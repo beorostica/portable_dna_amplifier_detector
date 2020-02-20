@@ -6,11 +6,13 @@
  */
 int main(void)
 {
-    bool erase_bonds;
+
+    //Init Log for debugging:
+    logInit();
 
     //Initialize Peripherals:
-    log_init();
     timers_init();
+    bool erase_bonds;
     buttons_leds_init(&erase_bonds);
     power_management_init();
 

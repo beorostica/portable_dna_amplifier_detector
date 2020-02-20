@@ -5,7 +5,7 @@
 
 #include <stdbool.h>
 
-void log_init(void);
+
 void timers_init(void);
 void buttons_leds_init(bool * p_erase_bonds);
 void power_management_init(void);

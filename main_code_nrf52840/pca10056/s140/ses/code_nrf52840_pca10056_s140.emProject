@@ -136,6 +136,7 @@
     <folder Name="custom_libraries">
       <file file_name="../../../custom_libraries/ble_cus.c" />
       <file file_name="../../../custom_libraries/custom_ble_manager.c" />
+      <file file_name="../../../custom_libraries/custom_log.c" />
     </folder>
   </project>
   <configuration
