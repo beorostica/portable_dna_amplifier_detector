@@ -4,6 +4,7 @@
 #include "custom_timer.h"
 #include "custom_detection_system_struct_data.h"
 #include "custom_qspi.h"
+#include "boards.h"
 #include "custom_ble_manager.h"
 
 #include <stdlib.h>
@@ -23,7 +24,8 @@ int main(void)
 
     //Initialize other Peripherals:
     qspiInit();                       //Init QSPI for external flash (qspiInit() must be after the timers are started, otherwise the qspi throws error on the first burn (but after reset works ok)).
-    
+    bsp_board_init(BSP_INIT_LEDS);    //Init digital output
+
     //Initialize BLE:
     ble_stack_init();
     gap_params_init();
@@ -62,6 +64,7 @@ int main(void)
                     {
                         //Save struct data before and Change the mosfet state for detection:
                         detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
+                        bsp_board_led_on(counter);
                         
                         //Increase counter:
                         counter++;
@@ -71,9 +74,11 @@ int main(void)
                     {
                         //Save struct data after and Change the mosfet state for non-detection:
                         detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+                        bsp_board_led_off(counter-1);
 
                         //Save struct data before and Change the mosfet state for detection:
                         detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
+                        bsp_board_led_on(counter);
 
                         //Increase counter:
                         counter++;
@@ -83,9 +88,11 @@ int main(void)
                     {
                         //Save struct data after and Change the mosfet state for non-detection:
                         detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+                        bsp_board_led_off(counter-1);
 
                         //Save struct data before and Change the mosfet state for detection:
                         detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
+                        bsp_board_led_on(counter);
 
                         //Increase counter:
                         counter++;
@@ -95,9 +102,11 @@ int main(void)
                     {
                         //Save struct data after and Change the mosfet state for non-detection:
                         detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+                        bsp_board_led_off(counter-1);
 
                         //Save struct data before and Change the mosfet state for detection:
                         detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
+                        bsp_board_led_on(counter);
 
                         //Increase counter:
                         counter++;
@@ -107,6 +116,7 @@ int main(void)
                     {
                         //Save struct data after and Change the mosfet state for non-detection:
                         detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+                        bsp_board_led_off(counter-1);
 
                         //Get the detection system struct data:
                         detection_system_data dsData = detectionSystem_getStructData();
