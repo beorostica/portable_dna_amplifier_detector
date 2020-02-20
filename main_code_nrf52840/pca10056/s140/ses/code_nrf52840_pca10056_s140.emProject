@@ -140,10 +140,16 @@
       <file file_name="../../../custom_libraries/custom_timer.c" />
       <file file_name="../../../custom_libraries/custom_detection_system_struct_data.c" />
       <file file_name="../../../custom_libraries/custom_qspi.c" />
+      <file file_name="../../../custom_libraries/custom_twi.c" />
     </folder>
     <folder Name="other_libraries">
       <folder Name="for_ExternalFlash">
         <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_qspi.c" />
+      </folder>
+      <folder Name="for_Twi">
+        <file file_name="../../../../../../integration/nrfx/legacy/nrf_drv_twi.c" />
+        <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_twi.c" />
+        <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_twim.c" />
       </folder>
     </folder>
   </project>

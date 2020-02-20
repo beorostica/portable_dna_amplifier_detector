@@ -5,9 +5,9 @@
 #include "custom_detection_system_struct_data.h"
 #include "custom_qspi.h"
 #include "boards.h"
+#include "custom_twi.h"
 #include "custom_ble_manager.h"
 
-#include <stdlib.h>
 
 //Main Function:
 int main(void)
@@ -25,6 +25,7 @@ int main(void)
     //Initialize other Peripherals:
     qspiInit();                       //Init QSPI for external flash (qspiInit() must be after the timers are started, otherwise the qspi throws error on the first burn (but after reset works ok)).
     bsp_board_init(BSP_INIT_LEDS);    //Init digital output
+    twiInit();                        //Init TWI for ADS1015
 
     //Initialize BLE:
     ble_stack_init();
@@ -42,8 +43,6 @@ int main(void)
     NRF_LOG_INFO("*** Project Start ***");
     NRF_LOG_INFO("*********************");
 
-    srand(0);
-
     //Enter main loop:
     while(1)
     {
@@ -58,12 +57,19 @@ int main(void)
             {
                 secondsClearFlag();
 
+                static uint8_t mosfetActuator;
+                static uint16_t lightSensor;
+                static uint16_t time;
+
                 switch(counter) 
                 {
                     case 0 :
                     {
                         //Save struct data before and Change the mosfet state for detection:
-                        detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
+                        mosfetActuator = (uint8_t) bsp_board_led_state_get(counter);
+                        lightSensor    = ads1015Read(counter);
+                        NRF_LOG_INFO("lightSensor[%d]: %d", counter, lightSensor);
+                        detectionSystem_saveStructData_before(counter, mosfetActuator, lightSensor);
                         bsp_board_led_on(counter);
                         
                         //Increase counter:
@@ -73,11 +79,18 @@ int main(void)
                     case 1 :
                     {
                         //Save struct data after and Change the mosfet state for non-detection:
-                        detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+                        mosfetActuator = (uint8_t) bsp_board_led_state_get(counter-1);
+                        lightSensor    = ads1015Read(counter-1);
+                        time           = (uint16_t) secondsGetTime();
+                        NRF_LOG_INFO("lightSensor[%d]: %d", (counter-1), lightSensor);
+                        detectionSystem_saveStructData_after((counter-1), mosfetActuator, lightSensor, time);
                         bsp_board_led_off(counter-1);
 
                         //Save struct data before and Change the mosfet state for detection:
-                        detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
+                        mosfetActuator = (uint8_t) bsp_board_led_state_get(counter);
+                        lightSensor    = ads1015Read(counter);
+                        NRF_LOG_INFO("lightSensor[%d]: %d", counter, lightSensor);
+                        detectionSystem_saveStructData_before(counter, mosfetActuator, lightSensor);
                         bsp_board_led_on(counter);
 
                         //Increase counter:
@@ -87,11 +100,18 @@ int main(void)
                     case 2 :
                     {
                         //Save struct data after and Change the mosfet state for non-detection:
-                        detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+                        mosfetActuator = (uint8_t) bsp_board_led_state_get(counter-1);
+                        lightSensor    = ads1015Read(counter-1);
+                        time           = (uint16_t) secondsGetTime();
+                        NRF_LOG_INFO("lightSensor[%d]: %d", (counter-1), lightSensor);
+                        detectionSystem_saveStructData_after((counter-1), mosfetActuator, lightSensor, time);
                         bsp_board_led_off(counter-1);
 
                         //Save struct data before and Change the mosfet state for detection:
-                        detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
+                        mosfetActuator = (uint8_t) bsp_board_led_state_get(counter);
+                        lightSensor    = ads1015Read(counter);
+                        NRF_LOG_INFO("lightSensor[%d]: %d", counter, lightSensor);
+                        detectionSystem_saveStructData_before(counter, mosfetActuator, lightSensor);
                         bsp_board_led_on(counter);
 
                         //Increase counter:
@@ -101,11 +121,18 @@ int main(void)
                     case 3 :
                     {
                         //Save struct data after and Change the mosfet state for non-detection:
-                        detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+                        mosfetActuator = (uint8_t) bsp_board_led_state_get(counter-1);
+                        lightSensor    = ads1015Read(counter-1);
+                        time           = (uint16_t) secondsGetTime();
+                        NRF_LOG_INFO("lightSensor[%d]: %d", (counter-1), lightSensor);
+                        detectionSystem_saveStructData_after((counter-1), mosfetActuator, lightSensor, time);
                         bsp_board_led_off(counter-1);
 
                         //Save struct data before and Change the mosfet state for detection:
-                        detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
+                        mosfetActuator = (uint8_t) bsp_board_led_state_get(counter);
+                        lightSensor    = ads1015Read(counter);
+                        NRF_LOG_INFO("lightSensor[%d]: %d", counter, lightSensor);
+                        detectionSystem_saveStructData_before(counter, mosfetActuator, lightSensor);
                         bsp_board_led_on(counter);
 
                         //Increase counter:
@@ -115,7 +142,11 @@ int main(void)
                     case 4 :
                     {
                         //Save struct data after and Change the mosfet state for non-detection:
-                        detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+                        mosfetActuator = (uint8_t) bsp_board_led_state_get(counter-1);
+                        lightSensor    = ads1015Read(counter-1);
+                        time           = (uint16_t) secondsGetTime();
+                        NRF_LOG_INFO("lightSensor[%d]: %d", (counter-1), lightSensor);
+                        detectionSystem_saveStructData_after((counter-1), mosfetActuator, lightSensor, time);
                         bsp_board_led_off(counter-1);
 
                         //Get the detection system struct data:
