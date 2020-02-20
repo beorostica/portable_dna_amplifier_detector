@@ -3,6 +3,7 @@
 #include "custom_log.h"
 #include "custom_timer.h"
 #include "custom_detection_system_struct_data.h"
+#include "custom_qspi.h"
 #include "custom_ble_manager.h"
 
 #include <stdlib.h>
@@ -20,6 +21,9 @@ int main(void)
     secondsStart();
     hundredMillisStart();
 
+    //Initialize other Peripherals:
+    qspiInit();                       //Init QSPI for external flash (qspiInit() must be after the timers are started, otherwise the qspi throws error on the first burn (but after reset works ok)).
+    
     //Initialize BLE:
     ble_stack_init();
     gap_params_init();
@@ -28,7 +32,7 @@ int main(void)
     advertising_init();
     conn_params_init();
 
-    //Start execution:
+    //Start Advertising:
     advertising_start();
 
     //Print Initial Message:
@@ -111,9 +115,8 @@ int main(void)
                         NRF_LOG_INFO("time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", dsData.time[2], dsData.mosfetActuator_before[2], dsData.lightSensor_before[2], dsData.mosfetActuator_after[2], dsData.lightSensor_after[2]);
                         NRF_LOG_INFO("time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", dsData.time[3], dsData.mosfetActuator_before[3], dsData.lightSensor_before[3], dsData.mosfetActuator_after[3], dsData.lightSensor_after[3]);
 
-                        //Send BT data if notifications are anabled by Phone:
-                        if(bleGetNotificationFlag())
-                            bleSendData(detectionSystem_getStructSingleData(dsData, 0));
+                        //(1) First:
+                        qspiPushSampleInExternalFlash(dsData);
 
                         //Reset counter and timer flag:
                         counter = 0;
@@ -126,12 +129,16 @@ int main(void)
             }
         }
 
-        //Print time every 0.1[s]:
-        if(hundredMillisGetFlag())
+        //If the nRF52840 is connected and the notifications are enabled, then try to send BT data every 0.1[s]:
+        if(bleGetNotificationFlag())
         {
-            hundredMillisClearFlag();
+            if(hundredMillisGetFlag())
+            {
+                hundredMillisClearFlag();
             
-            NRF_LOG_INFO("hundredMillisGetTime(): %d", hundredMillisGetTime());
+                //(2) Second:
+                qspiReadExternalFlashAndSendBleDataIfPossible();
+            }
         }
         
 

@@ -3036,7 +3036,7 @@
 // <e> NRFX_QSPI_ENABLED - nrfx_qspi - QSPI peripheral driver
 //==========================================================
 #ifndef NRFX_QSPI_ENABLED
-#define NRFX_QSPI_ENABLED 0
+#define NRFX_QSPI_ENABLED 1
 #endif
 // <o> NRFX_QSPI_CONFIG_SCK_DELAY - tSHSL, tWHSL and tSHWL in number of 16 MHz periods (62.5 ns).  <0-255> 
 
@@ -5166,7 +5166,7 @@
 // <e> QSPI_ENABLED - nrf_drv_qspi - QSPI peripheral driver - legacy layer
 //==========================================================
 #ifndef QSPI_ENABLED
-#define QSPI_ENABLED 0
+#define QSPI_ENABLED 1
 #endif
 // <o> QSPI_CONFIG_SCK_DELAY - tSHSL, tWHSL and tSHWL in number of 16 MHz periods (62.5 ns).  <0-255> 
 
@@ -5189,7 +5189,7 @@
 // <4=> Read4IO 
 
 #ifndef QSPI_CONFIG_READOC
-#define QSPI_CONFIG_READOC 0
+#define QSPI_CONFIG_READOC 4
 #endif
 
 // <o> QSPI_CONFIG_WRITEOC  - Number of data lines and opcode used for writing.
@@ -5200,7 +5200,7 @@
 // <3=> PP4IO 
 
 #ifndef QSPI_CONFIG_WRITEOC
-#define QSPI_CONFIG_WRITEOC 0
+#define QSPI_CONFIG_WRITEOC 3
 #endif
 
 // <o> QSPI_CONFIG_ADDRMODE  - Addressing mode.
@@ -5241,7 +5241,7 @@
 // <15=> 32MHz/16 
 
 #ifndef QSPI_CONFIG_FREQUENCY
-#define QSPI_CONFIG_FREQUENCY 15
+#define QSPI_CONFIG_FREQUENCY 1
 #endif
 
 // <s> QSPI_PIN_SCK - SCK pin value.

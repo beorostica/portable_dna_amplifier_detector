@@ -139,6 +139,12 @@
       <file file_name="../../../custom_libraries/custom_log.c" />
       <file file_name="../../../custom_libraries/custom_timer.c" />
       <file file_name="../../../custom_libraries/custom_detection_system_struct_data.c" />
+      <file file_name="../../../custom_libraries/custom_qspi.c" />
+    </folder>
+    <folder Name="other_libraries">
+      <folder Name="for_ExternalFlash">
+        <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_qspi.c" />
+      </folder>
     </folder>
   </project>
   <configuration

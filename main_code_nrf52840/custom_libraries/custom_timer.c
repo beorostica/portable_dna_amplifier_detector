@@ -186,7 +186,7 @@ void timerDetectionSystem_Start(void)
 
     //Start the detection system timer:
     isTimerDetectionSystemReady = true;
-    err_code = app_timer_start(m_timer_detection_system_id, APP_TIMER_TICKS(10000), NULL);
+    err_code = app_timer_start(m_timer_detection_system_id, APP_TIMER_TICKS(5000), NULL);
     APP_ERROR_CHECK(err_code);
 
 }

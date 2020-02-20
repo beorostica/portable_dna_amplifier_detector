@@ -243,7 +243,7 @@ void ble_cus_on_ble_evt( ble_evt_t const * p_ble_evt, void * p_context)
  */
 uint32_t ble_cus_custom_value_update(ble_cus_t * p_cus, uint8_t * custom_value)
 {
-    NRF_LOG_INFO("In ble_cus_custom_value_update. \r\n"); 
+    //NRF_LOG_INFO("In ble_cus_custom_value_update. \r\n"); 
     if (p_cus == NULL)
     {
         return NRF_ERROR_NULL;
