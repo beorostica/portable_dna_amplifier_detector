@@ -1,4 +1,5 @@
 
+//Include Modules:
 #include "custom_log.h"
 #include "custom_timer.h"
 #include "custom_detection_system_struct_data.h"
@@ -6,8 +7,7 @@
 
 #include <stdlib.h>
 
-/**@brief Function for application main entry.
- */
+//Main Function:
 int main(void)
 {
 
@@ -20,13 +20,6 @@ int main(void)
     secondsStart();
     hundredMillisStart();
 
-    timers_init();
-
-    //Initialize Peripherals:
-    bool erase_bonds;
-    buttons_leds_init(&erase_bonds);
-    //power_management_init();
-
     //Initialize BLE:
     ble_stack_init();
     gap_params_init();
@@ -34,19 +27,20 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
-    peer_manager_init();
 
     //Start execution:
-    application_timers_start();
-    advertising_start(erase_bonds);
+    advertising_start();
+
+    //Print Initial Message:
+    NRF_LOG_INFO("*********************");
+    NRF_LOG_INFO("*** Project Start ***");
+    NRF_LOG_INFO("*********************");
 
     srand(0);
 
     //Enter main loop:
     while(1)
     {
-        //idle_state_handle();
-
         ////////////////////////////////////////////////////////////////
         /// Detection System Task //////////////////////////////////////
         ////////////////////////////////////////////////////////////////

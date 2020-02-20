@@ -8,16 +8,9 @@
 #include "nrf_sdh_ble.h"
 #include "nrf_ble_gatt.h"
 #include "nrf_ble_qwr.h"
-#include "peer_manager_handler.h"
-
 #include "app_timer.h"
-#include "bsp_btn_ble.h"
-#include "nrf_pwr_mgmt.h"
 
-#include "app_error.h"
-#include "nrf_log.h"
-#include "nrf_log_ctrl.h"
-#include "nrf_log_default_backends.h"
+#include "custom_log.h"
 
 
 #define DEVICE_NAME                     "Nordic_Template"                       /**< Name of device. Will be included in the advertising data. */
@@ -37,25 +30,7 @@
 #define NEXT_CONN_PARAMS_UPDATE_DELAY   APP_TIMER_TICKS(30000)                  /**< Time between each call to sd_ble_gap_conn_param_update after the first call (30 seconds). */
 #define MAX_CONN_PARAMS_UPDATE_COUNT    3                                       /**< Number of attempts before giving up the connection parameter negotiation. */
 
-#define SEC_PARAM_BOND                  1                                       /**< Perform bonding. */
-#define SEC_PARAM_MITM                  0                                       /**< Man In The Middle protection not required. */
-#define SEC_PARAM_LESC                  0                                       /**< LE Secure Connections not enabled. */
-#define SEC_PARAM_KEYPRESS              0                                       /**< Keypress notifications not enabled. */
-#define SEC_PARAM_IO_CAPABILITIES       BLE_GAP_IO_CAPS_NONE                    /**< No I/O capabilities. */
-#define SEC_PARAM_OOB                   0                                       /**< Out Of Band data not available. */
-#define SEC_PARAM_MIN_KEY_SIZE          7                                       /**< Minimum encryption key size. */
-#define SEC_PARAM_MAX_KEY_SIZE          16                                      /**< Maximum encryption key size. */
-
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
-
-
-////////////////////////////////////////////////////////////////////
-/// For timer: notify update of a characteristic value /////////////
-////////////////////////////////////////////////////////////////////
-#define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(1000)
-APP_TIMER_DEF(m_notification_timer_id);
-static uint8_t m_custom_value = 0;
-////////////////////////////////////////////////////////////////////
 
 
 /**@brief Callback function for asserts in the SoftDevice.
@@ -93,40 +68,13 @@ static ble_uuid_t m_adv_uuids[] =                                               
 
 
 //Events or handlers:
-static void pm_evt_handler(pm_evt_t const * p_evt);                         //For handling Peer Manager events
 static void nrf_qwr_error_handler(uint32_t nrf_error);                      //For handling Queued Write Module errors
 static void on_conn_params_evt(ble_conn_params_evt_t * p_evt);              //For handling the Connection Parameters Module
 static void conn_params_error_handler(uint32_t nrf_error);                  //For handling a Connection Parameters error
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt);                          //For handling advertising events
 static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context); //For handling BLE events
 static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt);   //For handling custom service events
-static void notification_timeout_handler(void * p_context);                 //For handling custom timout for notification
-static void bsp_event_handler(bsp_event_t event);                           //For handling events from the BSP module
 
-//Used inside as auxiliar functions:
-static void sleep_mode_enter(void);
-static void delete_bonds(void);
-
-
-/**@brief Function for handling Peer Manager events.
- *
- * @param[in] p_evt  Peer Manager event.
- */
-static void pm_evt_handler(pm_evt_t const * p_evt)
-{
-    pm_handler_on_pm_evt(p_evt);
-    pm_handler_flash_clean(p_evt);
-
-    switch (p_evt->evt_id)
-    {
-        case PM_EVT_PEERS_DELETE_SUCCEEDED:
-            advertising_start(false);
-            break;
-
-        default:
-            break;
-    }
-}
 
 /**@brief Function for handling Queued Write Module errors.
  *
@@ -139,6 +87,7 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
 {
     APP_ERROR_HANDLER(nrf_error);
 }
+
 
 /**@brief Function for handling the Connection Parameters Module.
  *
@@ -186,12 +135,9 @@ void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
             NRF_LOG_INFO("Fast advertising.");
-            err_code = bsp_indication_set(BSP_INDICATE_ADVERTISING);
-            APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_ADV_EVT_IDLE:
-            sleep_mode_enter();
             break;
 
         default:
@@ -213,13 +159,10 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     {
         case BLE_GAP_EVT_DISCONNECTED:
             NRF_LOG_INFO("Disconnected.");
-            // LED indication will be changed when advertising starts.
             break;
 
         case BLE_GAP_EVT_CONNECTED:
             NRF_LOG_INFO("Connected.");
-            err_code = bsp_indication_set(BSP_INDICATE_CONNECTED);
-            APP_ERROR_CHECK(err_code);
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(err_code);
@@ -301,15 +244,9 @@ static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt)
     switch(p_evt->evt_type)
     {
         case BLE_CUS_EVT_NOTIFICATION_ENABLED:
-            //Start the timer for notify characteristic value changes:
-            err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
-            APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_CUS_EVT_NOTIFICATION_DISABLED:
-            //Start the timer for non-notication of characteristic value changes:
-            err_code = app_timer_stop(m_notification_timer_id);
-            APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_CUS_EVT_CONNECTED :
@@ -322,160 +259,6 @@ static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt)
               // No implementation needed.
               break;
     }
-}
-
-
-/**@brief Function for handling the Battery measurement timer timeout.
- *
- * @details This function will be called each time the battery level measurement timer expires.
- *
- * @param[in] p_context  Pointer used for passing some arbitrary information (context) from the
- *                       app_start_timer() call to the timeout handler.
- */
-static void notification_timeout_handler(void * p_context)
-{
-    UNUSED_PARAMETER(p_context);
-    ret_code_t err_code;
-    
-    // Increment the value of m_custom_value before nortifing it.
-    m_custom_value++;
-    
-    err_code = ble_cus_custom_value_update(&m_cus, m_custom_value);
-    APP_ERROR_CHECK(err_code);
-}
-
-
-/**@brief Function for handling events from the BSP module.
- *
- * @param[in]   event   Event generated when button is pressed.
- */
-static void bsp_event_handler(bsp_event_t event)
-{
-    ret_code_t err_code;
-
-    switch (event)
-    {
-        case BSP_EVENT_SLEEP:
-            sleep_mode_enter();
-            break; // BSP_EVENT_SLEEP
-
-        case BSP_EVENT_DISCONNECT:
-            err_code = sd_ble_gap_disconnect(m_conn_handle,
-                                             BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
-            if (err_code != NRF_ERROR_INVALID_STATE)
-            {
-                APP_ERROR_CHECK(err_code);
-            }
-            break; // BSP_EVENT_DISCONNECT
-
-        case BSP_EVENT_WHITELIST_OFF:
-            if (m_conn_handle == BLE_CONN_HANDLE_INVALID)
-            {
-                err_code = ble_advertising_restart_without_whitelist(&m_advertising);
-                if (err_code != NRF_ERROR_INVALID_STATE)
-                {
-                    APP_ERROR_CHECK(err_code);
-                }
-            }
-            break; // BSP_EVENT_KEY_0
-
-        default:
-            break;
-    }
-}
-
-
-
-
-/**@brief Function for putting the chip into sleep mode.
- *
- * @note This function will not return.
- */
-static void sleep_mode_enter(void)
-{
-    ret_code_t err_code;
-
-    err_code = bsp_indication_set(BSP_INDICATE_IDLE);
-    APP_ERROR_CHECK(err_code);
-
-    // Prepare wakeup buttons.
-    err_code = bsp_btn_ble_sleep_mode_prepare();
-    APP_ERROR_CHECK(err_code);
-
-    // Go to system-off mode (this function will not return; wakeup will cause a reset).
-    err_code = sd_power_system_off();
-    APP_ERROR_CHECK(err_code);
-}
-
-
-/**@brief Clear bond information from persistent storage.
- */
-static void delete_bonds(void)
-{
-    ret_code_t err_code;
-
-    NRF_LOG_INFO("Erase bonds!");
-
-    err_code = pm_peers_delete();
-    APP_ERROR_CHECK(err_code);
-}
-
-
-
-
-
-/**@brief Function for the Timer initialization.
- *
- * @details Initializes the timer module. This creates and starts application timers.
- */
-void timers_init(void)
-{
-    // Initialize timer module.
-    //ret_code_t err_code = app_timer_init();
-    //APP_ERROR_CHECK(err_code);
-
-    // Create timers.
-
-    /* YOUR_JOB: Create any timers to be used by the application.
-                 Below is an example of how to create a timer.
-                 For every new timer needed, increase the value of the macro APP_TIMER_MAX_TIMERS by
-                 one.
-       ret_code_t err_code;
-       err_code = app_timer_create(&m_app_timer_id, APP_TIMER_MODE_REPEATED, timer_timeout_handler);
-       APP_ERROR_CHECK(err_code); */
-
-    ret_code_t err_code = app_timer_create(&m_notification_timer_id, APP_TIMER_MODE_REPEATED, notification_timeout_handler);
-    APP_ERROR_CHECK(err_code);
-
-}
-
-
-/**@brief Function for initializing buttons and leds.
- *
- * @param[out] p_erase_bonds  Will be true if the clear bonding button was pressed to wake the application up.
- */
-void buttons_leds_init(bool * p_erase_bonds)
-{
-    ret_code_t err_code;
-    bsp_event_t startup_event;
-
-    err_code = bsp_init(BSP_INIT_LEDS | BSP_INIT_BUTTONS, bsp_event_handler);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = bsp_btn_ble_init(NULL, &startup_event);
-    APP_ERROR_CHECK(err_code);
-
-    *p_erase_bonds = (startup_event == BSP_EVENT_CLEAR_BONDING_DATA);
-}
-
-
-/**@brief Function for initializing power management.
- */
-void power_management_init(void)
-{
-    ret_code_t err_code;
-    err_code = nrf_pwr_mgmt_init();
-    APP_ERROR_CHECK(err_code);
 }
 
 
@@ -503,6 +286,7 @@ void ble_stack_init(void)
     // Register a handler for BLE events.
     NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
 }
+
 
 /**@brief Function for the GAP initialization.
  *
@@ -573,7 +357,6 @@ void advertising_init(void)
 
     ble_advertising_conn_cfg_tag_set(&m_advertising, APP_BLE_CONN_CFG_TAG);
 }
-
 
 
 /**@brief Function for initializing services that will be used by the application.
@@ -654,78 +437,10 @@ void conn_params_init(void)
 }
 
 
-
-/**@brief Function for the Peer Manager initialization.
- */
-void peer_manager_init(void)
-{
-    ble_gap_sec_params_t sec_param;
-    ret_code_t           err_code;
-
-    err_code = pm_init();
-    APP_ERROR_CHECK(err_code);
-
-    memset(&sec_param, 0, sizeof(ble_gap_sec_params_t));
-
-    // Security parameters to be used for all security procedures.
-    sec_param.bond           = SEC_PARAM_BOND;
-    sec_param.mitm           = SEC_PARAM_MITM;
-    sec_param.lesc           = SEC_PARAM_LESC;
-    sec_param.keypress       = SEC_PARAM_KEYPRESS;
-    sec_param.io_caps        = SEC_PARAM_IO_CAPABILITIES;
-    sec_param.oob            = SEC_PARAM_OOB;
-    sec_param.min_key_size   = SEC_PARAM_MIN_KEY_SIZE;
-    sec_param.max_key_size   = SEC_PARAM_MAX_KEY_SIZE;
-    sec_param.kdist_own.enc  = 1;
-    sec_param.kdist_own.id   = 1;
-    sec_param.kdist_peer.enc = 1;
-    sec_param.kdist_peer.id  = 1;
-
-    err_code = pm_sec_params_set(&sec_param);
-    APP_ERROR_CHECK(err_code);
-
-    err_code = pm_register(pm_evt_handler);
-    APP_ERROR_CHECK(err_code);
-}
-
-
 /**@brief Function for starting advertising.
  */
-void advertising_start(bool erase_bonds)
+void advertising_start(void)
 {
-    if (erase_bonds == true)
-    {
-        delete_bonds();
-        // Advertising is started by PM_EVT_PEERS_DELETED_SUCEEDED event
-    }
-    else
-    {
-        ret_code_t err_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
-
-        APP_ERROR_CHECK(err_code);
-    }
-}
-
-
-/**@brief Function for starting timers.
- */
-void application_timers_start(void)
-{
-    /* YOUR_JOB: Start your timers. below is an example of how to start a timer.
-       ret_code_t err_code;
-       err_code = app_timer_start(m_app_timer_id, TIMER_INTERVAL, NULL);
-       APP_ERROR_CHECK(err_code); */
-
-}
-
-/**@brief Function for handling the idle state (main loop).
- *
- * @details If there is no pending log operation, then sleep until next the next event occurs.
- */
-void idle_state_handle(void)
-{
-    if (NRF_LOG_PROCESS() == false)
-    {
-        nrf_pwr_mgmt_run();
-    }
+    ret_code_t err_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
+    APP_ERROR_CHECK(err_code);
 }
