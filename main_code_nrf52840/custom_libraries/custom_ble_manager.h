@@ -3,9 +3,7 @@
 #define CUSTOM_BLE_MANAGER_H
 
 
-#include <stdint.h>
 #include <stdbool.h>
-
 
 void log_init(void);
 void timers_init(void);

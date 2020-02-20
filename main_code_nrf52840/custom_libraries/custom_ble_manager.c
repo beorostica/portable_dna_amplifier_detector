@@ -1,5 +1,6 @@
 
 #include "custom_ble_manager.h"
+#include "ble_cus.h"
 
 #include "ble_advertising.h"
 #include "ble_conn_params.h"
@@ -48,6 +49,15 @@
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
 
+////////////////////////////////////////////////////////////////////
+/// For timer: notify update of a characteristic value /////////////
+////////////////////////////////////////////////////////////////////
+#define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(1000)
+APP_TIMER_DEF(m_notification_timer_id);
+static uint8_t m_custom_value = 0;
+////////////////////////////////////////////////////////////////////
+
+
 /**@brief Callback function for asserts in the SoftDevice.
  *
  * @details This function will be called in case of an assert in the SoftDevice.
@@ -64,19 +74,21 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
     app_error_handler(DEAD_BEEF, line_num, p_file_name);
 }
 
-/* YOUR_JOB: Declare all services structure your application is using
- *  BLE_XYZ_DEF(m_xyz);
- */
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                                         /**< Context for the Queued Write module.*/
 BLE_ADVERTISING_DEF(m_advertising);                                             /**< Advertising module instance. */
+
+/* YOUR_JOB: Declare all services structure your application is using
+ *  BLE_XYZ_DEF(m_xyz);
+ */
+BLE_CUS_DEF(m_cus);
 
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
 static ble_uuid_t m_adv_uuids[] =                                               /**< Universally unique service identifiers. */
 {
-    {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}
+    {CUSTOM_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
 };
 
 
@@ -87,6 +99,8 @@ static void on_conn_params_evt(ble_conn_params_evt_t * p_evt);              //Fo
 static void conn_params_error_handler(uint32_t nrf_error);                  //For handling a Connection Parameters error
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt);                          //For handling advertising events
 static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context); //For handling BLE events
+static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt);   //For handling custom service events
+static void notification_timeout_handler(void * p_context);                 //For handling custom timout for notification
 static void bsp_event_handler(bsp_event_t event);                           //For handling events from the BSP module
 
 //Used inside as auxiliar functions:
@@ -272,6 +286,64 @@ static void on_yys_evt(ble_yy_service_t     * p_yy_service,
 }
 */
 
+/**@brief Function for handling the Custom Service Service events.
+ *
+ * @details This function will be called for all Custom Service events which are passed to
+ *          the application.
+ *
+ * @param[in]   p_cus_service  Custom Service structure.
+ * @param[in]   p_evt          Event received from the Custom Service.
+ *
+ */
+static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt)
+{
+    uint32_t err_code;
+    switch(p_evt->evt_type)
+    {
+        case BLE_CUS_EVT_NOTIFICATION_ENABLED:
+            //Start the timer for notify characteristic value changes:
+            err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
+            APP_ERROR_CHECK(err_code);
+            break;
+
+        case BLE_CUS_EVT_NOTIFICATION_DISABLED:
+            //Start the timer for non-notication of characteristic value changes:
+            err_code = app_timer_stop(m_notification_timer_id);
+            APP_ERROR_CHECK(err_code);
+            break;
+
+        case BLE_CUS_EVT_CONNECTED :
+            break;
+
+        case BLE_CUS_EVT_DISCONNECTED:
+            break;
+
+        default:
+              // No implementation needed.
+              break;
+    }
+}
+
+
+/**@brief Function for handling the Battery measurement timer timeout.
+ *
+ * @details This function will be called each time the battery level measurement timer expires.
+ *
+ * @param[in] p_context  Pointer used for passing some arbitrary information (context) from the
+ *                       app_start_timer() call to the timeout handler.
+ */
+static void notification_timeout_handler(void * p_context)
+{
+    UNUSED_PARAMETER(p_context);
+    ret_code_t err_code;
+    
+    // Increment the value of m_custom_value before nortifing it.
+    m_custom_value++;
+    
+    err_code = ble_cus_custom_value_update(&m_cus, m_custom_value);
+    APP_ERROR_CHECK(err_code);
+}
+
 
 /**@brief Function for handling events from the BSP module.
  *
@@ -311,6 +383,8 @@ static void bsp_event_handler(bsp_event_t event)
             break;
     }
 }
+
+
 
 
 /**@brief Function for putting the chip into sleep mode.
@@ -379,6 +453,10 @@ void timers_init(void)
        ret_code_t err_code;
        err_code = app_timer_create(&m_app_timer_id, APP_TIMER_MODE_REPEATED, timer_timeout_handler);
        APP_ERROR_CHECK(err_code); */
+
+    err_code = app_timer_create(&m_notification_timer_id, APP_TIMER_MODE_REPEATED, notification_timeout_handler);
+    APP_ERROR_CHECK(err_code);
+
 }
 
 
@@ -435,7 +513,6 @@ void ble_stack_init(void)
     // Register a handler for BLE events.
     NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
 }
-
 
 /**@brief Function for the GAP initialization.
  *
@@ -508,6 +585,7 @@ void advertising_init(void)
 }
 
 
+
 /**@brief Function for initializing services that will be used by the application.
  */
 void services_init(void)
@@ -543,6 +621,23 @@ void services_init(void)
        err_code = ble_yy_service_init(&yys_init, &yy_init);
        APP_ERROR_CHECK(err_code);
      */
+
+    //CUS service variable:
+    ble_cus_init_t  cus_init;
+
+    //Initialize CUS Service init structure to zero.
+    memset(&cus_init, 0, sizeof(cus_init));
+
+    //Sets the write and read permissions to the characteristic value attribute to open, i.e. the peer is allowed to write/read the value without encrypting the link first.
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.write_perm);
+
+    // Set the cus event handler
+    cus_init.evt_handler = on_cus_evt;
+
+    err_code = ble_cus_init(&m_cus, &cus_init);
+    APP_ERROR_CHECK(err_code);
+
 }
 
 
@@ -567,6 +662,7 @@ void conn_params_init(void)
     err_code = ble_conn_params_init(&cp_init);
     APP_ERROR_CHECK(err_code);
 }
+
 
 
 /**@brief Function for the Peer Manager initialization.
@@ -631,7 +727,6 @@ void application_timers_start(void)
        APP_ERROR_CHECK(err_code); */
 
 }
-
 
 /**@brief Function for handling the idle state (main loop).
  *
