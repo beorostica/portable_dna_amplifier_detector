@@ -1,5 +1,6 @@
 
 #include "custom_ble_manager.h"
+#include "ble_cus.h"
 
 #include "ble_advertising.h"
 #include "ble_conn_params.h"
@@ -48,6 +49,7 @@
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
 
+
 /**@brief Callback function for asserts in the SoftDevice.
  *
  * @details This function will be called in case of an assert in the SoftDevice.
@@ -64,19 +66,21 @@ void assert_nrf_callback(uint16_t line_num, const uint8_t * p_file_name)
     app_error_handler(DEAD_BEEF, line_num, p_file_name);
 }
 
-/* YOUR_JOB: Declare all services structure your application is using
- *  BLE_XYZ_DEF(m_xyz);
- */
 NRF_BLE_GATT_DEF(m_gatt);                                                       /**< GATT module instance. */
 NRF_BLE_QWR_DEF(m_qwr);                                                         /**< Context for the Queued Write module.*/
 BLE_ADVERTISING_DEF(m_advertising);                                             /**< Advertising module instance. */
+
+/* YOUR_JOB: Declare all services structure your application is using
+ *  BLE_XYZ_DEF(m_xyz);
+ */
+BLE_CUS_DEF(m_cus);
 
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
 static ble_uuid_t m_adv_uuids[] =                                               /**< Universally unique service identifiers. */
 {
-    {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}
+    {CUSTOM_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
 };
 
 
@@ -245,7 +249,6 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     }
 }
 
-
 /**@brief Function for handling the YYY Service events.
  * YOUR_JOB implement a service handler function depending on the event the service you are using can generate
  *
@@ -313,6 +316,8 @@ static void bsp_event_handler(bsp_event_t event)
 }
 
 
+
+
 /**@brief Function for putting the chip into sleep mode.
  *
  * @note This function will not return.
@@ -358,7 +363,6 @@ void log_init(void)
 
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 }
-
 
 /**@brief Function for the Timer initialization.
  *
@@ -436,7 +440,6 @@ void ble_stack_init(void)
     NRF_SDH_BLE_OBSERVER(m_ble_observer, APP_BLE_OBSERVER_PRIO, ble_evt_handler, NULL);
 }
 
-
 /**@brief Function for the GAP initialization.
  *
  * @details This function sets up all the necessary GAP (Generic Access Profile) parameters of the
@@ -508,6 +511,7 @@ void advertising_init(void)
 }
 
 
+
 /**@brief Function for initializing services that will be used by the application.
  */
 void services_init(void)
@@ -543,6 +547,20 @@ void services_init(void)
        err_code = ble_yy_service_init(&yys_init, &yy_init);
        APP_ERROR_CHECK(err_code);
      */
+
+    //CUS service variable:
+    ble_cus_init_t  cus_init;
+
+    //Initialize CUS Service init structure to zero.
+    memset(&cus_init, 0, sizeof(cus_init));
+
+    //Sets the write and read permissions to the characteristic value attribute to open, i.e. the peer is allowed to write/read the value without encrypting the link first.
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.write_perm);
+
+    err_code = ble_cus_init(&m_cus, &cus_init);
+    APP_ERROR_CHECK(err_code);
+
 }
 
 
@@ -567,6 +585,7 @@ void conn_params_init(void)
     err_code = ble_conn_params_init(&cp_init);
     APP_ERROR_CHECK(err_code);
 }
+
 
 
 /**@brief Function for the Peer Manager initialization.
@@ -631,7 +650,6 @@ void application_timers_start(void)
        APP_ERROR_CHECK(err_code); */
 
 }
-
 
 /**@brief Function for handling the idle state (main loop).
  *
