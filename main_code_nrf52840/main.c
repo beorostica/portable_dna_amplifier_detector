@@ -1,8 +1,10 @@
 
 #include "custom_log.h"
 #include "custom_timer.h"
+#include "custom_detection_system_struct_data.h"
 #include "custom_ble_manager.h"
 
+#include <stdlib.h>
 
 /**@brief Function for application main entry.
  */
@@ -38,6 +40,8 @@ int main(void)
     application_timers_start();
     advertising_start(erase_bonds);
 
+    srand(0);
+
     //Enter main loop:
     while(1)
     {
@@ -58,15 +62,20 @@ int main(void)
                 {
                     case 0 :
                     {
-                        NRF_LOG_INFO("secondsGetTime(): %d", secondsGetTime());
-
+                        //Save struct data before and Change the mosfet state for detection:
+                        detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
+                        
                         //Increase counter:
                         counter++;
                         break;
                     }
                     case 1 :
                     {
-                        NRF_LOG_INFO("secondsGetTime(): %d", secondsGetTime());
+                        //Save struct data after and Change the mosfet state for non-detection:
+                        detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+
+                        //Save struct data before and Change the mosfet state for detection:
+                        detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
 
                         //Increase counter:
                         counter++;
@@ -74,7 +83,11 @@ int main(void)
                     }
                     case 2 :
                     {
-                        NRF_LOG_INFO("secondsGetTime(): %d", secondsGetTime());
+                        //Save struct data after and Change the mosfet state for non-detection:
+                        detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+
+                        //Save struct data before and Change the mosfet state for detection:
+                        detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
 
                         //Increase counter:
                         counter++;
@@ -82,7 +95,11 @@ int main(void)
                     }
                     case 3 :
                     {
-                        NRF_LOG_INFO("secondsGetTime(): %d", secondsGetTime());
+                        //Save struct data after and Change the mosfet state for non-detection:
+                        detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+
+                        //Save struct data before and Change the mosfet state for detection:
+                        detectionSystem_saveStructData_before(counter, 0, (uint16_t) rand());
 
                         //Increase counter:
                         counter++;
@@ -90,7 +107,15 @@ int main(void)
                     }
                     case 4 :
                     {
-                        NRF_LOG_INFO("secondsGetTime(): %d", secondsGetTime());
+                        //Save struct data after and Change the mosfet state for non-detection:
+                        detectionSystem_saveStructData_after((counter-1), 1, (uint16_t) rand(), (uint16_t) secondsGetTime());
+
+                        //Get the detection system struct data:
+                        detection_system_data dsData = detectionSystem_getStructData();
+                        NRF_LOG_INFO("time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", dsData.time[0], dsData.mosfetActuator_before[0], dsData.lightSensor_before[0], dsData.mosfetActuator_after[0], dsData.lightSensor_after[0]);
+                        NRF_LOG_INFO("time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", dsData.time[1], dsData.mosfetActuator_before[1], dsData.lightSensor_before[1], dsData.mosfetActuator_after[1], dsData.lightSensor_after[1]);
+                        NRF_LOG_INFO("time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", dsData.time[2], dsData.mosfetActuator_before[2], dsData.lightSensor_before[2], dsData.mosfetActuator_after[2], dsData.lightSensor_after[2]);
+                        NRF_LOG_INFO("time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", dsData.time[3], dsData.mosfetActuator_before[3], dsData.lightSensor_before[3], dsData.mosfetActuator_after[3], dsData.lightSensor_after[3]);
 
                         //Reset counter and timer flag:
                         counter = 0;

@@ -138,6 +138,7 @@
       <file file_name="../../../custom_libraries/custom_ble_manager.c" />
       <file file_name="../../../custom_libraries/custom_log.c" />
       <file file_name="../../../custom_libraries/custom_timer.c" />
+      <file file_name="../../../custom_libraries/custom_detection_system_struct_data.c" />
     </folder>
   </project>
   <configuration
