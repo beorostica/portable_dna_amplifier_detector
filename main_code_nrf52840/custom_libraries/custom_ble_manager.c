@@ -431,8 +431,8 @@ static void delete_bonds(void)
 void timers_init(void)
 {
     // Initialize timer module.
-    ret_code_t err_code = app_timer_init();
-    APP_ERROR_CHECK(err_code);
+    //ret_code_t err_code = app_timer_init();
+    //APP_ERROR_CHECK(err_code);
 
     // Create timers.
 
@@ -444,7 +444,7 @@ void timers_init(void)
        err_code = app_timer_create(&m_app_timer_id, APP_TIMER_MODE_REPEATED, timer_timeout_handler);
        APP_ERROR_CHECK(err_code); */
 
-    err_code = app_timer_create(&m_notification_timer_id, APP_TIMER_MODE_REPEATED, notification_timeout_handler);
+    ret_code_t err_code = app_timer_create(&m_notification_timer_id, APP_TIMER_MODE_REPEATED, notification_timeout_handler);
     APP_ERROR_CHECK(err_code);
 
 }
