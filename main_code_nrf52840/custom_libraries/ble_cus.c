@@ -1,9 +1,8 @@
 
 #include "ble_cus.h"
+#include "custom_ble_manager.h"
 
-#include "boards.h"
-#include "nrf_log.h"
-
+#include "custom_log.h"
 
 static uint32_t custom_value_char_add(ble_cus_t * p_cus, const ble_cus_init_t * p_cus_init);
 static void on_connect(ble_cus_t * p_cus, ble_evt_t const * p_ble_evt);
@@ -66,9 +65,9 @@ static uint32_t custom_value_char_add(ble_cus_t * p_cus, const ble_cus_init_t * 
 
     attr_char_value.p_uuid    = &ble_uuid;
     attr_char_value.p_attr_md = &attr_md;
-    attr_char_value.init_len  = sizeof(uint8_t);
+    attr_char_value.init_len  = sizeof(detection_system_single_data);
     attr_char_value.init_offs = 0;
-    attr_char_value.max_len   = sizeof(uint8_t);
+    attr_char_value.max_len   = sizeof(detection_system_single_data);
 
     err_code = sd_ble_gatts_characteristic_add(p_cus->service_handle, &char_md,
                                                &attr_char_value,
@@ -123,7 +122,7 @@ static void on_write(ble_cus_t * p_cus, ble_evt_t const * p_ble_evt)
     if (p_evt_write->handle == p_cus->custom_value_handles.value_handle)
     {
         // Put specific task here (toogle LED_4).
-        nrf_gpio_pin_toggle(LED_4);
+        //nrf_gpio_pin_toggle(LED_4);
     }
 
     // Check if the Custom value CCCD is written to and that the value is the appropriate length, i.e 2 bytes.
@@ -242,9 +241,9 @@ void ble_cus_on_ble_evt( ble_evt_t const * p_ble_evt, void * p_context)
  *
  * @return      NRF_SUCCESS on success, otherwise an error code.
  */
-uint32_t ble_cus_custom_value_update(ble_cus_t * p_cus, uint8_t custom_value)
+uint32_t ble_cus_custom_value_update(ble_cus_t * p_cus, uint8_t * custom_value)
 {
-    NRF_LOG_INFO("In ble_cus_custom_value_update. \r\n"); 
+    //NRF_LOG_INFO("In ble_cus_custom_value_update. \r\n"); 
     if (p_cus == NULL)
     {
         return NRF_ERROR_NULL;
@@ -256,9 +255,9 @@ uint32_t ble_cus_custom_value_update(ble_cus_t * p_cus, uint8_t custom_value)
     // Initialize value struct.
     memset(&gatts_value, 0, sizeof(gatts_value));
 
-    gatts_value.len     = sizeof(uint8_t);
+    gatts_value.len     = sizeof(detection_system_single_data);
     gatts_value.offset  = 0;
-    gatts_value.p_value = &custom_value;
+    gatts_value.p_value = custom_value;
 
     // Update database.
     err_code = sd_ble_gatts_value_set(p_cus->conn_handle,
@@ -270,7 +269,7 @@ uint32_t ble_cus_custom_value_update(ble_cus_t * p_cus, uint8_t custom_value)
     }
 
     // Send value if connected and notifying.
-    if ((p_cus->conn_handle != BLE_CONN_HANDLE_INVALID)) 
+    if ((p_cus->conn_handle != BLE_CONN_HANDLE_INVALID) && bleGetNotificationFlag()) 
     {
         ble_gatts_hvx_params_t hvx_params;
 
@@ -282,7 +281,10 @@ uint32_t ble_cus_custom_value_update(ble_cus_t * p_cus, uint8_t custom_value)
         hvx_params.p_len  = &gatts_value.len;
         hvx_params.p_data = gatts_value.p_value;
 
-        err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        do {
+            err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        } while (err_code == NRF_ERROR_RESOURCES);
+        
     }
     else
     {
