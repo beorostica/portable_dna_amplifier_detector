@@ -111,6 +111,10 @@ int main(void)
                         NRF_LOG_INFO("time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", dsData.time[2], dsData.mosfetActuator_before[2], dsData.lightSensor_before[2], dsData.mosfetActuator_after[2], dsData.lightSensor_after[2]);
                         NRF_LOG_INFO("time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", dsData.time[3], dsData.mosfetActuator_before[3], dsData.lightSensor_before[3], dsData.mosfetActuator_after[3], dsData.lightSensor_after[3]);
 
+                        //Send BT data if notifications are anabled by Phone:
+                        if(bleGetNotificationFlag())
+                            bleSendData(detectionSystem_getStructSingleData(dsData, 0));
+
                         //Reset counter and timer flag:
                         counter = 0;
                         timerDetectionSystem_ClearFlag();

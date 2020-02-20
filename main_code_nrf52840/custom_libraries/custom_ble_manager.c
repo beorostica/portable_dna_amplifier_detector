@@ -58,6 +58,9 @@ BLE_ADVERTISING_DEF(m_advertising);                                             
  */
 BLE_CUS_DEF(m_cus);
 
+
+static bool isNotificationEnabled = false;
+
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
@@ -158,6 +161,8 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_DISCONNECTED:
+            isNotificationEnabled = false;
+            NRF_LOG_INFO("isNotificationEnabled: false");
             NRF_LOG_INFO("Disconnected.");
             break;
 
@@ -182,6 +187,8 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GATTC_EVT_TIMEOUT:
             // Disconnect on GATT Client timeout event.
+            isNotificationEnabled = false;
+            NRF_LOG_INFO("isNotificationEnabled: false");
             NRF_LOG_DEBUG("GATT Client Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
@@ -190,6 +197,8 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GATTS_EVT_TIMEOUT:
             // Disconnect on GATT Server timeout event.
+            isNotificationEnabled = false;
+            NRF_LOG_INFO("isNotificationEnabled: false");
             NRF_LOG_DEBUG("GATT Server Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
@@ -244,15 +253,21 @@ static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt)
     switch(p_evt->evt_type)
     {
         case BLE_CUS_EVT_NOTIFICATION_ENABLED:
+            isNotificationEnabled = true;
+            NRF_LOG_INFO("isNotificationEnabled: true");
             break;
 
         case BLE_CUS_EVT_NOTIFICATION_DISABLED:
+            isNotificationEnabled = false;
+            NRF_LOG_INFO("isNotificationEnabled: false");
             break;
 
         case BLE_CUS_EVT_CONNECTED :
             break;
 
         case BLE_CUS_EVT_DISCONNECTED:
+            isNotificationEnabled = false;
+            NRF_LOG_INFO("isNotificationEnabled: false");
             break;
 
         default:
@@ -444,3 +459,23 @@ void advertising_start(void)
     ret_code_t err_code = ble_advertising_start(&m_advertising, BLE_ADV_MODE_FAST);
     APP_ERROR_CHECK(err_code);
 }
+
+
+/**@brief Function for checking notification status.
+ */
+bool bleGetNotificationFlag(void)
+{
+    return isNotificationEnabled;
+}
+
+
+/**@brief Function for sending ble data.
+ */
+void bleSendData(detection_system_single_data data)
+{
+    uint8_t *ptrData = (uint8_t*) &data;
+    ret_code_t err_code = ble_cus_custom_value_update(&m_cus, ptrData);
+    APP_ERROR_CHECK(err_code);
+}
+
+

@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include "ble_srv_common.h"
 
+#include "custom_detection_system_struct_data.h"
+
 
 #define CUSTOM_SERVICE_UUID_BASE         {0xBC, 0x8A, 0xBF, 0x45, 0xCA, 0x05, 0x50, 0xBA, \
                                           0x40, 0x42, 0xB0, 0x00, 0xC9, 0xAD, 0x64, 0xF3}
@@ -56,7 +58,7 @@ typedef void (*ble_cus_evt_handler_t) (ble_cus_t * p_cus, ble_cus_evt_t * p_evt)
 typedef struct
 {
     ble_cus_evt_handler_t         evt_handler;                    /**< Event handler to be called for handling events in the Custom Service. */
-    uint8_t                       initial_custom_value;           /**< Initial custom value */
+    uint8_t                       initial_custom_value[sizeof(detection_system_single_data)];         /**< Initial custom value */
     ble_srv_cccd_security_mode_t  custom_value_char_attr_md;     /**< Initial security level for Custom characteristics attribute */
 } ble_cus_init_t;
 
@@ -109,7 +111,7 @@ void ble_cus_on_ble_evt( ble_evt_t const * p_ble_evt, void * p_context);
  *
  * @return      NRF_SUCCESS on success, otherwise an error code.
  */
-uint32_t ble_cus_custom_value_update(ble_cus_t * p_cus, uint8_t custom_value);
+uint32_t ble_cus_custom_value_update(ble_cus_t * p_cus, uint8_t * custom_value);
 
 
 #endif /* BLE_CUS_H */
