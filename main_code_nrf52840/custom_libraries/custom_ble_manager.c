@@ -49,6 +49,14 @@
 #define DEAD_BEEF                       0xDEADBEEF                              /**< Value used as error code on stack dump, can be used to identify stack location on stack unwind. */
 
 
+////////////////////////////////////////////////////////////////////
+/// For timer: notify update of a characteristic value /////////////
+////////////////////////////////////////////////////////////////////
+#define NOTIFICATION_INTERVAL           APP_TIMER_TICKS(1000)
+APP_TIMER_DEF(m_notification_timer_id);
+static uint8_t m_custom_value = 0;
+////////////////////////////////////////////////////////////////////
+
 
 /**@brief Callback function for asserts in the SoftDevice.
  *
@@ -91,6 +99,8 @@ static void on_conn_params_evt(ble_conn_params_evt_t * p_evt);              //Fo
 static void conn_params_error_handler(uint32_t nrf_error);                  //For handling a Connection Parameters error
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt);                          //For handling advertising events
 static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context); //For handling BLE events
+static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt);   //For handling custom service events
+static void notification_timeout_handler(void * p_context);                 //For handling custom timout for notification
 static void bsp_event_handler(bsp_event_t event);                           //For handling events from the BSP module
 
 //Used inside as auxiliar functions:
@@ -249,6 +259,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     }
 }
 
+
 /**@brief Function for handling the YYY Service events.
  * YOUR_JOB implement a service handler function depending on the event the service you are using can generate
  *
@@ -274,6 +285,64 @@ static void on_yys_evt(ble_yy_service_t     * p_yy_service,
     }
 }
 */
+
+/**@brief Function for handling the Custom Service Service events.
+ *
+ * @details This function will be called for all Custom Service events which are passed to
+ *          the application.
+ *
+ * @param[in]   p_cus_service  Custom Service structure.
+ * @param[in]   p_evt          Event received from the Custom Service.
+ *
+ */
+static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt)
+{
+    uint32_t err_code;
+    switch(p_evt->evt_type)
+    {
+        case BLE_CUS_EVT_NOTIFICATION_ENABLED:
+            //Start the timer for notify characteristic value changes:
+            err_code = app_timer_start(m_notification_timer_id, NOTIFICATION_INTERVAL, NULL);
+            APP_ERROR_CHECK(err_code);
+            break;
+
+        case BLE_CUS_EVT_NOTIFICATION_DISABLED:
+            //Start the timer for non-notication of characteristic value changes:
+            err_code = app_timer_stop(m_notification_timer_id);
+            APP_ERROR_CHECK(err_code);
+            break;
+
+        case BLE_CUS_EVT_CONNECTED :
+            break;
+
+        case BLE_CUS_EVT_DISCONNECTED:
+            break;
+
+        default:
+              // No implementation needed.
+              break;
+    }
+}
+
+
+/**@brief Function for handling the Battery measurement timer timeout.
+ *
+ * @details This function will be called each time the battery level measurement timer expires.
+ *
+ * @param[in] p_context  Pointer used for passing some arbitrary information (context) from the
+ *                       app_start_timer() call to the timeout handler.
+ */
+static void notification_timeout_handler(void * p_context)
+{
+    UNUSED_PARAMETER(p_context);
+    ret_code_t err_code;
+    
+    // Increment the value of m_custom_value before nortifing it.
+    m_custom_value++;
+    
+    err_code = ble_cus_custom_value_update(&m_cus, m_custom_value);
+    APP_ERROR_CHECK(err_code);
+}
 
 
 /**@brief Function for handling events from the BSP module.
@@ -364,6 +433,7 @@ void log_init(void)
     NRF_LOG_DEFAULT_BACKENDS_INIT();
 }
 
+
 /**@brief Function for the Timer initialization.
  *
  * @details Initializes the timer module. This creates and starts application timers.
@@ -383,6 +453,10 @@ void timers_init(void)
        ret_code_t err_code;
        err_code = app_timer_create(&m_app_timer_id, APP_TIMER_MODE_REPEATED, timer_timeout_handler);
        APP_ERROR_CHECK(err_code); */
+
+    err_code = app_timer_create(&m_notification_timer_id, APP_TIMER_MODE_REPEATED, notification_timeout_handler);
+    APP_ERROR_CHECK(err_code);
+
 }
 
 
@@ -557,6 +631,9 @@ void services_init(void)
     //Sets the write and read permissions to the characteristic value attribute to open, i.e. the peer is allowed to write/read the value without encrypting the link first.
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.read_perm);
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.write_perm);
+
+    // Set the cus event handler
+    cus_init.evt_handler = on_cus_evt;
 
     err_code = ble_cus_init(&m_cus, &cus_init);
     APP_ERROR_CHECK(err_code);
