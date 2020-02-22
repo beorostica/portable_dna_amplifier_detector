@@ -70,6 +70,7 @@ struct ble_cus_s
     ble_gatts_char_handles_t      custom_value_handles;           /**< Handles related to the Custom Value characteristic. */
     uint16_t                      conn_handle;                    /**< Handle of the current connection (as provided by the BLE stack, is BLE_CONN_HANDLE_INVALID if not in a connection). */
     uint8_t                       uuid_type; 
+    bool                          busy;                           //!< Busy flag. Indicates that the hvx function returned busy and that there is still data to be transfered. */
 };
 
 

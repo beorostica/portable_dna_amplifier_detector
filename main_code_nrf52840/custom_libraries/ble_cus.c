@@ -8,6 +8,7 @@ static uint32_t custom_value_char_add(ble_cus_t * p_cus, const ble_cus_init_t * 
 static void on_connect(ble_cus_t * p_cus, ble_evt_t const * p_ble_evt);
 static void on_disconnect(ble_cus_t * p_cus, ble_evt_t const * p_ble_evt);
 static void on_write(ble_cus_t * p_cus, ble_evt_t const * p_ble_evt);
+static void on_tx_complete(ble_cus_t * p_cus);
 
 
 /**@brief Function for adding the Custom Value characteristic.
@@ -148,6 +149,17 @@ static void on_write(ble_cus_t * p_cus, ble_evt_t const * p_ble_evt)
 }
 
 
+/**@brief Function for handling the TX_COMPLETE event.
+ *
+ * @param   p_cus   Custom Service structure.
+ */
+static void on_tx_complete(ble_cus_t * p_cus)
+{
+    if (p_cus->busy)
+    {
+        p_cus->busy = false;
+    }
+}
 
 
 /**@brief Function for initializing the Custom Service.
@@ -219,9 +231,15 @@ void ble_cus_on_ble_evt( ble_evt_t const * p_ble_evt, void * p_context)
        case BLE_GAP_EVT_DISCONNECTED:
            on_disconnect(p_cus, p_ble_evt);
            break;
+
        case BLE_GATTS_EVT_WRITE:
            on_write(p_cus, p_ble_evt);
            break;
+
+       case BLE_GATTS_EVT_HVN_TX_COMPLETE:
+            on_tx_complete(p_cus);
+            break;
+
        default:
            // No implementation needed.
            break;
@@ -250,6 +268,8 @@ uint32_t ble_cus_custom_value_update(ble_cus_t * p_cus, uint8_t * custom_value)
     }
 
     uint32_t err_code = NRF_SUCCESS;
+
+
     ble_gatts_value_t gatts_value;
 
     // Initialize value struct.
@@ -259,36 +279,63 @@ uint32_t ble_cus_custom_value_update(ble_cus_t * p_cus, uint8_t * custom_value)
     gatts_value.offset  = 0;
     gatts_value.p_value = custom_value;
 
-    // Update database.
-    err_code = sd_ble_gatts_value_set(p_cus->conn_handle,
-                                      p_cus->custom_value_handles.value_handle,
-                                      &gatts_value);
-    if (err_code != NRF_SUCCESS)
-    {
-        return err_code;
+    if(bleGetCusNotificationFlag()){
+
+        // Update database.
+        err_code = sd_ble_gatts_value_set(p_cus->conn_handle,
+                                          p_cus->custom_value_handles.value_handle,
+                                          &gatts_value);
+        if (err_code != NRF_SUCCESS)
+        {
+            return err_code;
+        }
+
     }
+    
+    if(bleGetCusNotificationFlag()){
 
-    // Send value if connected and notifying.
-    if ((p_cus->conn_handle != BLE_CONN_HANDLE_INVALID) && bleGetCusNotificationFlag()) 
-    {
-        ble_gatts_hvx_params_t hvx_params;
-
-        memset(&hvx_params, 0, sizeof(hvx_params));
-
-        hvx_params.handle = p_cus->custom_value_handles.value_handle;
-        hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
-        hvx_params.offset = gatts_value.offset;
-        hvx_params.p_len  = &gatts_value.len;
-        hvx_params.p_data = gatts_value.p_value;
-
-        do {
-            err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
-        } while (err_code == NRF_ERROR_RESOURCES);
+        // Send value if connected and notifying.
+        if (p_cus->conn_handle != BLE_CONN_HANDLE_INVALID) 
+        {
+            ble_gatts_hvx_params_t hvx_params;
         
-    }
-    else
-    {
-        err_code = NRF_ERROR_INVALID_STATE;
+            memset(&hvx_params, 0, sizeof(hvx_params));
+        
+            hvx_params.handle = p_cus->custom_value_handles.value_handle;
+            hvx_params.type   = BLE_GATT_HVX_NOTIFICATION;
+            hvx_params.offset = gatts_value.offset;
+            hvx_params.p_len  = &gatts_value.len;
+            hvx_params.p_data = gatts_value.p_value;
+        
+            //If notification flag is true, then try to send data once:
+            if(bleGetCusNotificationFlag()){
+                err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+        
+                //If is busy the "nrf resources buffer", we will say its success but busy:
+                if (err_code == NRF_ERROR_RESOURCES){
+        
+                    err_code = NRF_SUCCESS;
+                    p_cus->busy = true;
+                    NRF_LOG_INFO("CUS SERVICE, sd_ble_gatts_hvx: BUSY");
+        
+                    //We wait for BLE_GATTS_EVT_HVN_TX_COMPLETE:
+                    while((p_cus->busy) && bleGetCusNotificationFlag());
+        
+                    //If notification flag is true, and once checked the "nrf resources buffer", send again:
+                    if(bleGetCusNotificationFlag()){
+                        err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
+                        NRF_LOG_INFO("CUS SERVICE, sd_ble_gatts_hvx: FREE, send again");
+                    }
+        
+                }
+            } 
+            
+        }
+        else
+        {
+            err_code = NRF_ERROR_INVALID_STATE;
+        }
+
     }
 
     return err_code;
