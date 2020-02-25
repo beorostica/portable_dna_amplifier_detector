@@ -3,6 +3,7 @@
 
 #include "custom_log.h"
 
+
 static uint32_t custom_value_char_add(cus_sens_t * p_cus, const cus_sens_init_t * p_cus_init);
 static void on_connect(cus_sens_t * p_cus, ble_evt_t const * p_ble_evt);
 static void on_disconnect(cus_sens_t * p_cus, ble_evt_t const * p_ble_evt);
@@ -303,19 +304,19 @@ uint32_t cus_sens_custom_value_update(cus_sens_t * p_cus, uint8_t * custom_value
         //Try to send data once:
         err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
     
-        //If is busy the "nrf resources buffer", we will say its success but busy:
+        //If the "nrf resources buffer" is busy, we will say its success but busy:
         if (err_code == NRF_ERROR_RESOURCES){
     
             err_code = NRF_SUCCESS;
             p_cus->busy = true;
-            NRF_LOG_INFO("SENS SERVICE, sd_ble_gatts_hvx: BUSY, waiting ...");
+            NRF_LOG_INFO("BLE SENS SERVICE: sd_ble_gatts_hvx BUSY, waiting ...");
     
             //We wait for BLE_GATTS_EVT_HVN_TX_COMPLETE:
             while(p_cus->busy);
     
             //Send again:
             err_code = sd_ble_gatts_hvx(p_cus->conn_handle, &hvx_params);
-            NRF_LOG_INFO("SENS SERVICE, sd_ble_gatts_hvx: FREE, send again");
+            NRF_LOG_INFO("BLE SENS SERVICE: sd_ble_gatts_hvx FREE, send again.");
             
         }   
              

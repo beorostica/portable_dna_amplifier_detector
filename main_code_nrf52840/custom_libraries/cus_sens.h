@@ -21,17 +21,15 @@
  * @param   _name   Name of the instance.
  * @hideinitializer
  */
-#define BLE_CUS_SENS_DEF(_name)                                                                         \
-static cus_sens_t _name;                                                                             \
-NRF_SDH_BLE_OBSERVER(_name ## _obs,                                                                 \
-                     BLE_HRS_BLE_OBSERVER_PRIO,                                                     \
+#define BLE_CUS_SENS_DEF(_name)                                                                    \
+static cus_sens_t _name;                                                                           \
+NRF_SDH_BLE_OBSERVER(_name ## _obs,                                                                \
+                     BLE_HRS_BLE_OBSERVER_PRIO,                                                    \
                      cus_sens_on_ble_evt, &_name)
 
 
 /**@brief Forward declaration of the cus_sens_t type.*/
 typedef struct cus_sens_s cus_sens_t;
-
-
 
 /**@brief Custom Service event type. */
 typedef enum
@@ -50,8 +48,6 @@ typedef struct
 
 /**@brief Custom Service event handler type. */
 typedef void (*cus_sens_evt_handler_t) (cus_sens_t * p_cus, cus_sens_evt_t * p_evt);
-
-
 
 /**@brief Custom Service init structure. This contains all options and data needed for
  *        initialization of the service.*/
@@ -72,8 +68,6 @@ struct cus_sens_s
     uint8_t                       uuid_type; 
     bool                          busy;                           //!< Busy flag. Indicates that the hvx function returned busy and that there is still data to be transfered. */
 };
-
-
 
 
 /**@brief Function for initializing the Custom Service.

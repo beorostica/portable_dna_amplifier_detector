@@ -141,8 +141,8 @@
       <file file_name="../../../custom_libraries/custom_detection_system_struct_data.c" />
       <file file_name="../../../custom_libraries/custom_qspi.c" />
       <file file_name="../../../custom_libraries/custom_twi.c" />
-      <file file_name="../../../custom_libraries/ble_cus_status.c" />
       <file file_name="../../../custom_libraries/cus_sens.c" />
+      <file file_name="../../../custom_libraries/cus_stat.c" />
     </folder>
     <folder Name="other_libraries">
       <folder Name="for_ExternalFlash">

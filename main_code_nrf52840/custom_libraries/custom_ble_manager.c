@@ -1,7 +1,7 @@
 
 #include "custom_ble_manager.h"
 #include "ble_cus.h"
-#include "ble_cus_status.h"
+#include "cus_stat.h"
 #include "cus_sens.h"
 
 #include "ble_advertising.h"
@@ -59,7 +59,7 @@ BLE_ADVERTISING_DEF(m_advertising);                                             
  *  BLE_XYZ_DEF(m_xyz);
  */
 BLE_CUS_DEF(m_cus);
-BLE_CUS_STATUS_DEF(m_cus_status);
+BLE_CUS_STAT_DEF(m_cus_stat);
 BLE_CUS_SENS_DEF(m_cus_sens);
 
 
@@ -73,7 +73,7 @@ static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        
 static ble_uuid_t m_adv_uuids[] =                                               /**< Universally unique service identifiers. */
 {
     {CUSTOM_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
-    //{CUSTOM_SERVICE_STATUS_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
+    //{CUSTOM_STAT_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
     //{CUSTOM_SENS_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
 };
 
@@ -85,7 +85,7 @@ static void conn_params_error_handler(uint32_t nrf_error);                  //Fo
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt);                          //For handling advertising events
 static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context); //For handling BLE events
 static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt);   //For handling custom service events
-static void on_cus_status_evt(ble_cus_status_t * p_cus_service, ble_cus_status_evt_t * p_evt);   //For handling custom service events
+static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt);   //For handling custom service events
 static void on_cus_sens_evt(cus_sens_t * p_cus_service, cus_sens_evt_t * p_evt);   //For handling custom service events
 
 
@@ -307,25 +307,25 @@ static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt)
  * @param[in]   p_evt          Event received from the Custom Service.
  *
  */
-static void on_cus_status_evt(ble_cus_status_t * p_cus_service, ble_cus_status_evt_t * p_evt)
+static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
 {
     uint32_t err_code;
     switch(p_evt->evt_type)
     {
-        case BLE_CUS_STATUS_EVT_NOTIFICATION_ENABLED:
+        case CUS_STAT_EVT_NOTIFICATION_ENABLED:
             isCusStatusNotificationEnabled = true;
             NRF_LOG_INFO("isCusStatusNotificationEnabled: true");
             break;
 
-        case BLE_CUS_STATUS_EVT_NOTIFICATION_DISABLED:
+        case CUS_STAT_EVT_NOTIFICATION_DISABLED:
             isCusStatusNotificationEnabled = false;
             NRF_LOG_INFO("isCusStatusNotificationEnabled: false");
             break;
 
-        case BLE_CUS_STATUS_EVT_CONNECTED :
+        case CUS_STAT_EVT_CONNECTED :
             break;
 
-        case BLE_CUS_STATUS_EVT_DISCONNECTED:
+        case CUS_STAT_EVT_DISCONNECTED:
             isCusStatusNotificationEnabled = false;
             NRF_LOG_INFO("isCusStatusNotificationEnabled: false");
             break;
@@ -528,19 +528,19 @@ void services_init(void)
 
     //////////////////////////////////////////////////////////////
     //CUS STATUS service variable:
-    ble_cus_status_init_t  cus_status_init;
+    cus_stat_init_t  cus_stat_init;
 
     //Initialize CUS Service init structure to zero.
-    memset(&cus_status_init, 0, sizeof(cus_status_init));
+    memset(&cus_stat_init, 0, sizeof(cus_stat_init));
 
     //Sets the write and read permissions to the characteristic value attribute to open, i.e. the peer is allowed to write/read the value without encrypting the link first.
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_status_init.custom_status_value_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_status_init.custom_status_value_char_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_stat_init.custom_value_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_stat_init.custom_value_char_attr_md.write_perm);
 
     // Set the cus event handler
-    cus_status_init.evt_handler = on_cus_status_evt;
+    cus_stat_init.evt_handler = on_cus_stat_evt;
 
-    err_code = ble_cus_status_init(&m_cus_status, &cus_status_init);
+    err_code = cus_stat_ble_init(&m_cus_stat, &cus_stat_init);
     APP_ERROR_CHECK(err_code);
 
     //////////////////////////////////////////////////////////////
@@ -604,7 +604,7 @@ bool bleGetCusNotificationFlag(void)
 
 /**@brief Function for checking notification status.
  */
-bool bleGetCusStatusNotificationFlag(void)
+bool bleGetCusStatNotificationFlag(void)
 {
     return isCusStatusNotificationEnabled;
 }
@@ -627,10 +627,10 @@ void bleCusSendData(detection_system_single_data data)
 
 /**@brief Function for sending ble data.
  */
-void bleCusStatusSendData(detection_system_single_data data)
+void bleCusStatSendData(detection_system_single_data data)
 {
     uint8_t *ptrData = (uint8_t*) &data;
-    uint32_t err_code = ble_cus_status_custom_value_update(&m_cus_status, ptrData);
+    uint32_t err_code = cus_stat_custom_value_update(&m_cus_stat, ptrData);
     APP_ERROR_CHECK(err_code);
 }
 

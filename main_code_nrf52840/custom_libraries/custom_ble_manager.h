@@ -19,8 +19,8 @@ void advertising_start(void);
 bool bleGetCusNotificationFlag(void);
 void bleCusSendData(detection_system_single_data data);
 
-bool bleGetCusStatusNotificationFlag(void);
-void bleCusStatusSendData(detection_system_single_data data);
+bool bleGetCusStatNotificationFlag(void);
+void bleCusStatSendData(detection_system_single_data data);
 
 bool bleGetCusSensNotificationFlag(void);
 void bleCusSensSendData(detection_system_single_data data);
