@@ -69,8 +69,7 @@ static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
 static ble_uuid_t m_adv_uuids[] =                                               /**< Universally unique service identifiers. */
 {
-    {CUSTOM_STAT_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
-    //{CUSTOM_SENS_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
+    {CUSTOM_SENS_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
 };
 
 
@@ -462,23 +461,6 @@ void services_init(void)
      */
 
     //////////////////////////////////////////////////////////////
-    //CUS STAT service variable:
-    cus_stat_init_t  cus_stat_init;
-
-    //Initialize CUS Service init structure to zero.
-    memset(&cus_stat_init, 0, sizeof(cus_stat_init));
-
-    //Sets the write and read permissions to the characteristic value attribute to open, i.e. the peer is allowed to write/read the value without encrypting the link first.
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_stat_init.custom_value_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_stat_init.custom_value_char_attr_md.write_perm);
-
-    // Set the cus event handler
-    cus_stat_init.evt_handler = on_cus_stat_evt;
-
-    err_code = cus_stat_ble_init(&m_cus_stat, &cus_stat_init);
-    APP_ERROR_CHECK(err_code);
-
-    //////////////////////////////////////////////////////////////
     //CUS SENS service variable:
     cus_sens_init_t  cus_sens_init;
 
@@ -493,6 +475,23 @@ void services_init(void)
     cus_sens_init.evt_handler = on_cus_sens_evt;
 
     err_code = cus_sens_ble_init(&m_cus_sens, &cus_sens_init);
+    APP_ERROR_CHECK(err_code);
+
+    //////////////////////////////////////////////////////////////
+    //CUS STAT service variable:
+    cus_stat_init_t  cus_stat_init;
+
+    //Initialize CUS Service init structure to zero.
+    memset(&cus_stat_init, 0, sizeof(cus_stat_init));
+
+    //Sets the write and read permissions to the characteristic value attribute to open, i.e. the peer is allowed to write/read the value without encrypting the link first.
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_stat_init.custom_value_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_stat_init.custom_value_char_attr_md.write_perm);
+
+    // Set the cus event handler
+    cus_stat_init.evt_handler = on_cus_stat_evt;
+
+    err_code = cus_stat_ble_init(&m_cus_stat, &cus_stat_init);
     APP_ERROR_CHECK(err_code);
 
 }

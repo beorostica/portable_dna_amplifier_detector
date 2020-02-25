@@ -50,11 +50,13 @@ public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
 	/**
 	 * The service UUID.
 	 */
-	static final UUID SERVICE_UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb"); // Heart Rate service
+	static final UUID SERVICE_UUID = UUID.fromString("f3641400-00b0-4240-ba50-05ca45bf8abd"); // Custom service
+	//static final UUID SERVICE_UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb"); // Heart Rate service
 	/**
 	 * A UUID of a characteristic with notify property.
 	 */
-	private static final UUID MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb"); // Heart Rate Measurement
+	private static final UUID MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("f3641401-00b0-4240-ba50-05ca45bf8abd"); // Custom Measurement
+	//private static final UUID MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb"); // Heart Rate Measurement
 	/**
 	 * A UUID of a characteristic with read property.
 	 */
