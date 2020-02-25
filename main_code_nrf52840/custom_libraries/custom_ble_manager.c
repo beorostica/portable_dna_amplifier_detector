@@ -465,9 +465,9 @@ void services_init(void)
     //Initialize CUS Service init structure to zero.
     memset(&cus_init, 0, sizeof(cus_init));
 
-    //Sets the write and read permissions to the characteristic value attribute to open, i.e. the peer is allowed to write/read the value without encrypting the link first.
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.write_perm);
+    //The write and read permissions to the characteristic value attribute are disabled:
+    //BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.read_perm);
+    //BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.write_perm);
 
     // Set the cus event handler
     cus_init.evt_handler = on_cus_evt;
