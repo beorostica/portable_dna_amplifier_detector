@@ -161,8 +161,8 @@ void qspiReadExternalFlashAndSendBleDataIfPossible(void){
 
         //Send data via BT from the m_buffer_rx:
         detection_system_single_data bleData = detectionSystem_getStructSingleData(m_buffer_rx[indexBuffer_read], indexBleData);
-        bleSendData(bleData);
-        NRF_LOG_INFO("Send BT data. Read from Buffer_read. indexBleData: %d. indexBuffer_read: %d. timeValue[%d]: %d", indexBleData, indexBuffer_read, indexBleData, bleData.time);
+        bleCusSensSendData(bleData);
+        NRF_LOG_INFO("BLE SENS SERVICE: send. Read from Buffer_read. indexBleData: %d. indexBuffer_read: %d. timeValue[%d]: %d", indexBleData, indexBuffer_read, indexBleData, bleData.time);
         
         //If it is sent the last BT data:
         if(indexBleData == (4-1))
@@ -221,8 +221,8 @@ void qspiReadExternalFlashAndSendBleDataIfPossible(void){
 
             //Send data via BT from the mBuffer_write:
             detection_system_single_data bleData = detectionSystem_getStructSingleData(mBuffer_write[indexBuffer_read], indexBleData);
-            bleSendData(bleData);
-            NRF_LOG_INFO("Send BT data. Read from Buffer_write. indexBleData: %d. indexBuffer_read: %d. timeValue[%d]: %d", indexBleData, indexBuffer_read, indexBleData, bleData.time);
+            bleCusSensSendData(bleData);
+            NRF_LOG_INFO("BLE SENS SERVICE: send. Read from Buffer_write. indexBleData: %d. indexBuffer_read: %d. timeValue[%d]: %d", indexBleData, indexBuffer_read, indexBleData, bleData.time);
 
             //If it is sent the last BT data:
             if(indexBleData == (4-1))

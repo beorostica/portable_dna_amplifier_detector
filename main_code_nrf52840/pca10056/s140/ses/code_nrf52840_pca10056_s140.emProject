@@ -28,7 +28,7 @@
       linker_printf_width_precision_supported="Yes"
       linker_scanf_fmt_level="long"
       linker_section_placement_file="flash_placement.xml"
-      linker_section_placement_macros="FLASH_PH_START=0x0;FLASH_PH_SIZE=0x100000;RAM_PH_START=0x20000000;RAM_PH_SIZE=0x40000;FLASH_START=0x27000;FLASH_SIZE=0xd9000;RAM_START=0x20002270;RAM_SIZE=0x3dda0"
+      linker_section_placement_macros="FLASH_PH_START=0x0;FLASH_PH_SIZE=0x100000;RAM_PH_START=0x20000000;RAM_PH_SIZE=0x40000;FLASH_START=0x27000;FLASH_SIZE=0xd9000;RAM_START=0x20002280;RAM_SIZE=0x3dd80"
       linker_section_placements_segments="FLASH RX 0x0 0x100000;RAM RWX 0x20000000 0x40000"
       macros="CMSIS_CONFIG_TOOL=../../../../../../external_tools/cmsisconfig/CMSIS_Configuration_Wizard.jar"
       project_directory=""
@@ -134,13 +134,14 @@
       <file file_name="../../../../../../components/softdevice/common/nrf_sdh_soc.c" />
     </folder>
     <folder Name="custom_libraries">
-      <file file_name="../../../custom_libraries/ble_cus.c" />
       <file file_name="../../../custom_libraries/custom_ble_manager.c" />
       <file file_name="../../../custom_libraries/custom_log.c" />
       <file file_name="../../../custom_libraries/custom_timer.c" />
       <file file_name="../../../custom_libraries/custom_detection_system_struct_data.c" />
       <file file_name="../../../custom_libraries/custom_qspi.c" />
       <file file_name="../../../custom_libraries/custom_twi.c" />
+      <file file_name="../../../custom_libraries/cus_sens.c" />
+      <file file_name="../../../custom_libraries/cus_stat.c" />
     </folder>
     <folder Name="other_libraries">
       <folder Name="for_ExternalFlash">

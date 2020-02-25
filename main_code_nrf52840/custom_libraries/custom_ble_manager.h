@@ -16,8 +16,11 @@ void services_init(void);
 void conn_params_init(void);
 void advertising_start(void);
 
-bool bleGetNotificationFlag(void);
-void bleSendData(detection_system_single_data data);
+bool bleGetCusStatNotificationFlag(void);
+void bleCusStatSendData(detection_system_single_data data);
+
+bool bleGetCusSensNotificationFlag(void);
+void bleCusSensSendData(detection_system_single_data data);
 
 
 #endif /* CUSTOM_BLE_MANAGER_H */

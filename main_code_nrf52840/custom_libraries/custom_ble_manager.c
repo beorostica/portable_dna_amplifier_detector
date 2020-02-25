@@ -1,6 +1,7 @@
 
 #include "custom_ble_manager.h"
-#include "ble_cus.h"
+#include "cus_stat.h"
+#include "cus_sens.h"
 
 #include "ble_advertising.h"
 #include "ble_conn_params.h"
@@ -15,9 +16,9 @@
 
 #define DEVICE_NAME                     "Nordic_Template"                       /**< Name of device. Will be included in the advertising data. */
 #define MANUFACTURER_NAME               "NordicSemiconductor"                   /**< Manufacturer. Will be passed to Device Information Service. */
-#define APP_ADV_INTERVAL                300                                     /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
+#define APP_ADV_INTERVAL                800                                     //800 /**<0.5[s]>**/. //300 /**< The advertising interval (in units of 0.625 ms. This value corresponds to 187.5 ms). */
 
-#define APP_ADV_DURATION                18000                                   /**< The advertising duration (180 seconds) in units of 10 milliseconds. */
+#define APP_ADV_DURATION                0                                       //0 /**< Never Timeout >**/. //18000 /**< The advertising duration (180 seconds) in units of 10 milliseconds. */
 #define APP_BLE_OBSERVER_PRIO           3                                       /**< Application's BLE observer priority. You shouldn't need to modify this value. */
 #define APP_BLE_CONN_CFG_TAG            1                                       /**< A tag identifying the SoftDevice BLE configuration. */
 
@@ -56,17 +57,20 @@ BLE_ADVERTISING_DEF(m_advertising);                                             
 /* YOUR_JOB: Declare all services structure your application is using
  *  BLE_XYZ_DEF(m_xyz);
  */
-BLE_CUS_DEF(m_cus);
+BLE_CUS_STAT_DEF(m_cus_stat);
+BLE_CUS_SENS_DEF(m_cus_sens);
 
 
-static bool isNotificationEnabled = false;
+static bool isCusStatNotificationEnabled = false;
+static bool isCusSensNotificationEnabled = false;
 
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 
 // YOUR_JOB: Use UUIDs for service(s) used in your application.
 static ble_uuid_t m_adv_uuids[] =                                               /**< Universally unique service identifiers. */
 {
-    {CUSTOM_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
+    {CUSTOM_STAT_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
+    //{CUSTOM_SENS_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}
 };
 
 
@@ -76,7 +80,8 @@ static void on_conn_params_evt(ble_conn_params_evt_t * p_evt);              //Fo
 static void conn_params_error_handler(uint32_t nrf_error);                  //For handling a Connection Parameters error
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt);                          //For handling advertising events
 static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context); //For handling BLE events
-static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt);   //For handling custom service events
+static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt);   //For handling custom service events
+static void on_cus_sens_evt(cus_sens_t * p_cus_service, cus_sens_evt_t * p_evt);   //For handling custom service events
 
 
 /**@brief Function for handling Queued Write Module errors.
@@ -161,8 +166,10 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_DISCONNECTED:
-            isNotificationEnabled = false;
-            NRF_LOG_INFO("isNotificationEnabled: false");
+            isCusStatNotificationEnabled = false;
+            isCusSensNotificationEnabled = false;
+            NRF_LOG_INFO("isCusStatNotificationEnabled: false");
+            NRF_LOG_INFO("isCusSensNotificationEnabled: false");
             NRF_LOG_INFO("Disconnected.");
             break;
 
@@ -187,8 +194,10 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GATTC_EVT_TIMEOUT:
             // Disconnect on GATT Client timeout event.
-            isNotificationEnabled = false;
-            NRF_LOG_INFO("isNotificationEnabled: false");
+            isCusStatNotificationEnabled = false;
+            isCusSensNotificationEnabled = false;
+            NRF_LOG_INFO("isCusStatNotificationEnabled: false");
+            NRF_LOG_INFO("isCusSensNotificationEnabled: false");
             NRF_LOG_DEBUG("GATT Client Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
@@ -197,8 +206,10 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GATTS_EVT_TIMEOUT:
             // Disconnect on GATT Server timeout event.
-            isNotificationEnabled = false;
-            NRF_LOG_INFO("isNotificationEnabled: false");
+            isCusStatNotificationEnabled = false;
+            isCusSensNotificationEnabled = false;
+            NRF_LOG_INFO("isCusStatNotificationEnabled: false");
+            NRF_LOG_INFO("isCusSensNotificationEnabled: false");
             NRF_LOG_DEBUG("GATT Server Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
@@ -238,6 +249,7 @@ static void on_yys_evt(ble_yy_service_t     * p_yy_service,
 }
 */
 
+
 /**@brief Function for handling the Custom Service Service events.
  *
  * @details This function will be called for all Custom Service events which are passed to
@@ -247,27 +259,66 @@ static void on_yys_evt(ble_yy_service_t     * p_yy_service,
  * @param[in]   p_evt          Event received from the Custom Service.
  *
  */
-static void on_cus_evt(ble_cus_t * p_cus_service, ble_cus_evt_t * p_evt)
+static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
 {
     uint32_t err_code;
     switch(p_evt->evt_type)
     {
-        case BLE_CUS_EVT_NOTIFICATION_ENABLED:
-            isNotificationEnabled = true;
-            NRF_LOG_INFO("isNotificationEnabled: true");
+        case CUS_STAT_EVT_NOTIFICATION_ENABLED:
+            isCusStatNotificationEnabled = true;
+            NRF_LOG_INFO("isCusStatNotificationEnabled: true");
             break;
 
-        case BLE_CUS_EVT_NOTIFICATION_DISABLED:
-            isNotificationEnabled = false;
-            NRF_LOG_INFO("isNotificationEnabled: false");
+        case CUS_STAT_EVT_NOTIFICATION_DISABLED:
+            isCusStatNotificationEnabled = false;
+            NRF_LOG_INFO("isCusStatNotificationEnabled: false");
             break;
 
-        case BLE_CUS_EVT_CONNECTED :
+        case CUS_STAT_EVT_CONNECTED :
             break;
 
-        case BLE_CUS_EVT_DISCONNECTED:
-            isNotificationEnabled = false;
-            NRF_LOG_INFO("isNotificationEnabled: false");
+        case CUS_STAT_EVT_DISCONNECTED:
+            isCusStatNotificationEnabled = false;
+            NRF_LOG_INFO("isCusStatNotificationEnabled: false");
+            break;
+
+        default:
+              // No implementation needed.
+              break;
+    }
+}
+
+
+/**@brief Function for handling the Custom Service Service events.
+ *
+ * @details This function will be called for all Custom Service events which are passed to
+ *          the application.
+ *
+ * @param[in]   p_cus_service  Custom Service structure.
+ * @param[in]   p_evt          Event received from the Custom Service.
+ *
+ */
+static void on_cus_sens_evt(cus_sens_t * p_cus_service, cus_sens_evt_t * p_evt)
+{
+    uint32_t err_code;
+    switch(p_evt->evt_type)
+    {
+        case CUS_SENS_EVT_NOTIFICATION_ENABLED:
+            isCusSensNotificationEnabled = true;
+            NRF_LOG_INFO("isCusSensNotificationEnabled: true");
+            break;
+
+        case CUS_SENS_EVT_NOTIFICATION_DISABLED:
+            isCusSensNotificationEnabled = false;
+            NRF_LOG_INFO("isCusSensNotificationEnabled: false");
+            break;
+
+        case CUS_SENS_EVT_CONNECTED :
+            break;
+
+        case CUS_SENS_EVT_DISCONNECTED:
+            isCusSensNotificationEnabled = false;
+            NRF_LOG_INFO("isCusSensNotificationEnabled: false");
             break;
 
         default:
@@ -410,20 +461,38 @@ void services_init(void)
        APP_ERROR_CHECK(err_code);
      */
 
-    //CUS service variable:
-    ble_cus_init_t  cus_init;
+    //////////////////////////////////////////////////////////////
+    //CUS STAT service variable:
+    cus_stat_init_t  cus_stat_init;
 
     //Initialize CUS Service init structure to zero.
-    memset(&cus_init, 0, sizeof(cus_init));
+    memset(&cus_stat_init, 0, sizeof(cus_stat_init));
 
     //Sets the write and read permissions to the characteristic value attribute to open, i.e. the peer is allowed to write/read the value without encrypting the link first.
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.read_perm);
-    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_init.custom_value_char_attr_md.write_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_stat_init.custom_value_char_attr_md.read_perm);
+    BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_stat_init.custom_value_char_attr_md.write_perm);
 
     // Set the cus event handler
-    cus_init.evt_handler = on_cus_evt;
+    cus_stat_init.evt_handler = on_cus_stat_evt;
 
-    err_code = ble_cus_init(&m_cus, &cus_init);
+    err_code = cus_stat_ble_init(&m_cus_stat, &cus_stat_init);
+    APP_ERROR_CHECK(err_code);
+
+    //////////////////////////////////////////////////////////////
+    //CUS SENS service variable:
+    cus_sens_init_t  cus_sens_init;
+
+    //Initialize CUS Service init structure to zero.
+    memset(&cus_sens_init, 0, sizeof(cus_sens_init));
+
+    //The write and read permissions to the characteristic value attribute are disabled:
+    //BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_sens_init.custom_value_char_attr_md.read_perm);
+    //BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_sens_init.custom_value_char_attr_md.write_perm);
+
+    // Set the cus event handler
+    cus_sens_init.evt_handler = on_cus_sens_evt;
+
+    err_code = cus_sens_ble_init(&m_cus_sens, &cus_sens_init);
     APP_ERROR_CHECK(err_code);
 
 }
@@ -461,21 +530,37 @@ void advertising_start(void)
 }
 
 
+
+
 /**@brief Function for checking notification status.
  */
-bool bleGetNotificationFlag(void)
+bool bleGetCusStatNotificationFlag(void)
 {
-    return isNotificationEnabled;
+    return isCusStatNotificationEnabled;
 }
 
+/**@brief Function for checking notification status.
+ */
+bool bleGetCusSensNotificationFlag(void)
+{
+    return isCusSensNotificationEnabled;
+}
 
 /**@brief Function for sending ble data.
  */
-void bleSendData(detection_system_single_data data)
+void bleCusStatSendData(detection_system_single_data data)
 {
     uint8_t *ptrData = (uint8_t*) &data;
-    ret_code_t err_code = ble_cus_custom_value_update(&m_cus, ptrData);
+    uint32_t err_code = cus_stat_custom_value_update(&m_cus_stat, ptrData);
     APP_ERROR_CHECK(err_code);
 }
 
+/**@brief Function for sending ble data.
+ */
+void bleCusSensSendData(detection_system_single_data data)
+{
+    uint8_t *ptrData = (uint8_t*) &data;
+    uint32_t err_code = cus_sens_custom_value_update(&m_cus_sens, ptrData);
+    APP_ERROR_CHECK(err_code);
+}
 

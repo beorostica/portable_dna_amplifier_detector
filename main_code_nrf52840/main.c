@@ -156,6 +156,13 @@ int main(void)
                         NRF_LOG_INFO("time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", dsData.time[2], dsData.mosfetActuator_before[2], dsData.lightSensor_before[2], dsData.mosfetActuator_after[2], dsData.lightSensor_after[2]);
                         NRF_LOG_INFO("time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", dsData.time[3], dsData.mosfetActuator_before[3], dsData.lightSensor_before[3], dsData.mosfetActuator_after[3], dsData.lightSensor_after[3]);
 
+                        //Send data to the custom stat service:
+                        if(bleGetCusStatNotificationFlag()){
+                            detection_system_single_data bleData = detectionSystem_getStructSingleData(dsData, 0);
+                            bleCusStatSendData(bleData);
+                            NRF_LOG_INFO("BLE STAT SERVICE: send. time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", bleData.time, bleData.mosfetActuator_before, bleData.lightSensor_before, bleData.mosfetActuator_after, bleData.lightSensor_after);
+                        }
+
                         //(1) First:
                         qspiPushSampleInExternalFlash(dsData);
 
@@ -171,7 +178,7 @@ int main(void)
         }
 
         //If the nRF52840 is connected and the notifications are enabled, then try to send BT data every 0.1[s]:
-        if(bleGetNotificationFlag())
+        if(bleGetCusSensNotificationFlag())
         {
             if(hundredMillisGetFlag())
             {
