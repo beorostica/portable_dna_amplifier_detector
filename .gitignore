@@ -33,3 +33,13 @@ RTE/
 *.emSession
 *.jlink
 **/ses/Output/
+
+
+## Android Studio ##
+.gradle
+/*/local.properties
+/*/.idea
+*.iml
+.DS_Store
+/*/build
+/*/key*
