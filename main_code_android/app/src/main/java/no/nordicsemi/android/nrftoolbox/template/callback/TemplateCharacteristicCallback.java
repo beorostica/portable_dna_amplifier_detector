@@ -17,5 +17,5 @@ public interface TemplateCharacteristicCallback {
 	 * @param device a device from which the value was obtained.
 	 * @param value  the new value.
 	 */
-	void onSampleValueReceived(@NonNull final BluetoothDevice device, int value);
+	void onSampleValueReceived(@NonNull final BluetoothDevice device, int value, int value1, int value2, int value3, int value4, int value5);
 }

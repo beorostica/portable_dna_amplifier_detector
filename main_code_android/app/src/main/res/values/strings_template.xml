@@ -21,17 +21,27 @@
   ~ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 <resources>
-    <string name="template_feature_title">Template</string>
-	<string name="template_settings_title">Template Settings</string>
+    <string name="template_feature_title">DNA Amplifier</string>
+	<string name="template_settings_title">DNA Amplifier Settings</string>
 
-	<string name="template_feature_title_long">TEMPLATE</string>
+	<string name="template_feature_title_long">DNA Amplifier</string>
 	<dimen name="template_feature_title_long_margin">-62dp</dimen>
 
 	<string name="template_default_name">DEFAULT DEVICE</string>
-	<string name="template_section_header">Values</string>
-	<string name="template_value_title">Value</string>
-	<string name="template_unit_bpm">bpm</string>
 	<string name="template_action">An action</string>
+	<string name="template_section_header">Values</string>
+	<string name="template_value_title">Index</string>
+	<string name="template_unit">[ind]</string>
+	<string name="template_value_title_1">Time</string>
+	<string name="template_unit_1">[s]</string>
+	<string name="template_value_title_2">Mosfet</string>
+	<string name="template_unit_2">[bool]</string>
+	<string name="template_value_title_3">Mosfet</string>
+	<string name="template_unit_3">[bool]</string>
+	<string name="template_value_title_4">Light</string>
+	<string name="template_unit_4">[adc]</string>
+	<string name="template_value_title_5">Light</string>
+	<string name="template_unit_5">[adc]</string>
 
 	<string name="template_notification_action_disconnect">Disconnect</string>
 	<string name="template_notification_connected_message">%s is connected.</string>

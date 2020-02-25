@@ -19,6 +19,24 @@ public abstract class TemplateDataCallback implements ProfileDataCallback, Templ
 
 	@Override
 	public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
+
+		int offset = 0;
+		final int value = data.getIntValue(Data.FORMAT_UINT16, offset);
+		offset = 2;
+		final int value1 = data.getIntValue(Data.FORMAT_UINT16, offset);
+		offset = 4;
+		final int value2 = data.getIntValue(Data.FORMAT_UINT16, offset);
+		offset = 6;
+		final int value3 = data.getIntValue(Data.FORMAT_UINT16, offset);
+		offset = 8;
+		final int value4 = data.getIntValue(Data.FORMAT_UINT16, offset);
+		offset = 10;
+		final int value5 = data.getIntValue(Data.FORMAT_UINT16, offset);
+
+		// Report the parsed value(s)
+		onSampleValueReceived(device, value, value1, value2, value3, value4, value5);
+
+		/*
 		if (data.size() < 2) {
 			onInvalidDataReceived(device, data);
 			return;
@@ -43,5 +61,6 @@ public abstract class TemplateDataCallback implements ProfileDataCallback, Templ
 
 		// Report the parsed value(s)
 		onSampleValueReceived(device, value);
+		*/
 	}
 }

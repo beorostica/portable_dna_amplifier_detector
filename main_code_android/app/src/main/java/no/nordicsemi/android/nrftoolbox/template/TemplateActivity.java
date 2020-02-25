@@ -48,6 +48,11 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 	// TODO change view references to match your need
 	private TextView valueView;
+	private TextView valueView1;
+	private TextView valueView2;
+	private TextView valueView3;
+	private TextView valueView4;
+	private TextView valueView5;
 	private TextView batteryLevelView;
 
 	@Override
@@ -60,13 +65,20 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	private void setGUI() {
 		// TODO assign your views to fields
 		valueView = findViewById(R.id.value);
+		valueView1 = findViewById(R.id.value1);
+		valueView2 = findViewById(R.id.value2);
+		valueView3 = findViewById(R.id.value3);
+		valueView4 = findViewById(R.id.value4);
+		valueView5 = findViewById(R.id.value5);
 		batteryLevelView = findViewById(R.id.battery);
 
+		/*
 		findViewById(R.id.action_set_name).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
 				getService().performAction("Template");
 			}
 		});
+		*/
 	}
 
 	@Override
@@ -84,6 +96,11 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	protected void setDefaultUI() {
 		// TODO clear your UI
 		valueView.setText(R.string.not_available_value);
+		valueView1.setText(R.string.not_available_value);
+		valueView2.setText(R.string.not_available_value);
+		valueView3.setText(R.string.not_available_value);
+		valueView4.setText(R.string.not_available_value);
+		valueView5.setText(R.string.not_available_value);
 		batteryLevelView.setText(R.string.not_available);
 	}
 
@@ -172,8 +189,20 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 			if (TemplateService.BROADCAST_TEMPLATE_MEASUREMENT.equals(action)) {
 				final int value = intent.getIntExtra(TemplateService.EXTRA_DATA, 0);
+				final int value1 = intent.getIntExtra(TemplateService.EXTRA_DATA_1, 0);
+				final int value2 = intent.getIntExtra(TemplateService.EXTRA_DATA_2, 0);
+				final int value3 = intent.getIntExtra(TemplateService.EXTRA_DATA_3, 0);
+				final int value4 = intent.getIntExtra(TemplateService.EXTRA_DATA_4, 0);
+				final int value5 = intent.getIntExtra(TemplateService.EXTRA_DATA_5, 0);
 				// Update GUI
-				setValueOnView(device, value);
+				//setValueOnView(device, value);
+				valueView.setText(String.valueOf(value));
+				valueView1.setText(String.valueOf(value1));
+				valueView2.setText(String.valueOf(value2));
+				valueView3.setText(String.valueOf(value3));
+				valueView4.setText(String.valueOf(value4));
+				valueView5.setText(String.valueOf(value5));
+
 			} else if (TemplateService.BROADCAST_BATTERY_LEVEL.equals(action)) {
 				final int batteryLevel = intent.getIntExtra(TemplateService.EXTRA_BATTERY_LEVEL, 0);
 				// Update GUI
