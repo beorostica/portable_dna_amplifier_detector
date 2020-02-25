@@ -22,5 +22,7 @@ void bleCusSendData(detection_system_single_data data);
 bool bleGetCusStatusNotificationFlag(void);
 void bleCusStatusSendData(detection_system_single_data data);
 
+bool bleGetCusSensNotificationFlag(void);
+void bleCusSensSendData(detection_system_single_data data);
 
 #endif /* CUSTOM_BLE_MANAGER_H */

@@ -161,7 +161,7 @@ void qspiReadExternalFlashAndSendBleDataIfPossible(void){
 
         //Send data via BT from the m_buffer_rx:
         detection_system_single_data bleData = detectionSystem_getStructSingleData(m_buffer_rx[indexBuffer_read], indexBleData);
-        bleCusSendData(bleData);
+        bleCusSensSendData(bleData);
         NRF_LOG_INFO("Send BT data. Read from Buffer_read. indexBleData: %d. indexBuffer_read: %d. timeValue[%d]: %d", indexBleData, indexBuffer_read, indexBleData, bleData.time);
         
         //If it is sent the last BT data:
@@ -221,7 +221,7 @@ void qspiReadExternalFlashAndSendBleDataIfPossible(void){
 
             //Send data via BT from the mBuffer_write:
             detection_system_single_data bleData = detectionSystem_getStructSingleData(mBuffer_write[indexBuffer_read], indexBleData);
-            bleCusSendData(bleData);
+            bleCusSensSendData(bleData);
             NRF_LOG_INFO("Send BT data. Read from Buffer_write. indexBleData: %d. indexBuffer_read: %d. timeValue[%d]: %d", indexBleData, indexBuffer_read, indexBleData, bleData.time);
 
             //If it is sent the last BT data:

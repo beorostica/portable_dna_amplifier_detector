@@ -160,7 +160,14 @@ int main(void)
                         if(bleGetCusStatusNotificationFlag()){
                             detection_system_single_data bleData = detectionSystem_getStructSingleData(dsData, 0);
                             bleCusStatusSendData(bleData);
-                            NRF_LOG_INFO("BLE send to STATUS service. time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", bleData.time, bleData.mosfetActuator_before, bleData.lightSensor_before, bleData.mosfetActuator_after, bleData.lightSensor_after);
+                            NRF_LOG_INFO("BLE send to STAT service. time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", bleData.time, bleData.mosfetActuator_before, bleData.lightSensor_before, bleData.mosfetActuator_after, bleData.lightSensor_after);
+                        }
+
+                        //Send data to the custom sens service:
+                        if(bleGetCusNotificationFlag()){
+                            detection_system_single_data bleData = detectionSystem_getStructSingleData(dsData, 1);
+                            bleCusSendData(bleData);
+                            NRF_LOG_INFO("BLE send to SENS service. time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", bleData.time, bleData.mosfetActuator_before, bleData.lightSensor_before, bleData.mosfetActuator_after, bleData.lightSensor_after);
                         }
 
                         //(1) First:
@@ -178,7 +185,7 @@ int main(void)
         }
 
         //If the nRF52840 is connected and the notifications are enabled, then try to send BT data every 0.1[s]:
-        if(bleGetCusNotificationFlag())
+        if(bleGetCusSensNotificationFlag())
         {
             if(hundredMillisGetFlag())
             {
