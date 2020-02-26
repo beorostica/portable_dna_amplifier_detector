@@ -79,255 +79,262 @@
 
 		<!-- Application section -->
 
-		<LinearLayout
-			android:id="@+id/container"
-			style="@style/Widget.List"
+
+
+		<ScrollView
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_marginBottom="@dimen/activity_vertical_margin_bottom"
+			android:layout_height="match_parent"
+			style="@style/Widget.List"
 			android:layout_marginLeft="@dimen/feature_horizontal_margin"
-			android:layout_marginRight="@dimen/feature_horizontal_margin"
 			android:layout_marginTop="@dimen/feature_vertical_margin_top"
-			android:orientation="vertical">
+			android:layout_marginRight="@dimen/feature_horizontal_margin"
+			android:layout_marginBottom="148dp">
 
-			<androidx.appcompat.widget.AppCompatTextView
-				style="@style/Widget.ListTitle"
+			<LinearLayout
+				android:id="@+id/container"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:text="@string/template_section_header"/>
+				android:orientation="vertical">
 
-			<TableLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:padding="@dimen/feature_section_padding">
-
-				<TableRow
+				<androidx.appcompat.widget.AppCompatTextView
+					style="@style/Widget.ListTitle"
 					android:layout_width="match_parent"
-					android:layout_height="wrap_content">
+					android:layout_height="wrap_content"
+					android:text="@string/template_section_header" />
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:layout_width="0dp"
-						android:layout_height="match_parent"
-						android:layout_weight="1"
-						android:gravity="center_vertical"
-						android:text="@string/template_value_title"/>
-
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value"
-						android:layout_width="wrap_content"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="right"
-						android:text="@string/not_available_value"
-						android:textSize="36sp"/>
-
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value_unit"
-						android:layout_width="45dp"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="bottom"
-						android:text="@string/template_unit"/>
-				</TableRow>
-
-			</TableLayout>
-
-			<TableLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:padding="@dimen/feature_section_padding">
-
-				<TableRow
+				<TableLayout
 					android:layout_width="match_parent"
-					android:layout_height="wrap_content">
+					android:layout_height="wrap_content"
+					android:padding="@dimen/feature_section_padding">
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:layout_width="0dp"
-						android:layout_height="match_parent"
-						android:layout_weight="1"
-						android:gravity="center_vertical"
-						android:text="@string/template_value_title_1"/>
+					<TableRow
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content">
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value1"
-						android:layout_width="wrap_content"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="right"
-						android:text="@string/not_available_value"
-						android:textSize="36sp"/>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:layout_width="0dp"
+							android:layout_height="match_parent"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:text="@string/template_value_title" />
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value_unit1"
-						android:layout_width="45dp"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="bottom"
-						android:text="@string/template_unit_1"/>
-				</TableRow>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value"
+							android:layout_width="wrap_content"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="right"
+							android:text="@string/not_available_value"
+							android:textSize="36sp" />
 
-			</TableLayout>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value_unit"
+							android:layout_width="45dp"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="bottom"
+							android:text="@string/template_unit" />
+					</TableRow>
 
+				</TableLayout>
 
-			<TableLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:padding="@dimen/feature_section_padding">
-
-				<TableRow
+				<TableLayout
 					android:layout_width="match_parent"
-					android:layout_height="wrap_content">
+					android:layout_height="wrap_content"
+					android:padding="@dimen/feature_section_padding">
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:layout_width="0dp"
-						android:layout_height="match_parent"
-						android:layout_weight="1"
-						android:gravity="center_vertical"
-						android:text="@string/template_value_title_2"/>
+					<TableRow
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content">
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value2"
-						android:layout_width="wrap_content"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="right"
-						android:text="@string/not_available_value"
-						android:textSize="36sp"/>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:layout_width="0dp"
+							android:layout_height="match_parent"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:text="@string/template_value_title_1" />
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value_unit2"
-						android:layout_width="45dp"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="bottom"
-						android:text="@string/template_unit_2"/>
-				</TableRow>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value1"
+							android:layout_width="wrap_content"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="right"
+							android:text="@string/not_available_value"
+							android:textSize="36sp" />
 
-			</TableLayout>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value_unit1"
+							android:layout_width="45dp"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="bottom"
+							android:text="@string/template_unit_1" />
+					</TableRow>
+
+				</TableLayout>
 
 
-			<TableLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:padding="@dimen/feature_section_padding">
-
-				<TableRow
+				<TableLayout
 					android:layout_width="match_parent"
-					android:layout_height="wrap_content">
+					android:layout_height="wrap_content"
+					android:padding="@dimen/feature_section_padding">
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:layout_width="0dp"
-						android:layout_height="match_parent"
-						android:layout_weight="1"
-						android:gravity="center_vertical"
-						android:text="@string/template_value_title_3"/>
+					<TableRow
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content">
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value3"
-						android:layout_width="wrap_content"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="right"
-						android:text="@string/not_available_value"
-						android:textSize="36sp"/>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:layout_width="0dp"
+							android:layout_height="match_parent"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:text="@string/template_value_title_2" />
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value_unit3"
-						android:layout_width="45dp"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="bottom"
-						android:text="@string/template_unit_3"/>
-				</TableRow>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value2"
+							android:layout_width="wrap_content"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="right"
+							android:text="@string/not_available_value"
+							android:textSize="36sp" />
 
-			</TableLayout>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value_unit2"
+							android:layout_width="45dp"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="bottom"
+							android:text="@string/template_unit_2" />
+					</TableRow>
+
+				</TableLayout>
 
 
-			<TableLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:padding="@dimen/feature_section_padding">
-
-				<TableRow
+				<TableLayout
 					android:layout_width="match_parent"
-					android:layout_height="wrap_content">
+					android:layout_height="wrap_content"
+					android:padding="@dimen/feature_section_padding">
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:layout_width="0dp"
-						android:layout_height="match_parent"
-						android:layout_weight="1"
-						android:gravity="center_vertical"
-						android:text="@string/template_value_title_4"/>
+					<TableRow
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content">
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value4"
-						android:layout_width="wrap_content"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="right"
-						android:text="@string/not_available_value"
-						android:textSize="36sp"/>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:layout_width="0dp"
+							android:layout_height="match_parent"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:text="@string/template_value_title_3" />
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value_unit4"
-						android:layout_width="45dp"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="bottom"
-						android:text="@string/template_unit_4"/>
-				</TableRow>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value3"
+							android:layout_width="wrap_content"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="right"
+							android:text="@string/not_available_value"
+							android:textSize="36sp" />
 
-			</TableLayout>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value_unit3"
+							android:layout_width="45dp"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="bottom"
+							android:text="@string/template_unit_3" />
+					</TableRow>
+
+				</TableLayout>
 
 
-			<TableLayout
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:padding="@dimen/feature_section_padding">
-
-				<TableRow
+				<TableLayout
 					android:layout_width="match_parent"
-					android:layout_height="wrap_content">
+					android:layout_height="wrap_content"
+					android:padding="@dimen/feature_section_padding">
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:layout_width="0dp"
-						android:layout_height="match_parent"
-						android:layout_weight="1"
-						android:gravity="center_vertical"
-						android:text="@string/template_value_title_5"/>
+					<TableRow
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content">
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value5"
-						android:layout_width="wrap_content"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="right"
-						android:text="@string/not_available_value"
-						android:textSize="36sp"/>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:layout_width="0dp"
+							android:layout_height="match_parent"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:text="@string/template_value_title_4" />
 
-					<androidx.appcompat.widget.AppCompatTextView
-						android:id="@+id/value_unit5"
-						android:layout_width="45dp"
-						android:layout_height="match_parent"
-						android:freezesText="true"
-						android:gravity="bottom"
-						android:text="@string/template_unit_5"/>
-				</TableRow>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value4"
+							android:layout_width="wrap_content"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="right"
+							android:text="@string/not_available_value"
+							android:textSize="36sp" />
 
-			</TableLayout>
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value_unit4"
+							android:layout_width="45dp"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="bottom"
+							android:text="@string/template_unit_4" />
+					</TableRow>
+
+				</TableLayout>
 
 
-		</LinearLayout>
+				<TableLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:padding="@dimen/feature_section_padding">
+
+					<TableRow
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content">
+
+						<androidx.appcompat.widget.AppCompatTextView
+							android:layout_width="0dp"
+							android:layout_height="match_parent"
+							android:layout_weight="1"
+							android:gravity="center_vertical"
+							android:text="@string/template_value_title_5" />
+
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value5"
+							android:layout_width="wrap_content"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="right"
+							android:text="@string/not_available_value"
+							android:textSize="36sp" />
+
+						<androidx.appcompat.widget.AppCompatTextView
+							android:id="@+id/value_unit5"
+							android:layout_width="45dp"
+							android:layout_height="match_parent"
+							android:freezesText="true"
+							android:gravity="bottom"
+							android:text="@string/template_unit_5" />
+					</TableRow>
+
+				</TableLayout>
+
+
+			</LinearLayout>
+		</ScrollView>
 
 		<com.google.android.material.button.MaterialButton
 			android:id="@+id/action_set_name"
 			style="@style/Widget.MaterialComponents.Button"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:layout_above="@id/action_connect"
 			android:layout_centerHorizontal="true"
-			android:layout_below="@+id/container"
-			app:backgroundTint="@color/nordicLake"
-			android:text="@string/template_action"/>
+			android:text="@string/template_action"
+			app:backgroundTint="@color/nordicLake" />
 
 		<com.google.android.material.button.MaterialButton
 			android:id="@+id/action_connect"
