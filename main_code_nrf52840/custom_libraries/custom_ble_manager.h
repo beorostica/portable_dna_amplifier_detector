@@ -23,4 +23,5 @@ bool bleGetCusSensNotificationFlag(void);
 void bleCusSensSendData(detection_system_single_data data);
 
 
+
 #endif /* CUSTOM_BLE_MANAGER_H */

@@ -122,8 +122,10 @@ static void on_write(cus_stat_t * p_cus, ble_evt_t const * p_ble_evt)
     // Custom Value Characteristic Written to.
     if (p_evt_write->handle == p_cus->custom_value_handles.value_handle)
     {
-        // Put specific task here (toogle LED_4).
-        //nrf_gpio_pin_toggle(LED_4);
+        //Invoke event handler to on write event:
+        cus_stat_evt_t evt;
+        evt.evt_type = CUS_STAT_EVT_WRITE;
+        p_cus->evt_handler(p_cus, &evt);
     }
 
     // Check if the Custom value CCCD is written to and that the value is the appropriate length, i.e 2 bytes.

@@ -75,9 +75,14 @@ public class TemplateService extends BleProfileService implements TemplateManage
          *
          * @param parameter some parameter.
          */
-        void performAction(final String parameter) {
-            manager.performAction(parameter);
+        void performActionRead(final String parameter) {
+            manager.performActionRead(parameter);
         }
+
+        void performActionWrite(final String parameter) {
+            manager.performActionWrite(parameter);
+        }
+
     }
 
     @Override
