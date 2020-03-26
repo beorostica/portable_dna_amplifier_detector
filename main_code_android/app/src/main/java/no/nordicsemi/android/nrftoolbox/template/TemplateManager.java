@@ -31,21 +31,16 @@ import android.util.Log;
 
 import java.util.UUID;
 
-import no.nordicsemi.android.ble.BleManager;
 import no.nordicsemi.android.ble.data.Data;
 import no.nordicsemi.android.log.LogContract;
-import no.nordicsemi.android.nrftoolbox.battery.BatteryManager;
 import no.nordicsemi.android.nrftoolbox.parser.TemplateParser;
+import no.nordicsemi.android.nrftoolbox.profile.LoggableBleManager;
 import no.nordicsemi.android.nrftoolbox.template.callback.TemplateDataCallback;
 
 /**
  * Modify to template manager to match your requirements.
- * The TemplateManager extends {@link BatteryManager}, but it may easily extend {@link BleManager}
- * instead if you don't need Battery Service support. If not, also modify the
- * {@link TemplateManagerCallbacks} to extend {@link no.nordicsemi.android.ble.BleManagerCallbacks}
- * and replace BatteryManagerGattCallback to BleManagerGattCallback in this class.
  */
-public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
+public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks> {
 	// TODO Replace the services and characteristics below to match your device.
 	/**
 	 * The service UUID.
@@ -83,7 +78,7 @@ public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
 
 	@NonNull
 	@Override
-	protected BatteryManagerGattCallback getGattCallback() {
+	protected BleManagerGattCallback getGattCallback() {
 		return new TemplateManagerGattCallback();
 	}
 
@@ -91,7 +86,7 @@ public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
 	 * BluetoothGatt callbacks for connection/disconnection, service discovery,
 	 * receiving indication, etc.
 	 */
-	private class TemplateManagerGattCallback extends BatteryManagerGattCallback {
+	private class TemplateManagerGattCallback extends BleManagerGattCallback {
 
 		@Override
 		protected void initialize() {
@@ -180,8 +175,6 @@ public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
 
 		@Override
 		protected void onDeviceDisconnected() {
-			// Release Battery Service
-			super.onDeviceDisconnected();
 
 			// TODO Release references to your characteristics.
 			requiredCharacteristic = null;

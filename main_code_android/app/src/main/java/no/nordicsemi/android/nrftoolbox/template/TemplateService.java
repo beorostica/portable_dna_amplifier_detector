@@ -141,11 +141,6 @@ public class TemplateService extends BleProfileService implements TemplateManage
         }
     }
 
-    @Override
-    public void onBatteryLevelChanged(@NonNull final BluetoothDevice device, final int batteryLevel) {
-
-    }
-
     /**
      * Sets the service as a foreground service
      */
