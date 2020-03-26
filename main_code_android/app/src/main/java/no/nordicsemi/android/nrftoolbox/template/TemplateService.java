@@ -45,11 +45,6 @@ import no.nordicsemi.android.nrftoolbox.profile.LoggableBleManager;
 public class TemplateService extends BleProfileService implements TemplateManagerCallbacks {
     public static final String BROADCAST_TEMPLATE_MEASUREMENT = "no.nordicsemi.android.nrftoolbox.template.BROADCAST_MEASUREMENT";
     public static final String EXTRA_DATA = "no.nordicsemi.android.nrftoolbox.template.EXTRA_DATA";
-    public static final String EXTRA_DATA_1 = "no.nordicsemi.android.nrftoolbox.template.EXTRA_DATA_1";
-    public static final String EXTRA_DATA_2 = "no.nordicsemi.android.nrftoolbox.template.EXTRA_DATA_2";
-    public static final String EXTRA_DATA_3 = "no.nordicsemi.android.nrftoolbox.template.EXTRA_DATA_3";
-    public static final String EXTRA_DATA_4 = "no.nordicsemi.android.nrftoolbox.template.EXTRA_DATA_4";
-    public static final String EXTRA_DATA_5 = "no.nordicsemi.android.nrftoolbox.template.EXTRA_DATA_5";
 
     public static final String BROADCAST_BATTERY_LEVEL = "no.nordicsemi.android.nrftoolbox.BROADCAST_BATTERY_LEVEL";
     public static final String EXTRA_BATTERY_LEVEL = "no.nordicsemi.android.nrftoolbox.EXTRA_BATTERY_LEVEL";
@@ -124,15 +119,10 @@ public class TemplateService extends BleProfileService implements TemplateManage
     }
 
     @Override
-    public void onSampleValueReceived(@NonNull final BluetoothDevice device, final int value, final int value1, final int value2, final int value3, final int value4, final int value5) {
+    public void onSampleValueReceived(@NonNull final BluetoothDevice device, final int[] dataArray) {
         final Intent broadcast = new Intent(BROADCAST_TEMPLATE_MEASUREMENT);
         broadcast.putExtra(EXTRA_DEVICE, getBluetoothDevice());
-        broadcast.putExtra(EXTRA_DATA, value);
-        broadcast.putExtra(EXTRA_DATA_1, value1);
-        broadcast.putExtra(EXTRA_DATA_2, value2);
-        broadcast.putExtra(EXTRA_DATA_3, value3);
-        broadcast.putExtra(EXTRA_DATA_4, value4);
-        broadcast.putExtra(EXTRA_DATA_5, value5);
+        broadcast.putExtra(EXTRA_DATA, dataArray);
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
 
         if (!bound) {

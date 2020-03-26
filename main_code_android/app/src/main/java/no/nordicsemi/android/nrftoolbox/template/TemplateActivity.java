@@ -194,20 +194,14 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 			final BluetoothDevice device = intent.getParcelableExtra(TemplateService.EXTRA_DEVICE);
 
 			if (TemplateService.BROADCAST_TEMPLATE_MEASUREMENT.equals(action)) {
-				final int value = intent.getIntExtra(TemplateService.EXTRA_DATA, 0);
-				final int value1 = intent.getIntExtra(TemplateService.EXTRA_DATA_1, 0);
-				final int value2 = intent.getIntExtra(TemplateService.EXTRA_DATA_2, 0);
-				final int value3 = intent.getIntExtra(TemplateService.EXTRA_DATA_3, 0);
-				final int value4 = intent.getIntExtra(TemplateService.EXTRA_DATA_4, 0);
-				final int value5 = intent.getIntExtra(TemplateService.EXTRA_DATA_5, 0);
+				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA);
 				// Update GUI
-				//setValueOnView(device, value);
-				valueView.setText(String.valueOf(value));
-				valueView1.setText(String.valueOf(value1));
-				valueView2.setText(String.valueOf(value2));
-				valueView3.setText(String.valueOf(value3));
-				valueView4.setText(String.valueOf(value4));
-				valueView5.setText(String.valueOf(value5));
+				valueView.setText(String.valueOf(dataArray[0]));
+				valueView1.setText(String.valueOf(dataArray[1]));
+				valueView2.setText(String.valueOf(dataArray[2]));
+				valueView3.setText(String.valueOf(dataArray[3]));
+				valueView4.setText(String.valueOf(dataArray[4]));
+				valueView5.setText(String.valueOf(dataArray[5]));
 
 			} else if (TemplateService.BROADCAST_BATTERY_LEVEL.equals(action)) {
 				final int batteryLevel = intent.getIntExtra(TemplateService.EXTRA_BATTERY_LEVEL, 0);

@@ -20,15 +20,13 @@ public abstract class TemplateDataCallback implements ProfileDataCallback, Templ
 	@Override
 	public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
 
-		final int value = data.getIntValue(Data.FORMAT_UINT16, 0);
-		final int value1 = data.getIntValue(Data.FORMAT_UINT16, 2);
-		final int value2 = data.getIntValue(Data.FORMAT_UINT16, 4);
-		final int value3 = data.getIntValue(Data.FORMAT_UINT16, 6);
-		final int value4 = data.getIntValue(Data.FORMAT_UINT16, 8);
-		final int value5 = data.getIntValue(Data.FORMAT_UINT16, 10);
+		final int[] dataArray = new int[6];
+		for (int i = 0; i < dataArray.length; i++){
+			dataArray[i] = data.getIntValue(Data.FORMAT_UINT16, 2*i);
+		}
 
 		// Report the parsed value(s)
-		onSampleValueReceived(device, value, value1, value2, value3, value4, value5);
+		onSampleValueReceived(device, dataArray);
 
 	}
 	

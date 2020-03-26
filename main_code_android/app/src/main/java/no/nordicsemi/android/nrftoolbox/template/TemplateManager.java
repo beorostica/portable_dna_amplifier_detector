@@ -122,9 +122,9 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 						}
 
 						@Override
-						public void onSampleValueReceived(@NonNull final BluetoothDevice device, final int value, final int value1, final int value2, final int value3, final int value4, final int value5) {
-							// Let's lass received data to the service
-							callbacks.onSampleValueReceived(device, value, value1, value2, value3, value4, value5);
+						public void onSampleValueReceived(@NonNull final BluetoothDevice device, final int[] dataArray) {
+						    // Let's lass received data to the service
+							callbacks.onSampleValueReceived(device, dataArray);
 						}
 
 						@Override
