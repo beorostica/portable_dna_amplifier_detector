@@ -261,6 +261,9 @@ static void on_yys_evt(ble_yy_service_t     * p_yy_service,
 static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
 {
     uint32_t err_code;
+    static ble_gatts_value_t gatts_value;
+    static uint8_t data_buffer[sizeof(detection_system_single_data)];
+        
     switch(p_evt->evt_type)
     {
         case CUS_STAT_EVT_NOTIFICATION_ENABLED:
@@ -279,6 +282,21 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
         case CUS_STAT_EVT_DISCONNECTED:
             isCusStatNotificationEnabled = false;
             NRF_LOG_INFO("isCusStatNotificationEnabled: false");
+            break;
+
+        case CUS_STAT_EVT_WRITE:
+
+            memset(&gatts_value, 0, sizeof(gatts_value));
+            gatts_value.offset = 0;
+            gatts_value.len = 12;
+            gatts_value.p_value = (uint8_t*) &data_buffer;
+            
+            err_code = sd_ble_gatts_value_get(p_cus_service->conn_handle, p_cus_service->custom_value_handles.value_handle, &gatts_value);
+            APP_ERROR_CHECK(err_code);
+
+            uint32_t err_code = cus_stat_custom_value_update(p_cus_service, data_buffer);
+            APP_ERROR_CHECK(err_code);
+
             break;
 
         default:
@@ -461,23 +479,6 @@ void services_init(void)
      */
 
     //////////////////////////////////////////////////////////////
-    //CUS SENS service variable:
-    cus_sens_init_t  cus_sens_init;
-
-    //Initialize CUS Service init structure to zero.
-    memset(&cus_sens_init, 0, sizeof(cus_sens_init));
-
-    //The write and read permissions to the characteristic value attribute are disabled:
-    //BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_sens_init.custom_value_char_attr_md.read_perm);
-    //BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_sens_init.custom_value_char_attr_md.write_perm);
-
-    // Set the cus event handler
-    cus_sens_init.evt_handler = on_cus_sens_evt;
-
-    err_code = cus_sens_ble_init(&m_cus_sens, &cus_sens_init);
-    APP_ERROR_CHECK(err_code);
-
-    //////////////////////////////////////////////////////////////
     //CUS STAT service variable:
     cus_stat_init_t  cus_stat_init;
 
@@ -492,6 +493,23 @@ void services_init(void)
     cus_stat_init.evt_handler = on_cus_stat_evt;
 
     err_code = cus_stat_ble_init(&m_cus_stat, &cus_stat_init);
+    APP_ERROR_CHECK(err_code);
+
+    //////////////////////////////////////////////////////////////
+    //CUS SENS service variable:
+    cus_sens_init_t  cus_sens_init;
+
+    //Initialize CUS Service init structure to zero.
+    memset(&cus_sens_init, 0, sizeof(cus_sens_init));
+
+    //The write and read permissions to the characteristic value attribute are disabled:
+    //BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_sens_init.custom_value_char_attr_md.read_perm);
+    //BLE_GAP_CONN_SEC_MODE_SET_OPEN(&cus_sens_init.custom_value_char_attr_md.write_perm);
+
+    // Set the cus event handler
+    cus_sens_init.evt_handler = on_cus_sens_evt;
+
+    err_code = cus_sens_ble_init(&m_cus_sens, &cus_sens_init);
     APP_ERROR_CHECK(err_code);
 
 }
@@ -562,4 +580,3 @@ void bleCusSensSendData(detection_system_single_data data)
     uint32_t err_code = cus_sens_custom_value_update(&m_cus_sens, ptrData);
     APP_ERROR_CHECK(err_code);
 }
-

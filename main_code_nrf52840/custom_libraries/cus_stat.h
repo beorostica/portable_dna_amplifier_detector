@@ -37,7 +37,8 @@ typedef enum
     CUS_STAT_EVT_NOTIFICATION_ENABLED,                             /**< Custom value notification enabled event. */
     CUS_STAT_EVT_NOTIFICATION_DISABLED,                            /**< Custom value notification disabled event. */
     CUS_STAT_EVT_DISCONNECTED,
-    CUS_STAT_EVT_CONNECTED
+    CUS_STAT_EVT_CONNECTED,
+    CUS_STAT_EVT_WRITE
 } cus_stat_evt_type_t;
 
 /**@brief Custom Service event. */

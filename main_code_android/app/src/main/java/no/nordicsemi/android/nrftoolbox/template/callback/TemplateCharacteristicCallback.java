@@ -15,7 +15,8 @@ public interface TemplateCharacteristicCallback {
 	 * Called when a value is received.
 	 *
 	 * @param device a device from which the value was obtained.
-	 * @param value  the new value.
+	 * @param dataArray the new array value.
 	 */
-	void onSampleValueReceived(@NonNull final BluetoothDevice device, int value, int value1, int value2, int value3, int value4, int value5);
+	void onSampleValueReceived(@NonNull final BluetoothDevice device, int[] dataArray);
+
 }

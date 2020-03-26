@@ -21,14 +21,14 @@
  */
 package no.nordicsemi.android.nrftoolbox.template;
 
-import no.nordicsemi.android.nrftoolbox.battery.BatteryManagerCallbacks;
+import no.nordicsemi.android.ble.BleManagerCallbacks;
 import no.nordicsemi.android.nrftoolbox.template.callback.TemplateCharacteristicCallback;
 
 /**
  * Interface {@link TemplateManagerCallbacks} must be implemented by {@link TemplateService}
  * in order to receive callbacks from {@link TemplateManager}
  */
-interface TemplateManagerCallbacks extends BatteryManagerCallbacks, TemplateCharacteristicCallback {
+interface TemplateManagerCallbacks extends BleManagerCallbacks, TemplateCharacteristicCallback {
 
 	// Callbacks are called when a data has been received/written to a remote device.
 	// This is the way how the manager notifies the activity about this event.

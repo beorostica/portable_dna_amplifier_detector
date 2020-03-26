@@ -31,47 +31,37 @@ import android.util.Log;
 
 import java.util.UUID;
 
-import no.nordicsemi.android.ble.BleManager;
 import no.nordicsemi.android.ble.data.Data;
 import no.nordicsemi.android.log.LogContract;
-import no.nordicsemi.android.nrftoolbox.battery.BatteryManager;
 import no.nordicsemi.android.nrftoolbox.parser.TemplateParser;
+import no.nordicsemi.android.nrftoolbox.profile.LoggableBleManager;
 import no.nordicsemi.android.nrftoolbox.template.callback.TemplateDataCallback;
 
 /**
  * Modify to template manager to match your requirements.
- * The TemplateManager extends {@link BatteryManager}, but it may easily extend {@link BleManager}
- * instead if you don't need Battery Service support. If not, also modify the
- * {@link TemplateManagerCallbacks} to extend {@link no.nordicsemi.android.ble.BleManagerCallbacks}
- * and replace BatteryManagerGattCallback to BleManagerGattCallback in this class.
  */
-public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
+public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks> {
 	// TODO Replace the services and characteristics below to match your device.
 	/**
-	 * The service UUID.
+	 * The Generic Access service UUID, just to to aware of its existence:
 	 */
-	static final UUID SERVICE_UUID = UUID.fromString("f3641400-00b0-4240-ba50-05ca45bf8abd"); // Custom service
-	//static final UUID SERVICE_UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb"); // Heart Rate service
+	private static final UUID UUID_SERVICE_GENERIC_ACCESS = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb");
 	/**
-	 * A UUID of a characteristic with notify property.
+	 * The Device Name characteristic UUID, from the Generic Access service, just to to aware of its existence:
 	 */
-	private static final UUID MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("f3641401-00b0-4240-ba50-05ca45bf8abd"); // Custom Measurement
-	//private static final UUID MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb"); // Heart Rate Measurement
+	private static final UUID UUID_CHARACTERISTIC_DEVICE_NAME = UUID.fromString("00002A00-0000-1000-8000-00805f9b34fb");
 	/**
-	 * A UUID of a characteristic with read property.
+	 * The custom STAT service UUID:
 	 */
-	private static final UUID READABLE_CHARACTERISTIC_UUID = UUID.fromString("00002A38-0000-1000-8000-00805f9b34fb"); // Body Sensor Location
+	public static final UUID UUID_SERVICE_STAT = UUID.fromString("e2531400-ffaf-313f-a94f-f4b934ae79ab");
 	/**
-	 * Some other service UUID.
+	 * The custom STAT characteristic UUID, from the custom STAT service:
 	 */
-	private static final UUID OTHER_SERVICE_UUID = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb"); // Generic Access service
-	/**
-	 * A UUID of a characteristic with write property.
-	 */
-	private static final UUID WRITABLE_CHARACTERISTIC_UUID = UUID.fromString("00002A00-0000-1000-8000-00805f9b34fb"); // Device Name
+	private static final UUID UUID_CHARACTERISTIC_STAT = UUID.fromString("e2531401-ffaf-313f-a94f-f4b934ae79ab");
 
 	// TODO Add more services and characteristics references.
-	private BluetoothGattCharacteristic requiredCharacteristic, deviceNameCharacteristic, optionalCharacteristic;
+	private BluetoothGattCharacteristic characteristicDeviceName;
+	private BluetoothGattCharacteristic characteristicStat;
 
 	public TemplateManager(final Context context) {
 		super(context);
@@ -79,7 +69,7 @@ public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
 
 	@NonNull
 	@Override
-	protected BatteryManagerGattCallback getGattCallback() {
+	protected BleManagerGattCallback getGattCallback() {
 		return new TemplateManagerGattCallback();
 	}
 
@@ -87,7 +77,7 @@ public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
 	 * BluetoothGatt callbacks for connection/disconnection, service discovery,
 	 * receiving indication, etc.
 	 */
-	private class TemplateManagerGattCallback extends BatteryManagerGattCallback {
+	private class TemplateManagerGattCallback extends BleManagerGattCallback {
 
 		@Override
 		protected void initialize() {
@@ -113,7 +103,7 @@ public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
 					.enqueue();
 
 			// Set notification callback
-			setNotificationCallback(requiredCharacteristic)
+			setNotificationCallback(characteristicStat)
 					// This callback will be called each time the notification is received
 					.with(new TemplateDataCallback() {
 						@Override
@@ -123,9 +113,9 @@ public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
 						}
 
 						@Override
-						public void onSampleValueReceived(@NonNull final BluetoothDevice device, final int value, final int value1, final int value2, final int value3, final int value4, final int value5) {
-							// Let's lass received data to the service
-							callbacks.onSampleValueReceived(device, value, value1, value2, value3, value4, value5);
+						public void onSampleValueReceived(@NonNull final BluetoothDevice device, final int[] dataArray) {
+						    // Let's lass received data to the service
+							callbacks.onSampleValueReceived(device, dataArray);
 						}
 
 						@Override
@@ -135,7 +125,7 @@ public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
 					});
 
 			// Enable notifications
-			enableNotifications(requiredCharacteristic)
+			enableNotifications(characteristicStat)
 					// Method called after the data were sent (data will contain 0x0100 in this case)
 					.with((device, data) -> log(Log.DEBUG, "Data sent: " + data))
 					// Method called when the request finished successfully. This will be called after .with(..) callback
@@ -149,39 +139,24 @@ public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
 		protected boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
 			// TODO Initialize required characteristics.
 			// It should return true if all has been discovered (that is that device is supported).
-			final BluetoothGattService service = gatt.getService(SERVICE_UUID);
-			if (service != null) {
-				requiredCharacteristic = service.getCharacteristic(MEASUREMENT_CHARACTERISTIC_UUID);
-			}
-			final BluetoothGattService otherService = gatt.getService(OTHER_SERVICE_UUID);
+			final BluetoothGattService otherService = gatt.getService(UUID_SERVICE_GENERIC_ACCESS);
 			if (otherService != null) {
-				deviceNameCharacteristic = otherService.getCharacteristic(WRITABLE_CHARACTERISTIC_UUID);
+				characteristicDeviceName = otherService.getCharacteristic(UUID_CHARACTERISTIC_DEVICE_NAME);
 			}
-			return requiredCharacteristic != null && deviceNameCharacteristic != null;
-		}
-
-		@Override
-		protected boolean isOptionalServiceSupported(@NonNull final BluetoothGatt gatt) {
-			// Initialize Battery characteristic
-			super.isOptionalServiceSupported(gatt);
-
-			// TODO If there are some optional characteristics, initialize them there.
-			final BluetoothGattService service = gatt.getService(SERVICE_UUID);
+			final BluetoothGattService service = gatt.getService(UUID_SERVICE_STAT);
 			if (service != null) {
-				optionalCharacteristic = service.getCharacteristic(READABLE_CHARACTERISTIC_UUID);
+				characteristicStat = service.getCharacteristic(UUID_CHARACTERISTIC_STAT);
 			}
-			return optionalCharacteristic != null;
+			return characteristicDeviceName != null && characteristicStat != null;
 		}
 
 		@Override
 		protected void onDeviceDisconnected() {
-			// Release Battery Service
-			super.onDeviceDisconnected();
 
 			// TODO Release references to your characteristics.
-			requiredCharacteristic = null;
-			deviceNameCharacteristic = null;
-			optionalCharacteristic = null;
+			characteristicDeviceName = null;
+			characteristicStat = null;
+
 		}
 
 		@Override
@@ -194,43 +169,64 @@ public class TemplateManager extends BatteryManager<TemplateManagerCallbacks> {
 
 			// Device is ready, let's read something here. Usually there is nothing else to be done
 			// here, as all had been done during initialization.
-			readCharacteristic(optionalCharacteristic)
-					.with((device, data) -> {
-						// Characteristic value has been read
-						// Let's do some magic with it.
-						if (data.size() > 0) {
-							final Integer value = data.getIntValue(Data.FORMAT_UINT8, 0);
-							log(LogContract.Log.Level.APPLICATION, "Value '" + value + "' has been read!");
-						} else {
-							log(Log.WARN, "Value is empty!");
-						}
-					})
-					.enqueue();
+			performActionRead("dummyString");
 		}
 	}
 
 	// TODO Define manager's API
 
 	/**
+	 * This method will read important data from the device.
+	 *
+	 * @param parameter parameter to be written. (not used)
+	 */
+	void performActionRead(final String parameter) {
+		readCharacteristic(characteristicStat).with((device, data) -> {
+			// Characteristic value has been read
+			// Let's do some magic with it.
+			if (data.size() > 0) {
+				final int value = data.getIntValue(Data.FORMAT_UINT16, 0);
+				final int value1 = data.getIntValue(Data.FORMAT_UINT16, 2);
+				final int value2 = data.getIntValue(Data.FORMAT_UINT16, 4);
+				final int value3 = data.getIntValue(Data.FORMAT_UINT16, 6);
+				final int value4 = data.getIntValue(Data.FORMAT_UINT16, 8);
+				final int value5 = data.getIntValue(Data.FORMAT_UINT16, 10);
+				log(LogContract.Log.Level.APPLICATION, "value = " + value  + ". value1 = " + value1 + ". value2 = " + value2 +
+						". value3 = " + value3 + ". value4 = " + value4 + ". value5 = " + value5);
+			} else {
+				log(Log.WARN, "Value is empty!");
+			}
+		}).enqueue();
+	}
+
+
+	/**
 	 * This method will write important data to the device.
 	 *
 	 * @param parameter parameter to be written.
 	 */
-	void performAction(final String parameter) {
+	void performActionWrite(final String parameter) {
 		log(Log.VERBOSE, "Changing device name to \"" + parameter + "\"");
 		// Write some data to the characteristic.
-		writeCharacteristic(deviceNameCharacteristic, Data.from(parameter))
+		byte[] customValue = {-128,0,-50,0,-1,0,1,0,50,0,127,0};
+		for(int i = 0; i < 12; i++){
+			Log.v("performActionWrite", "customValue[" + i + "] = " + customValue[i]);
+		}
+		Log.v("performActionWrite", "customValue = " + customValue);
+
+		writeCharacteristic(characteristicStat, customValue)
 				// If data are longer than MTU-3, they will be chunked into multiple packets.
 				// Check out other split options, with .split(...).
 				.split()
 				// Callback called when data were sent, or added to outgoing queue in case
 				// Write Without Request type was used.
-				.with((device, data) -> log(Log.DEBUG, data.size() + " bytes were sent"))
+				.with((device, data) -> log(Log.DEBUG, data.getByte(0) + "," + data.getByte(1) + "," + data.getByte(2) + "," + data.getByte(3) + "," + data.getByte(4) + "," + data.getByte(5) + "," + data.getByte(6) + "," + data.getByte(7) + "," + data.getByte(8) + "," + data.getByte(9) + "," + data.getByte(10) + "," + data.getByte(11) + " bytes were sent"))
 				// Callback called when data were sent, or added to outgoing queue in case
 				// Write Without Request type was used. This is called after .with(...) callback.
-				.done(device -> log(LogContract.Log.Level.APPLICATION, "Device name set to \"" + parameter + "\""))
+		        .done(device -> log(LogContract.Log.Level.APPLICATION, "Write STAT characteristic to: \"" + customValue + "\""))
 				// Callback called when write has failed.
-				.fail((device, status) -> log(Log.WARN, "Failed to change device name"))
+				.fail((device, status) -> log(Log.WARN, "Failed to write STAT characteristic."))
 				.enqueue();
 	}
+
 }
