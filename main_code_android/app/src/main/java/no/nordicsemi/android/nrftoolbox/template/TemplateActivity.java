@@ -47,12 +47,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	private final String TAG = "TemplateActivity";
 
 	// TODO change view references to match your need
-	private TextView valueView;
-	private TextView valueView1;
-	private TextView valueView2;
-	private TextView valueView3;
-	private TextView valueView4;
-	private TextView valueView5;
+	private TextView[] valueViewArray = new TextView[6];
 
 	@Override
 	protected void onCreateView(final Bundle savedInstanceState) {
@@ -64,12 +59,10 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	private void setGUI() {
 
 		// TODO assign your views to fields
-		valueView = findViewById(R.id.value);
-		valueView1 = findViewById(R.id.value1);
-		valueView2 = findViewById(R.id.value2);
-		valueView3 = findViewById(R.id.value3);
-		valueView4 = findViewById(R.id.value4);
-		valueView5 = findViewById(R.id.value5);
+		for(int i = 0; i < valueViewArray.length; i++){
+			int resId = getResources().getIdentifier("value" + i, "id", getPackageName());
+			valueViewArray[i] = findViewById(resId);
+		}
 
 		findViewById(R.id.action_read).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
@@ -99,12 +92,9 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	@Override
 	protected void setDefaultUI() {
 		// TODO clear your UI
-		valueView.setText(R.string.not_available_value);
-		valueView1.setText(R.string.not_available_value);
-		valueView2.setText(R.string.not_available_value);
-		valueView3.setText(R.string.not_available_value);
-		valueView4.setText(R.string.not_available_value);
-		valueView5.setText(R.string.not_available_value);
+		for(int i = 0; i < valueViewArray.length; i++){
+			valueViewArray[i].setText(R.string.not_available_value);
+		}
 	}
 
 	@Override
@@ -143,7 +133,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	protected UUID getFilterUUID() {
 		// TODO this method may return the UUID of the service that is required to be in the advertisement packet of a device in order to be listed on the Scanner dialog.
 		// If null is returned no filtering is done.
-		return TemplateManager.SERVICE_UUID;
+		return TemplateManager.UUID_SERVICE_STAT;
 	}
 
 	@Override
@@ -166,19 +156,10 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		// this may notify user or show some views
 	}
 
-	/*
-	@Override
-	public void onDeviceDisconnected(@NonNull final BluetoothDevice device) {
-		super.onDeviceDisconnected(device);
-	}
-	 */
-
-	// Handling updates from the device
-	@SuppressWarnings("unused")
-	private void setValueOnView(@NonNull final BluetoothDevice device, final int value) {
-		// TODO assign the value to a view
-		valueView.setText(String.valueOf(value));
-	}
+	//@Override
+	//public void onDeviceDisconnected(@NonNull final BluetoothDevice device) {
+	//	super.onDeviceDisconnected(device);
+	//}
 
 	private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
 		@Override
@@ -187,14 +168,12 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 			final BluetoothDevice device = intent.getParcelableExtra(TemplateService.EXTRA_DEVICE);
 
 			if (TemplateService.BROADCAST_TEMPLATE_MEASUREMENT.equals(action)) {
+
+				// Get notified data and update UI:
 				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA);
-				// Update GUI
-				valueView.setText(String.valueOf(dataArray[0]));
-				valueView1.setText(String.valueOf(dataArray[1]));
-				valueView2.setText(String.valueOf(dataArray[2]));
-				valueView3.setText(String.valueOf(dataArray[3]));
-				valueView4.setText(String.valueOf(dataArray[4]));
-				valueView5.setText(String.valueOf(dataArray[5]));
+				for(int i = 0; i < valueViewArray.length; i++){
+					valueViewArray[i].setText(String.valueOf(dataArray[i]));
+				}
 
 			}
 

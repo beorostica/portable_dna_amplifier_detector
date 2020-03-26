@@ -43,34 +43,25 @@ import no.nordicsemi.android.nrftoolbox.template.callback.TemplateDataCallback;
 public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks> {
 	// TODO Replace the services and characteristics below to match your device.
 	/**
-	 * The service UUID.
+	 * The Generic Access service UUID, just to to aware of its existence:
 	 */
-	static final UUID SERVICE_UUID = UUID.fromString("e2531400-ffaf-313f-a94f-f4b934ae79ab"); // Custom STAT service
-	//static final UUID SERVICE_UUID = UUID.fromString("f3641400-00b0-4240-ba50-05ca45bf8abd"); // Custom SENS service
-	//static final UUID SERVICE_UUID = UUID.fromString("0000180D-0000-1000-8000-00805f9b34fb"); // Heart Rate service
+	private static final UUID UUID_SERVICE_GENERIC_ACCESS = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb");
 	/**
-	 * A UUID of a characteristic with notify property.
+	 * The Device Name characteristic UUID, from the Generic Access service, just to to aware of its existence:
 	 */
-	private static final UUID MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("e2531401-ffaf-313f-a94f-f4b934ae79ab"); // Custom STAT characteristic
-	//private static final UUID MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("f3641401-00b0-4240-ba50-05ca45bf8abd"); // Custom SENS characteristic
-	//private static final UUID MEASUREMENT_CHARACTERISTIC_UUID = UUID.fromString("00002A37-0000-1000-8000-00805f9b34fb"); // Heart Rate Measurement
+	private static final UUID UUID_CHARACTERISTIC_DEVICE_NAME = UUID.fromString("00002A00-0000-1000-8000-00805f9b34fb");
 	/**
-	 * A UUID of a characteristic with read property.
+	 * The custom STAT service UUID:
 	 */
-	private static final UUID READABLE_CHARACTERISTIC_UUID = UUID.fromString("e2531401-ffaf-313f-a94f-f4b934ae79ab"); // Custom STAT characteristic
-	//private static final UUID READABLE_CHARACTERISTIC_UUID = UUID.fromString("00002A38-0000-1000-8000-00805f9b34fb"); // Body Sensor Location
+	public static final UUID UUID_SERVICE_STAT = UUID.fromString("e2531400-ffaf-313f-a94f-f4b934ae79ab");
 	/**
-	 * Some other service UUID.
+	 * The custom STAT characteristic UUID, from the custom STAT service:
 	 */
-	private static final UUID OTHER_SERVICE_UUID = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb"); // Generic Access service
-	/**
-	 * A UUID of a characteristic with write property.
-	 */
-	private static final UUID WRITABLE_CHARACTERISTIC_UUID = UUID.fromString("e2531401-ffaf-313f-a94f-f4b934ae79ab"); // Custom STAT characteristic
-	private static final UUID WRITABLE_NAME_CHARACTERISTIC_UUID = UUID.fromString("00002A00-0000-1000-8000-00805f9b34fb"); // Device Name
+	private static final UUID UUID_CHARACTERISTIC_STAT = UUID.fromString("e2531401-ffaf-313f-a94f-f4b934ae79ab");
 
 	// TODO Add more services and characteristics references.
-	private BluetoothGattCharacteristic requiredCharacteristic, deviceNameCharacteristic, optionalCharacteristic, writableCharacteristic;
+	private BluetoothGattCharacteristic characteristicDeviceName;
+	private BluetoothGattCharacteristic characteristicStat;
 
 	public TemplateManager(final Context context) {
 		super(context);
@@ -112,7 +103,7 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 					.enqueue();
 
 			// Set notification callback
-			setNotificationCallback(requiredCharacteristic)
+			setNotificationCallback(characteristicStat)
 					// This callback will be called each time the notification is received
 					.with(new TemplateDataCallback() {
 						@Override
@@ -134,7 +125,7 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 					});
 
 			// Enable notifications
-			enableNotifications(requiredCharacteristic)
+			enableNotifications(characteristicStat)
 					// Method called after the data were sent (data will contain 0x0100 in this case)
 					.with((device, data) -> log(Log.DEBUG, "Data sent: " + data))
 					// Method called when the request finished successfully. This will be called after .with(..) callback
@@ -148,39 +139,24 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 		protected boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
 			// TODO Initialize required characteristics.
 			// It should return true if all has been discovered (that is that device is supported).
-			final BluetoothGattService service = gatt.getService(SERVICE_UUID);
-			if (service != null) {
-				requiredCharacteristic = service.getCharacteristic(MEASUREMENT_CHARACTERISTIC_UUID);
-				writableCharacteristic = service.getCharacteristic(WRITABLE_CHARACTERISTIC_UUID);
-			}
-			final BluetoothGattService otherService = gatt.getService(OTHER_SERVICE_UUID);
+			final BluetoothGattService otherService = gatt.getService(UUID_SERVICE_GENERIC_ACCESS);
 			if (otherService != null) {
-				deviceNameCharacteristic = otherService.getCharacteristic(WRITABLE_NAME_CHARACTERISTIC_UUID);
+				characteristicDeviceName = otherService.getCharacteristic(UUID_CHARACTERISTIC_DEVICE_NAME);
 			}
-			return requiredCharacteristic != null && deviceNameCharacteristic != null;
-		}
-
-		@Override
-		protected boolean isOptionalServiceSupported(@NonNull final BluetoothGatt gatt) {
-			// Initialize Battery characteristic
-			super.isOptionalServiceSupported(gatt);
-
-			// TODO If there are some optional characteristics, initialize them there.
-			final BluetoothGattService service = gatt.getService(SERVICE_UUID);
+			final BluetoothGattService service = gatt.getService(UUID_SERVICE_STAT);
 			if (service != null) {
-				optionalCharacteristic = service.getCharacteristic(READABLE_CHARACTERISTIC_UUID);
+				characteristicStat = service.getCharacteristic(UUID_CHARACTERISTIC_STAT);
 			}
-			return optionalCharacteristic != null;
+			return characteristicDeviceName != null && characteristicStat != null;
 		}
 
 		@Override
 		protected void onDeviceDisconnected() {
 
 			// TODO Release references to your characteristics.
-			requiredCharacteristic = null;
-			deviceNameCharacteristic = null;
-			optionalCharacteristic = null;
-			writableCharacteristic = null;
+			characteristicDeviceName = null;
+			characteristicStat = null;
+
 		}
 
 		@Override
@@ -205,7 +181,7 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 	 * @param parameter parameter to be written. (not used)
 	 */
 	void performActionRead(final String parameter) {
-		readCharacteristic(optionalCharacteristic).with((device, data) -> {
+		readCharacteristic(characteristicStat).with((device, data) -> {
 			// Characteristic value has been read
 			// Let's do some magic with it.
 			if (data.size() > 0) {
@@ -238,7 +214,7 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 		}
 		Log.v("performActionWrite", "customValue = " + customValue);
 
-		writeCharacteristic(writableCharacteristic, customValue)
+		writeCharacteristic(characteristicStat, customValue)
 				// If data are longer than MTU-3, they will be chunked into multiple packets.
 				// Check out other split options, with .split(...).
 				.split()
@@ -247,9 +223,9 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 				.with((device, data) -> log(Log.DEBUG, data.getByte(0) + "," + data.getByte(1) + "," + data.getByte(2) + "," + data.getByte(3) + "," + data.getByte(4) + "," + data.getByte(5) + "," + data.getByte(6) + "," + data.getByte(7) + "," + data.getByte(8) + "," + data.getByte(9) + "," + data.getByte(10) + "," + data.getByte(11) + " bytes were sent"))
 				// Callback called when data were sent, or added to outgoing queue in case
 				// Write Without Request type was used. This is called after .with(...) callback.
-		        .done(device -> log(LogContract.Log.Level.APPLICATION, "Device name set to \"" + customValue + "\""))
+		        .done(device -> log(LogContract.Log.Level.APPLICATION, "Write STAT characteristic to: \"" + customValue + "\""))
 				// Callback called when write has failed.
-				.fail((device, status) -> log(Log.WARN, "Failed to change device name"))
+				.fail((device, status) -> log(Log.WARN, "Failed to write STAT characteristic."))
 				.enqueue();
 	}
 
