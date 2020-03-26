@@ -53,7 +53,6 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	private TextView valueView3;
 	private TextView valueView4;
 	private TextView valueView5;
-	private TextView batteryLevelView;
 
 	@Override
 	protected void onCreateView(final Bundle savedInstanceState) {
@@ -63,6 +62,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	}
 
 	private void setGUI() {
+
 		// TODO assign your views to fields
 		valueView = findViewById(R.id.value);
 		valueView1 = findViewById(R.id.value1);
@@ -70,8 +70,6 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		valueView3 = findViewById(R.id.value3);
 		valueView4 = findViewById(R.id.value4);
 		valueView5 = findViewById(R.id.value5);
-		batteryLevelView = findViewById(R.id.battery);
-
 
 		findViewById(R.id.action_read).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
@@ -107,7 +105,6 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		valueView3.setText(R.string.not_available_value);
 		valueView4.setText(R.string.not_available_value);
 		valueView5.setText(R.string.not_available_value);
-		batteryLevelView.setText(R.string.not_available);
 	}
 
 	@Override
@@ -169,22 +166,18 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		// this may notify user or show some views
 	}
 
+	/*
 	@Override
 	public void onDeviceDisconnected(@NonNull final BluetoothDevice device) {
 		super.onDeviceDisconnected(device);
-		batteryLevelView.setText(R.string.not_available);
 	}
+	 */
 
 	// Handling updates from the device
 	@SuppressWarnings("unused")
 	private void setValueOnView(@NonNull final BluetoothDevice device, final int value) {
 		// TODO assign the value to a view
 		valueView.setText(String.valueOf(value));
-	}
-
-	@SuppressWarnings("unused")
-	public void onBatteryLevelChanged(@NonNull final BluetoothDevice device, final int value) {
-		batteryLevelView.setText(getString(R.string.battery, value));
 	}
 
 	private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -203,18 +196,14 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				valueView4.setText(String.valueOf(dataArray[4]));
 				valueView5.setText(String.valueOf(dataArray[5]));
 
-			} else if (TemplateService.BROADCAST_BATTERY_LEVEL.equals(action)) {
-				final int batteryLevel = intent.getIntExtra(TemplateService.EXTRA_BATTERY_LEVEL, 0);
-				// Update GUI
-				onBatteryLevelChanged(device, batteryLevel);
 			}
+
 		}
 	};
 
 	private static IntentFilter makeIntentFilter() {
 		final IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(TemplateService.BROADCAST_TEMPLATE_MEASUREMENT);
-		intentFilter.addAction(TemplateService.BROADCAST_BATTERY_LEVEL);
 		return intentFilter;
 	}
 }
