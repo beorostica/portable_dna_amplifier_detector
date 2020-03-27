@@ -61,4 +61,3 @@ bool deviceStatus_getStructData_isDataOnFlash(void)
 {
     return statusData.isDataOnFlash;
 }
-

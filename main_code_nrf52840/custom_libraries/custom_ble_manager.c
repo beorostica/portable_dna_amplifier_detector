@@ -12,7 +12,6 @@
 #include "app_timer.h"
 
 #include "custom_timer.h"
-#include "custom_device_status_struct_data.h"
 #include "custom_log.h"
 
 
@@ -143,7 +142,7 @@ void on_adv_evt(ble_adv_evt_t ble_adv_evt)
     switch (ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
-            NRF_LOG_INFO("Fast advertising.");
+            NRF_LOG_INFO("BLE_MANAGER: Fast advertising.");
             break;
 
         case BLE_ADV_EVT_IDLE:
@@ -169,13 +168,13 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
         case BLE_GAP_EVT_DISCONNECTED:
             isCusStatNotificationEnabled = false;
             isCusSensNotificationEnabled = false;
-            NRF_LOG_INFO("isCusStatNotificationEnabled: false");
-            NRF_LOG_INFO("isCusSensNotificationEnabled: false");
-            NRF_LOG_INFO("Disconnected.");
+            NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: Disconnected.");
             break;
 
         case BLE_GAP_EVT_CONNECTED:
-            NRF_LOG_INFO("Connected.");
+            NRF_LOG_INFO("BLE_MANAGER: Connected.");
             m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
             err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(err_code);
@@ -183,7 +182,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GAP_EVT_PHY_UPDATE_REQUEST:
         {
-            NRF_LOG_DEBUG("PHY update request.");
+            NRF_LOG_DEBUG("BLE_MANAGER: PHY update request.");
             ble_gap_phys_t const phys =
             {
                 .rx_phys = BLE_GAP_PHY_AUTO,
@@ -197,9 +196,9 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             // Disconnect on GATT Client timeout event.
             isCusStatNotificationEnabled = false;
             isCusSensNotificationEnabled = false;
-            NRF_LOG_INFO("isCusStatNotificationEnabled: false");
-            NRF_LOG_INFO("isCusSensNotificationEnabled: false");
-            NRF_LOG_DEBUG("GATT Client Timeout.");
+            NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
+            NRF_LOG_DEBUG("BLE_MANAGER: GATT Client Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             APP_ERROR_CHECK(err_code);
@@ -209,9 +208,9 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             // Disconnect on GATT Server timeout event.
             isCusStatNotificationEnabled = false;
             isCusSensNotificationEnabled = false;
-            NRF_LOG_INFO("isCusStatNotificationEnabled: false");
-            NRF_LOG_INFO("isCusSensNotificationEnabled: false");
-            NRF_LOG_DEBUG("GATT Server Timeout.");
+            NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
+            NRF_LOG_DEBUG("BLE_MANAGER: GATT Server Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
             APP_ERROR_CHECK(err_code);
@@ -264,19 +263,18 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
 {
     uint32_t err_code;
     static ble_gatts_value_t gatts_value;
-    static uint8_t data_buffer[sizeof(detection_system_single_data)];
-    static bool commandFromPhone = false;
+    static uint8_t data_buffer[sizeof(device_status_data)];
         
     switch(p_evt->evt_type)
     {
         case CUS_STAT_EVT_NOTIFICATION_ENABLED:
             isCusStatNotificationEnabled = true;
-            NRF_LOG_INFO("isCusStatNotificationEnabled: true");
+            NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: true");
             break;
 
         case CUS_STAT_EVT_NOTIFICATION_DISABLED:
             isCusStatNotificationEnabled = false;
-            NRF_LOG_INFO("isCusStatNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: false");
             break;
 
         case CUS_STAT_EVT_CONNECTED :
@@ -284,37 +282,119 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
 
         case CUS_STAT_EVT_DISCONNECTED:
             isCusStatNotificationEnabled = false;
-            NRF_LOG_INFO("isCusStatNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: false");
             break;
 
         case CUS_STAT_EVT_WRITE:
 
-            if(commandFromPhone){
-                timerDetectionSystem_Stop();
-                secondsStop();
-                hundredMillisStop();
-                deviceStatus_saveStructData_commandFromPhone(false);
-                NRF_LOG_INFO("commandFromPhone = %d.", deviceStatus_getStructData_commandFromPhone());
-                commandFromPhone = false;
-            }else{
-                timerDetectionSystem_Start();
-                secondsStart();
-                hundredMillisStart();
-                deviceStatus_saveStructData_commandFromPhone(true);
-                NRF_LOG_INFO("commandFromPhone = %d.", deviceStatus_getStructData_commandFromPhone());
-                commandFromPhone = true;
-            }
-
+            //Allocate memory for "gatts_value" variable:
             memset(&gatts_value, 0, sizeof(gatts_value));
-            gatts_value.offset = 0;
-            gatts_value.len = 12;
+            gatts_value.offset  = 0;
+            gatts_value.len     = sizeof(device_status_data);
             gatts_value.p_value = (uint8_t*) &data_buffer;
-            
-            err_code = sd_ble_gatts_value_get(p_cus_service->conn_handle, p_cus_service->custom_value_handles.value_handle, &gatts_value);
-            APP_ERROR_CHECK(err_code);
 
-            uint32_t err_code = cus_stat_custom_value_update(p_cus_service, data_buffer);
-            APP_ERROR_CHECK(err_code);
+            //If the STAT characteristic notification is enabled, then the STAT characteristic changed by the NordicSoftdevice is valid:
+            if(bleGetCusStatNotificationFlag())
+            {               
+                //Get the last STAT characteristic written by the phone app and store on "data_buffer":
+                err_code = sd_ble_gatts_value_get(p_cus_service->conn_handle, p_cus_service->custom_value_handles.value_handle, &gatts_value);
+                APP_ERROR_CHECK(err_code);
+
+                //Store the commandFromPhoneAux = command of the STAT characteristic written by the phone:
+                bool commandFromPhoneAux = (bool) data_buffer[0];
+                
+                //The command of the STAT characteristic is analysed only if is different from the command in device status data:
+                if(commandFromPhoneAux != deviceStatus_getStructData_commandFromPhone())
+                {                    
+                    //If the command from phone app is true:
+                    if(commandFromPhoneAux){
+                        //And if the detection system is not measuring, then start detection system task: 
+                        if(!deviceStatus_getStructData_isMeasuring())
+                        {
+                            NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic is gonna be stored in the device status data.");
+                     
+                            //Update the status data (now the nrf52 is commanded to start the detection task):
+                            deviceStatus_saveStructData_commandFromPhone(true);
+                            NRF_LOG_INFO("BLE_MANAGER: commandFromPhone = %d.", deviceStatus_getStructData_commandFromPhone());
+
+                            //Start the detection system timers:
+                            NRF_LOG_INFO("BLE_MANAGER: Detection System Task Starts.");
+                            timerDetectionSystem_Start();
+                            secondsStart();
+                            hundredMillisStart();
+                            
+                            //Update the device status data (now it's measuring):
+                            deviceStatus_saveStructData_isMeasuring(true);
+                            NRF_LOG_INFO("BLE_MANAGER: isMeasuring = %d.", deviceStatus_getStructData_isMeasuring());
+                            
+                            //Change the "data_buffer" to update STAT characteristic (the isMeasuring status):
+                            data_buffer[1] = deviceStatus_getStructData_isMeasuring();
+                            
+                            //Send a notification back to the phone app of the STAT characteristic written (stored on "data_buffer"):
+                            uint32_t err_code = cus_stat_custom_value_update(p_cus_service, data_buffer);
+                            APP_ERROR_CHECK(err_code);
+                            NRF_LOG_INFO("BLE_MANAGER: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d.", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring());
+                        }
+                        //But if the detection system is measuring, then print log info:
+                        else
+                        {
+                            NRF_LOG_INFO("BLE_MANAGER: The Detection System is already measuring, so you have to wait until detection system task stops.");
+                            NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic will not be stored in the device status data.");
+                        }
+                    }
+                    //If the command from phone app is false:
+                    else
+                    {
+                        //And if the detection system is measuring, then the main will stop the detection system task soon:
+                        if(deviceStatus_getStructData_isMeasuring())
+                        {
+                            NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic is gonna be stored in the device status data.");
+                     
+                            //Update the status data (now the nrf52 is commanded to stop the detection task):
+                            deviceStatus_saveStructData_commandFromPhone(false);
+                            NRF_LOG_INFO("BLE_MANAGER: commandFromPhone = %d.", deviceStatus_getStructData_commandFromPhone());
+
+                            //Send a notification back to the phone app of the STAT characteristic written (stored on "data_buffer"):
+                            uint32_t err_code = cus_stat_custom_value_update(p_cus_service, data_buffer);
+                            APP_ERROR_CHECK(err_code);
+                            NRF_LOG_INFO("BLE_MANAGER: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d.", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring());
+                            NRF_LOG_INFO("BLE_MANAGER: Wait until the detection system task stops.");
+                        }
+                        //But if the detection system is not measuring, then print log info:
+                        else
+                        {
+                            NRF_LOG_INFO("BLE_MANAGER: The Detection System is not measuring, so the command from phone was not necessary");
+                            NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic will not be stored in the device status data.");
+                        }
+                    }
+                }
+                //If the command of the STAT characteristic sent by the phone is the same as the device status command, then print log info:
+                else
+                {
+                    NRF_LOG_INFO("BLE_MANAGER: The ble command sent by the phone is the same as the stored. commandFromPhone = %d", deviceStatus_getStructData_commandFromPhone());
+                }
+
+            }
+            //If the STAT characteristic notification is disabled, then the STAT characteristic changed by the NordicSoftdevice is not valid:
+            else
+            {
+                NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic is not valid when notification is disabled.");
+
+                //Update and notify the STAT characteristic (must be the status data stored):
+                device_status_data dataCusStat = deviceStatus_getStructData();
+                data_buffer[0] = dataCusStat.commandFromPhone;
+                data_buffer[1] = dataCusStat.isMeasuring;
+                data_buffer[2] = dataCusStat.isDataOnFlash;
+                data_buffer[3] = dataCusStat.fileName_year;
+                data_buffer[4] = dataCusStat.fileName_month;
+                data_buffer[5] = dataCusStat.fileName_day;
+                data_buffer[6] = dataCusStat.fileName_hrs;
+                data_buffer[7] = dataCusStat.fileName_mins;
+                data_buffer[8] = dataCusStat.fileName_secs;
+                err_code = sd_ble_gatts_value_set(p_cus_service->conn_handle, p_cus_service->custom_value_handles.value_handle, &gatts_value);
+                APP_ERROR_CHECK(err_code);
+                NRF_LOG_INFO("BLE_MANAGER: The STAT characteristic is the same as the device status data.");
+            }
 
             break;
 
@@ -341,12 +421,12 @@ static void on_cus_sens_evt(cus_sens_t * p_cus_service, cus_sens_evt_t * p_evt)
     {
         case CUS_SENS_EVT_NOTIFICATION_ENABLED:
             isCusSensNotificationEnabled = true;
-            NRF_LOG_INFO("isCusSensNotificationEnabled: true");
+            NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: true");
             break;
 
         case CUS_SENS_EVT_NOTIFICATION_DISABLED:
             isCusSensNotificationEnabled = false;
-            NRF_LOG_INFO("isCusSensNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
             break;
 
         case CUS_SENS_EVT_CONNECTED :
@@ -354,7 +434,7 @@ static void on_cus_sens_evt(cus_sens_t * p_cus_service, cus_sens_evt_t * p_evt)
 
         case CUS_SENS_EVT_DISCONNECTED:
             isCusSensNotificationEnabled = false;
-            NRF_LOG_INFO("isCusSensNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
             break;
 
         default:
@@ -584,7 +664,7 @@ bool bleGetCusSensNotificationFlag(void)
 
 /**@brief Function for sending ble data.
  */
-void bleCusStatSendData(detection_system_single_data data)
+void bleCusStatSendData(device_status_data data)
 {
     uint8_t *ptrData = (uint8_t*) &data;
     uint32_t err_code = cus_stat_custom_value_update(&m_cus_stat, ptrData);
