@@ -11,6 +11,8 @@
 #include "nrf_ble_qwr.h"
 #include "app_timer.h"
 
+#include "custom_timer.h"
+#include "custom_device_status_struct_data.h"
 #include "custom_log.h"
 
 
@@ -263,6 +265,7 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
     uint32_t err_code;
     static ble_gatts_value_t gatts_value;
     static uint8_t data_buffer[sizeof(detection_system_single_data)];
+    static bool commandFromPhone = false;
         
     switch(p_evt->evt_type)
     {
@@ -285,6 +288,22 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
             break;
 
         case CUS_STAT_EVT_WRITE:
+
+            if(commandFromPhone){
+                timerDetectionSystem_Stop();
+                secondsStop();
+                hundredMillisStop();
+                deviceStatus_saveStructData_commandFromPhone(false);
+                NRF_LOG_INFO("commandFromPhone = %d.", deviceStatus_getStructData_commandFromPhone());
+                commandFromPhone = false;
+            }else{
+                timerDetectionSystem_Start();
+                secondsStart();
+                hundredMillisStart();
+                deviceStatus_saveStructData_commandFromPhone(true);
+                NRF_LOG_INFO("commandFromPhone = %d.", deviceStatus_getStructData_commandFromPhone());
+                commandFromPhone = true;
+            }
 
             memset(&gatts_value, 0, sizeof(gatts_value));
             gatts_value.offset = 0;

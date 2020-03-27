@@ -142,6 +142,7 @@
       <file file_name="../../../custom_libraries/custom_twi.c" />
       <file file_name="../../../custom_libraries/cus_sens.c" />
       <file file_name="../../../custom_libraries/cus_stat.c" />
+      <file file_name="../../../custom_libraries/custom_device_status_struct_data.c" />
     </folder>
     <folder Name="other_libraries">
       <folder Name="for_ExternalFlash">

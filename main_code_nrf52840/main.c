@@ -7,6 +7,7 @@
 #include "boards.h"
 #include "custom_twi.h"
 #include "custom_ble_manager.h"
+#include "custom_device_status_struct_data.h"
 
 
 //Main Function:
@@ -16,11 +17,8 @@ int main(void)
     //Init Log for debugging:
     logInit();
 
-    //Init and Start Timers:
+    //Init Timers:
     timerInit();
-    timerDetectionSystem_Start();
-    secondsStart();
-    hundredMillisStart();
 
     //Initialize other Peripherals:
     qspiInit();                       //Init QSPI for external flash (qspiInit() must be after the timers are started, otherwise the qspi throws error on the first burn (but after reset works ok)).
@@ -37,6 +35,10 @@ int main(void)
 
     //Start Advertising:
     advertising_start();
+
+    //Set initial status of the device:
+    deviceStatus_saveStructData_init();
+
 
     //Print Initial Message:
     NRF_LOG_INFO("*********************");
