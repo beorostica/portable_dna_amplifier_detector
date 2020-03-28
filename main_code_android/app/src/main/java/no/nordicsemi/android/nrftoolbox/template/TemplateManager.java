@@ -113,9 +113,9 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 						}
 
 						@Override
-						public void onSampleValueReceived(@NonNull final BluetoothDevice device, final int[] dataArray) {
+						public void onCharacteristicStatNotification(@NonNull final BluetoothDevice device, final int[] dataArray) {
 						    // Let's lass received data to the service
-							callbacks.onSampleValueReceived(device, dataArray);
+							callbacks.onCharacteristicStatNotification(device, dataArray);
 						}
 
 						@Override
@@ -169,7 +169,8 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 
 			// Device is ready, let's read something here. Usually there is nothing else to be done
 			// here, as all had been done during initialization.
-			readCharacteristicStat("dummyString");
+			readCharacteristicStat();
+
 		}
 	}
 
@@ -180,52 +181,73 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 	 *
 	 * @param parameter parameter to be written. (not used)
 	 */
-	void readCharacteristicStat(final String parameter) {
+
+	//This value stores the last read STAT characteristic from the nRF52:
+	private byte dataDeviceStatus[] = new byte[9];
+
+	void readCharacteristicStat() {
 		readCharacteristic(characteristicStat).with((device, data) -> {
 			// Characteristic value has been read
 			// Let's do some magic with it.
 			if (data.size() > 0) {
-				int[] dataDeviceStatus = new int[9];
 				for(int i = 0; i < dataDeviceStatus.length; i++){
-					dataDeviceStatus[i] = data.getIntValue(Data.FORMAT_UINT8, i);
-					log(LogContract.Log.Level.APPLICATION, "dataDeviceStatus[" + i + "] = " + dataDeviceStatus[i]);
+					dataDeviceStatus[i] = (byte)(data.getIntValue(Data.FORMAT_UINT8, i) & 0xFF);
 				}
+                Log.v("readCharacteristicStat", "dataDeviceStatus[0] = " + dataDeviceStatus[0]);
 			} else {
 				log(Log.WARN, "Value is empty!");
 			}
 		}).enqueue();
 	}
 
-
 	/**
 	 * This method will write important data to the device.
-	 *
-	 * @param dataDeviceStat parameter to be written.
 	 */
-	private int commandFromPhone = 1;
-	void writeCharacteristicStat(final String dataDeviceStat) {
+	void sendCommandFromPhone() {
 
-		// Write some data to the characteristic.
-		byte[] dataDeviceStatus = {(byte)commandFromPhone,0,0,0,0,0,0,0,0};
-		commandFromPhone = (commandFromPhone == 1)?(0):(1);
-		for(int i = 0; i < dataDeviceStatus.length; i++){
-			Log.v("writeCharacteristicStat", "dataDeviceStatus[" + i + "] = " + dataDeviceStatus[i]);
-		}
-		Log.v("writeCharacteristicStat", "customValue = " + dataDeviceStatus);
+        readCharacteristic(characteristicStat).with((device, data) -> {
+            // If the read value has more than one byte, then:
+            if (data.size() > 0) {
 
-		writeCharacteristic(characteristicStat, dataDeviceStatus)
-				// If data are longer than MTU-3, they will be chunked into multiple packets.
-				// Check out other split options, with .split(...).
-				.split()
-				// Callback called when data were sent, or added to outgoing queue in case
-				// Write Without Request type was used.
-				.with((device, data) -> log(Log.DEBUG, data.getByte(0) + "," + data.getByte(1) + "," + data.getByte(2) + "," + data.getByte(3) + "," + data.getByte(4) + "," + data.getByte(5) + "," + data.getByte(6) + "," + data.getByte(7) + "," + data.getByte(8) + " bytes were sent"))
-				// Callback called when data were sent, or added to outgoing queue in case
-				// Write Without Request type was used. This is called after .with(...) callback.
-		        .done(device -> log(LogContract.Log.Level.APPLICATION, "Write STAT characteristic to: \"" + dataDeviceStatus + "\""))
-				// Callback called when write has failed.
-				.fail((device, status) -> log(Log.WARN, "Failed to write STAT characteristic."))
-				.enqueue();
+                // Read STAT characteristic from phone and update internal variables:
+                for(int i = 0; i < dataDeviceStatus.length; i++){
+                    dataDeviceStatus[i] = (byte)(data.getIntValue(Data.FORMAT_UINT8, i) & 0xFF);
+                }
+                Log.v("readCharacteristicStat", "dataDeviceStatus[0] = " + dataDeviceStatus[0]);
+
+                // Toggle the commandFromPhone:
+                byte commandFromPhone = (dataDeviceStatus[0] == 1)?((byte)0):((byte)1);
+                Log.v("sendCommandFromPhone", "commandFromPhone = " + commandFromPhone);
+
+                // Change data to send to the STAT characteristic:
+                byte[] dataDeviceStatusRequest = new byte[9];
+                dataDeviceStatusRequest[0] = commandFromPhone;
+                for(int i = 1; i < dataDeviceStatus.length; i++){
+                    dataDeviceStatusRequest[i] = dataDeviceStatus[i];
+                }
+
+                // Write STAT characteristic:
+                writeCharacteristic(characteristicStat, dataDeviceStatusRequest)
+                        // If data are longer than MTU-3, they will be chunked into multiple packets.
+                        // Check out other split options, with .split(...).
+                        .split()
+                        // Callback called when data were sent, or added to outgoing queue in case
+                        // Write Without Request type was used.
+                        .with((mdevice, mdata) -> Log.v("writeCharacteristicStat", mdata.getByte(0) + "," + mdata.getByte(1) + "," + mdata.getByte(2) + "," + mdata.getByte(3) + "," + mdata.getByte(4) + "," + mdata.getByte(5) + "," + mdata.getByte(6) + "," + mdata.getByte(7) + "," + mdata.getByte(8) + " bytes were sent"))
+                        // Callback called when data were sent, or added to outgoing queue in case
+                        // Write Without Request type was used. This is called after .with(...) callback.
+                        .done(mdevice -> Log.v("writeCharacteristicStat", "Write to STAT characteristic Successful."))
+                        // Callback called when write has failed.
+                        .fail((mdevice, status) -> Log.v("writeCharacteristicStat", "Failed to write STAT characteristic."))
+                        .enqueue();
+
+            }
+            // If the read value hasn' data:
+            else {
+                Log.v("readCharacteristicStat", "Value to read is empty!");
+            }
+        }).enqueue();
+
 	}
 
 }

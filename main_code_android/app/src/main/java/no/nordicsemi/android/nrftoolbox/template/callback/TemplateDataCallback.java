@@ -26,7 +26,7 @@ public abstract class TemplateDataCallback implements ProfileDataCallback, Templ
 		}
 
 		// Report the parsed value(s)
-		onSampleValueReceived(device, dataArray);
+		onCharacteristicStatNotification(device, dataArray);
 
 	}
 	

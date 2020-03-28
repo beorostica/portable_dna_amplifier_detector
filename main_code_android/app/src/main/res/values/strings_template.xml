@@ -29,7 +29,7 @@
 
 	<string name="template_default_name">DEFAULT DEVICE</string>
 	<string name="template_action_read">Read</string>
-	<string name="template_action_write">Write</string>
+	<string name="template_action_write">Command</string>
 	<string name="template_section_header">Values</string>
 	<string name="template_value_title">Index</string>
 	<string name="template_unit">[ind]</string>

@@ -66,13 +66,13 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 		findViewById(R.id.action_read).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
-				getService().performReadCharacteristicStat("Template");
+				getService().performReadCharacteristicStat();
 			}
 		});
 
 		findViewById(R.id.action_write).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
-				getService().performWriteCharacteristicStat("abcdefghijkl");
+				getService().performSendCommandFromPhone();
 			}
 		});
 
@@ -167,10 +167,10 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 			final String action = intent.getAction();
 			final BluetoothDevice device = intent.getParcelableExtra(TemplateService.EXTRA_DEVICE);
 
-			if (TemplateService.BROADCAST_TEMPLATE_MEASUREMENT.equals(action)) {
+			if (TemplateService.BROADCAST_CHARACTERISTIC_STAT_NOTIFICATION.equals(action)) {
 
 				// Get notified data and update UI:
-				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA);
+				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_STAT_NOTIFICATION);
 				for(int i = 0; i < valueViewArray.length; i++){
 					valueViewArray[i].setText(String.valueOf(dataArray[i]));
 				}
@@ -182,7 +182,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 	private static IntentFilter makeIntentFilter() {
 		final IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(TemplateService.BROADCAST_TEMPLATE_MEASUREMENT);
+		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_STAT_NOTIFICATION);
 		return intentFilter;
 	}
 }

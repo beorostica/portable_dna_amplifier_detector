@@ -44,8 +44,8 @@ import no.nordicsemi.android.nrftoolbox.profile.LoggableBleManager;
 
 public class TemplateService extends BleProfileService implements TemplateManagerCallbacks {
 
-    public static final String BROADCAST_TEMPLATE_MEASUREMENT = "no.nordicsemi.android.nrftoolbox.template.BROADCAST_MEASUREMENT";
-    public static final String EXTRA_DATA = "no.nordicsemi.android.nrftoolbox.template.EXTRA_DATA";
+    public static final String BROADCAST_CHARACTERISTIC_STAT_NOTIFICATION = "no.nordicsemi.android.nrftoolbox.template.BROADCAST_CHARACTERISTIC_STAT_NOTIFICATION";
+    public static final String EXTRA_DATA_CHARACTERISTIC_STAT_NOTIFICATION = "no.nordicsemi.android.nrftoolbox.template._CHARACTERISTIC_STAT_NOTIFICATION";
 
     private final static String ACTION_DISCONNECT = "no.nordicsemi.android.nrftoolbox.template.ACTION_DISCONNECT";
 
@@ -65,15 +65,13 @@ public class TemplateService extends BleProfileService implements TemplateManage
 
         /**
          * Sends some important data to the device.
-         *
-         * @param parameter some parameter.
          */
-        void performReadCharacteristicStat(final String parameter) {
-            manager.readCharacteristicStat(parameter);
+        void performReadCharacteristicStat() {
+            manager.readCharacteristicStat();
         }
 
-        void performWriteCharacteristicStat(final String parameter) {
-            manager.writeCharacteristicStat(parameter);
+        void performSendCommandFromPhone() {
+            manager.sendCommandFromPhone();
         }
 
     }
@@ -117,10 +115,10 @@ public class TemplateService extends BleProfileService implements TemplateManage
     }
 
     @Override
-    public void onSampleValueReceived(@NonNull final BluetoothDevice device, final int[] dataArray) {
-        final Intent broadcast = new Intent(BROADCAST_TEMPLATE_MEASUREMENT);
+    public void onCharacteristicStatNotification(@NonNull final BluetoothDevice device, final int[] dataArray) {
+        final Intent broadcast = new Intent(BROADCAST_CHARACTERISTIC_STAT_NOTIFICATION);
         broadcast.putExtra(EXTRA_DEVICE, getBluetoothDevice());
-        broadcast.putExtra(EXTRA_DATA, dataArray);
+        broadcast.putExtra(EXTRA_DATA_CHARACTERISTIC_STAT_NOTIFICATION, dataArray);
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
 
         if (!bound) {
