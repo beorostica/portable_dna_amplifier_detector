@@ -327,7 +327,8 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             deviceStatus_saveStructData_isMeasuring(true);
                             NRF_LOG_INFO("BLE_MANAGER: isMeasuring = %d.", deviceStatus_getStructData_isMeasuring());
                             
-                            //Change the "data_buffer" to update STAT characteristic (the isMeasuring status):
+                            //Change the "data_buffer" to update STAT characteristic:
+                            data_buffer[0] = deviceStatus_getStructData_commandFromPhone();
                             data_buffer[1] = deviceStatus_getStructData_isMeasuring();
                             
                             //Send a notification back to the phone app of the STAT characteristic written (stored on "data_buffer"):
@@ -353,6 +354,10 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             //Update the status data (now the nrf52 is commanded to stop the detection task):
                             deviceStatus_saveStructData_commandFromPhone(false);
                             NRF_LOG_INFO("BLE_MANAGER: commandFromPhone = %d.", deviceStatus_getStructData_commandFromPhone());
+
+                            //Change the "data_buffer" to update STAT characteristic:
+                            data_buffer[0] = deviceStatus_getStructData_commandFromPhone();
+                            data_buffer[1] = deviceStatus_getStructData_isMeasuring();
 
                             //Send a notification back to the phone app of the STAT characteristic written (stored on "data_buffer"):
                             uint32_t err_code = cus_stat_custom_value_update(p_cus_service, data_buffer);

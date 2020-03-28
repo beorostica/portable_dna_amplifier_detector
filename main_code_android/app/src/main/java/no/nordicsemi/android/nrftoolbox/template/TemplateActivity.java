@@ -66,13 +66,13 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 		findViewById(R.id.action_read).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
-				getService().performActionRead("Template");
+				getService().performReadCharacteristicStat("Template");
 			}
 		});
 
 		findViewById(R.id.action_write).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
-				getService().performActionWrite("abcdefghijkl");
+				getService().performWriteCharacteristicStat("abcdefghijkl");
 			}
 		});
 
