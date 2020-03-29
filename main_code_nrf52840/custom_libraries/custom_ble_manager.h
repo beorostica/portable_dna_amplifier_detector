@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 
+#include "custom_device_status_struct_data.h"
 #include "custom_detection_system_struct_data.h"
 
 
@@ -17,11 +18,10 @@ void conn_params_init(void);
 void advertising_start(void);
 
 bool bleGetCusStatNotificationFlag(void);
-void bleCusStatSendData(detection_system_single_data data);
+void bleCusStatSendData(device_status_data data);
 
 bool bleGetCusSensNotificationFlag(void);
 void bleCusSensSendData(detection_system_single_data data);
-
 
 
 #endif /* CUSTOM_BLE_MANAGER_H */

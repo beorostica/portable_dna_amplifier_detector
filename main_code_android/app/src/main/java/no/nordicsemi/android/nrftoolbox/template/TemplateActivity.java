@@ -29,7 +29,9 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.view.Menu;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.UUID;
@@ -66,13 +68,13 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 		findViewById(R.id.action_read).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
-				getService().performActionRead("Template");
+				getService().performReadCharacteristicStat();
 			}
 		});
 
-		findViewById(R.id.action_write).setOnClickListener(v -> {
+		findViewById(R.id.action_write_characteristic_stat).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
-				getService().performActionWrite("abcdefghijkl");
+				getService().performSendCommandFromPhone();
 			}
 		});
 
@@ -167,10 +169,29 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 			final String action = intent.getAction();
 			final BluetoothDevice device = intent.getParcelableExtra(TemplateService.EXTRA_DEVICE);
 
-			if (TemplateService.BROADCAST_TEMPLATE_MEASUREMENT.equals(action)) {
+			if (TemplateService.BROADCAST_CHARACTERISTIC_STAT_UPDATE.equals(action)) {
 
-				// Get notified data and update UI:
-				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA);
+				// Get read or notified data and update UI:
+				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_STAT_UPDATE);
+
+				//Update the Write Stat Characteristic Button:
+				Button buttonWrite = (Button) findViewById(R.id.action_write_characteristic_stat);
+				if(dataArray[0] == 0 && dataArray[1] == 0) {
+					buttonWrite.setEnabled(true);
+					buttonWrite.setText(R.string.template_action_write_start);
+				} else if (dataArray[0] == 1 && dataArray[1] == 1) {
+					buttonWrite.setEnabled(true);
+					buttonWrite.setText(R.string.template_action_write_stop);
+				} else if (dataArray[0] == 0 && dataArray[1] == 1) {
+					buttonWrite.setEnabled(false);
+					buttonWrite.setText(R.string.template_action_write_wait);
+				}
+
+			}
+			if (TemplateService.BROADCAST_CHARACTERISTIC_SENS_UPDATE.equals(action)) {
+
+				// Get read or notified data and update UI:
+				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_SENS_UPDATE);
 				for(int i = 0; i < valueViewArray.length; i++){
 					valueViewArray[i].setText(String.valueOf(dataArray[i]));
 				}
@@ -182,7 +203,8 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 	private static IntentFilter makeIntentFilter() {
 		final IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(TemplateService.BROADCAST_TEMPLATE_MEASUREMENT);
+		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_STAT_UPDATE);
+		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_SENS_UPDATE);
 		return intentFilter;
 	}
 }

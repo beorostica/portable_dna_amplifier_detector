@@ -35,33 +35,32 @@ import no.nordicsemi.android.ble.data.Data;
 import no.nordicsemi.android.log.LogContract;
 import no.nordicsemi.android.nrftoolbox.parser.TemplateParser;
 import no.nordicsemi.android.nrftoolbox.profile.LoggableBleManager;
-import no.nordicsemi.android.nrftoolbox.template.callback.TemplateDataCallback;
+import no.nordicsemi.android.nrftoolbox.template.callback.SensDataCallback;
+import no.nordicsemi.android.nrftoolbox.template.callback.StatDataCallback;
 
 /**
  * Modify to template manager to match your requirements.
  */
 public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks> {
+
 	// TODO Replace the services and characteristics below to match your device.
-	/**
-	 * The Generic Access service UUID, just to to aware of its existence:
-	 */
-	private static final UUID UUID_SERVICE_GENERIC_ACCESS = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb");
-	/**
-	 * The Device Name characteristic UUID, from the Generic Access service, just to to aware of its existence:
-	 */
+	//The Generic Access service UUID and the Device Name characteristic UUID, just to to aware of their existence:
+	private static final UUID UUID_SERVICE_GENERIC_ACCESS     = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb");
 	private static final UUID UUID_CHARACTERISTIC_DEVICE_NAME = UUID.fromString("00002A00-0000-1000-8000-00805f9b34fb");
-	/**
-	 * The custom STAT service UUID:
-	 */
-	public static final UUID UUID_SERVICE_STAT = UUID.fromString("e2531400-ffaf-313f-a94f-f4b934ae79ab");
-	/**
-	 * The custom STAT characteristic UUID, from the custom STAT service:
-	 */
+
+	//The custom STAT service and characteristic UUIDs:
+	public static final UUID UUID_SERVICE_STAT         = UUID.fromString("e2531400-ffaf-313f-a94f-f4b934ae79ab");
 	private static final UUID UUID_CHARACTERISTIC_STAT = UUID.fromString("e2531401-ffaf-313f-a94f-f4b934ae79ab");
+
+    //The custom SENS service and characteristic UUIDs:
+    public static final UUID UUID_SERVICE_SENS         = UUID.fromString("f3641400-00b0-4240-ba50-05ca45bf8abd");
+    private static final UUID UUID_CHARACTERISTIC_SENS = UUID.fromString("f3641401-00b0-4240-ba50-05ca45bf8abd");
+
 
 	// TODO Add more services and characteristics references.
 	private BluetoothGattCharacteristic characteristicDeviceName;
 	private BluetoothGattCharacteristic characteristicStat;
+    private BluetoothGattCharacteristic characteristicSens;
 
 	public TemplateManager(final Context context) {
 		super(context);
@@ -72,6 +71,50 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 	protected BleManagerGattCallback getGattCallback() {
 		return new TemplateManagerGattCallback();
 	}
+
+	/**
+	 * The callback for detecting updates of the Stat Characteristic.
+	 */
+	private StatDataCallback mStatDataCallback = new StatDataCallback() {
+		@Override
+		public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
+			log(LogContract.Log.Level.APPLICATION, TemplateParser.parse(data));
+			super.onDataReceived(device, data);
+		}
+
+		@Override
+		public void onCharacteristicStatUpdate(@NonNull final BluetoothDevice device, final int[] dataArray) {
+			// Let's lass received data to the service
+			callbacks.onCharacteristicStatUpdate(device, dataArray);
+		}
+
+		@Override
+		public void onInvalidDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
+			log(Log.WARN, "Invalid data received: " + data);
+		}
+	};
+
+	/**
+	 * The callback for detecting updates of the Sens Characteristic.
+	 */
+	private SensDataCallback mSensDataCallback = new SensDataCallback() {
+		@Override
+		public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
+			log(LogContract.Log.Level.APPLICATION, TemplateParser.parse(data));
+			super.onDataReceived(device, data);
+		}
+
+		@Override
+		public void onCharacteristicSensUpdate(@NonNull final BluetoothDevice device, final int[] dataArray) {
+			// Let's lass received data to the service
+			callbacks.onCharacteristicSensUpdate(device, dataArray);
+		}
+
+		@Override
+		public void onInvalidDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
+			log(Log.WARN, "Invalid data received: " + data);
+		}
+	};
 
 	/**
 	 * BluetoothGatt callbacks for connection/disconnection, service discovery,
@@ -105,49 +148,53 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 			// Set notification callback
 			setNotificationCallback(characteristicStat)
 					// This callback will be called each time the notification is received
-					.with(new TemplateDataCallback() {
-						@Override
-						public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
-							log(LogContract.Log.Level.APPLICATION, TemplateParser.parse(data));
-							super.onDataReceived(device, data);
-						}
-
-						@Override
-						public void onSampleValueReceived(@NonNull final BluetoothDevice device, final int[] dataArray) {
-						    // Let's lass received data to the service
-							callbacks.onSampleValueReceived(device, dataArray);
-						}
-
-						@Override
-						public void onInvalidDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
-							log(Log.WARN, "Invalid data received: " + data);
-						}
-					});
+					.with(mStatDataCallback);
 
 			// Enable notifications
 			enableNotifications(characteristicStat)
 					// Method called after the data were sent (data will contain 0x0100 in this case)
 					.with((device, data) -> log(Log.DEBUG, "Data sent: " + data))
 					// Method called when the request finished successfully. This will be called after .with(..) callback
-					.done(device -> log(LogContract.Log.Level.APPLICATION, "Notifications enabled successfully"))
+					.done(device -> log(LogContract.Log.Level.APPLICATION, "Stat Notifications enabled successfully"))
 					// Methods called in case of an error, for example when the characteristic does not have Notify property
-					.fail((device, status) -> log(Log.WARN, "Failed to enable notifications"))
+					.fail((device, status) -> log(Log.WARN, "Failed to enable Stat notifications"))
 					.enqueue();
+
+
+			// Set notification callback
+			setNotificationCallback(characteristicSens)
+					// This callback will be called each time the notification is received
+					.with(mSensDataCallback);
+
+			// Enable notifications
+			enableNotifications(characteristicSens)
+					// Method called after the data were sent (data will contain 0x0100 in this case)
+					.with((device, data) -> log(Log.DEBUG, "Data sent: " + data))
+					// Method called when the request finished successfully. This will be called after .with(..) callback
+					.done(device -> log(LogContract.Log.Level.APPLICATION, "Sens Notifications enabled successfully"))
+					// Methods called in case of an error, for example when the characteristic does not have Notify property
+					.fail((device, status) -> log(Log.WARN, "Failed to enable Sens notifications"))
+					.enqueue();
+
 		}
 
 		@Override
 		protected boolean isRequiredServiceSupported(@NonNull final BluetoothGatt gatt) {
 			// TODO Initialize required characteristics.
 			// It should return true if all has been discovered (that is that device is supported).
-			final BluetoothGattService otherService = gatt.getService(UUID_SERVICE_GENERIC_ACCESS);
-			if (otherService != null) {
-				characteristicDeviceName = otherService.getCharacteristic(UUID_CHARACTERISTIC_DEVICE_NAME);
+			final BluetoothGattService serviceGenericAccess = gatt.getService(UUID_SERVICE_GENERIC_ACCESS);
+			if (serviceGenericAccess != null) {
+				characteristicDeviceName = serviceGenericAccess.getCharacteristic(UUID_CHARACTERISTIC_DEVICE_NAME);
 			}
-			final BluetoothGattService service = gatt.getService(UUID_SERVICE_STAT);
-			if (service != null) {
-				characteristicStat = service.getCharacteristic(UUID_CHARACTERISTIC_STAT);
+			final BluetoothGattService serviceStat = gatt.getService(UUID_SERVICE_STAT);
+			if (serviceStat != null) {
+				characteristicStat = serviceStat.getCharacteristic(UUID_CHARACTERISTIC_STAT);
 			}
-			return characteristicDeviceName != null && characteristicStat != null;
+			final BluetoothGattService serviceSens = gatt.getService(UUID_SERVICE_SENS);
+			if (serviceSens != null) {
+				characteristicSens = serviceSens.getCharacteristic(UUID_CHARACTERISTIC_SENS);
+			}
+			return characteristicDeviceName != null && characteristicStat != null && characteristicSens != null;
 		}
 
 		@Override
@@ -156,6 +203,7 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 			// TODO Release references to your characteristics.
 			characteristicDeviceName = null;
 			characteristicStat = null;
+			characteristicSens = null;
 
 		}
 
@@ -169,7 +217,8 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 
 			// Device is ready, let's read something here. Usually there is nothing else to be done
 			// here, as all had been done during initialization.
-			performActionRead("dummyString");
+			readCharacteristicStat();
+
 		}
 	}
 
@@ -180,53 +229,62 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 	 *
 	 * @param parameter parameter to be written. (not used)
 	 */
-	void performActionRead(final String parameter) {
-		readCharacteristic(characteristicStat).with((device, data) -> {
-			// Characteristic value has been read
-			// Let's do some magic with it.
-			if (data.size() > 0) {
-				final int value = data.getIntValue(Data.FORMAT_UINT16, 0);
-				final int value1 = data.getIntValue(Data.FORMAT_UINT16, 2);
-				final int value2 = data.getIntValue(Data.FORMAT_UINT16, 4);
-				final int value3 = data.getIntValue(Data.FORMAT_UINT16, 6);
-				final int value4 = data.getIntValue(Data.FORMAT_UINT16, 8);
-				final int value5 = data.getIntValue(Data.FORMAT_UINT16, 10);
-				log(LogContract.Log.Level.APPLICATION, "value = " + value  + ". value1 = " + value1 + ". value2 = " + value2 +
-						". value3 = " + value3 + ". value4 = " + value4 + ". value5 = " + value5);
-			} else {
-				log(Log.WARN, "Value is empty!");
-			}
-		}).enqueue();
-	}
 
+	//This value stores the last updated STAT characteristic from the nRF52:
+	private byte dataDeviceStatus[] = new byte[9];
+
+	void readCharacteristicStat() {
+		readCharacteristic(characteristicStat).with(mStatDataCallback).enqueue();
+	}
 
 	/**
 	 * This method will write important data to the device.
-	 *
-	 * @param parameter parameter to be written.
 	 */
-	void performActionWrite(final String parameter) {
-		log(Log.VERBOSE, "Changing device name to \"" + parameter + "\"");
-		// Write some data to the characteristic.
-		byte[] customValue = {-128,0,-50,0,-1,0,1,0,50,0,127,0};
-		for(int i = 0; i < 12; i++){
-			Log.v("performActionWrite", "customValue[" + i + "] = " + customValue[i]);
-		}
-		Log.v("performActionWrite", "customValue = " + customValue);
+	void sendCommandFromPhone() {
 
-		writeCharacteristic(characteristicStat, customValue)
-				// If data are longer than MTU-3, they will be chunked into multiple packets.
-				// Check out other split options, with .split(...).
-				.split()
-				// Callback called when data were sent, or added to outgoing queue in case
-				// Write Without Request type was used.
-				.with((device, data) -> log(Log.DEBUG, data.getByte(0) + "," + data.getByte(1) + "," + data.getByte(2) + "," + data.getByte(3) + "," + data.getByte(4) + "," + data.getByte(5) + "," + data.getByte(6) + "," + data.getByte(7) + "," + data.getByte(8) + "," + data.getByte(9) + "," + data.getByte(10) + "," + data.getByte(11) + " bytes were sent"))
-				// Callback called when data were sent, or added to outgoing queue in case
-				// Write Without Request type was used. This is called after .with(...) callback.
-		        .done(device -> log(LogContract.Log.Level.APPLICATION, "Write STAT characteristic to: \"" + customValue + "\""))
-				// Callback called when write has failed.
-				.fail((device, status) -> log(Log.WARN, "Failed to write STAT characteristic."))
-				.enqueue();
+        readCharacteristic(characteristicStat).with((device, data) -> {
+            // If the read value has more than one byte, then:
+            if (data.size() > 0) {
+
+                // Read STAT characteristic from phone and update internal variables:
+                for(int i = 0; i < dataDeviceStatus.length; i++){
+                    dataDeviceStatus[i] = (byte)(data.getIntValue(Data.FORMAT_UINT8, i) & 0xFF);
+                }
+                Log.v("readCharacteristicStat", "dataDeviceStatus[0] = " + dataDeviceStatus[0]);
+
+                // Toggle the commandFromPhone:
+                byte commandFromPhone = (dataDeviceStatus[0] == 1)?((byte)0):((byte)1);
+                Log.v("sendCommandFromPhone", "commandFromPhone = " + commandFromPhone);
+
+                // Change data to send to the STAT characteristic:
+                byte[] dataDeviceStatusRequest = new byte[9];
+                dataDeviceStatusRequest[0] = commandFromPhone;
+                for(int i = 1; i < dataDeviceStatus.length; i++){
+                    dataDeviceStatusRequest[i] = dataDeviceStatus[i];
+                }
+
+                // Write STAT characteristic:
+                writeCharacteristic(characteristicStat, dataDeviceStatusRequest)
+                        // If data are longer than MTU-3, they will be chunked into multiple packets.
+                        // Check out other split options, with .split(...).
+                        .split()
+                        // Callback called when data were sent, or added to outgoing queue in case
+                        // Write Without Request type was used.
+                        .with((mdevice, mdata) -> Log.v("writeCharacteristicStat", mdata.getByte(0) + "," + mdata.getByte(1) + "," + mdata.getByte(2) + "," + mdata.getByte(3) + "," + mdata.getByte(4) + "," + mdata.getByte(5) + "," + mdata.getByte(6) + "," + mdata.getByte(7) + "," + mdata.getByte(8) + " bytes were sent"))
+                        // Callback called when data were sent, or added to outgoing queue in case
+                        // Write Without Request type was used. This is called after .with(...) callback.
+                        .done(mdevice -> Log.v("writeCharacteristicStat", "Write to STAT characteristic Successful."))
+                        // Callback called when write has failed.
+                        .fail((mdevice, status) -> Log.v("writeCharacteristicStat", "Failed to write STAT characteristic."))
+                        .enqueue();
+
+            }
+            // If the read value hasn' data:
+            else {
+                Log.v("readCharacteristicStat", "Value to read is empty!");
+            }
+        }).enqueue();
+
 	}
 
 }

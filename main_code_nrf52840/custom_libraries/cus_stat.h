@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include "ble_srv_common.h"
 
-#include "custom_detection_system_struct_data.h"
+#include "custom_device_status_struct_data.h"
 
 
 #define CUSTOM_STAT_SERVICE_UUID_BASE         {0xAB, 0x79, 0xAE, 0x34, 0xB9, 0xF4, 0x4F, 0xA9, \
@@ -55,7 +55,7 @@ typedef void (*cus_stat_evt_handler_t) (cus_stat_t * p_cus, cus_stat_evt_t * p_e
 typedef struct
 {
     cus_stat_evt_handler_t        evt_handler;                          /**< Event handler to be called for handling events in the Custom Service. */
-    uint8_t                       initial_custom_value[sizeof(detection_system_single_data)];         /**< Initial custom value */
+    uint8_t                       initial_custom_value[sizeof(device_status_data)];         /**< Initial custom value */
     ble_srv_cccd_security_mode_t  custom_value_char_attr_md;     /**< Initial security level for Custom characteristics attribute */
 } cus_stat_init_t;
 

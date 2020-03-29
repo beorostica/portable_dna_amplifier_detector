@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
  * with a value (Heart Rate). The single method just returns the value and ignores other
  * optional data from Heart Rate Measurement characteristic for simplicity.
  */
-public interface TemplateCharacteristicCallback {
+public interface StatCharacteristicCallback {
 
 	/**
 	 * Called when a value is received.
@@ -17,6 +17,6 @@ public interface TemplateCharacteristicCallback {
 	 * @param device a device from which the value was obtained.
 	 * @param dataArray the new array value.
 	 */
-	void onSampleValueReceived(@NonNull final BluetoothDevice device, int[] dataArray);
+	void onCharacteristicStatUpdate(@NonNull final BluetoothDevice device, int[] dataArray);
 
 }

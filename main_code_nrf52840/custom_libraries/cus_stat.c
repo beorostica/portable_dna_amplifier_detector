@@ -66,9 +66,9 @@ static uint32_t custom_value_char_add(cus_stat_t * p_cus, const cus_stat_init_t 
 
     attr_char_value.p_uuid    = &ble_uuid;
     attr_char_value.p_attr_md = &attr_md;
-    attr_char_value.init_len  = sizeof(detection_system_single_data);
+    attr_char_value.init_len  = sizeof(device_status_data);
     attr_char_value.init_offs = 0;
-    attr_char_value.max_len   = sizeof(detection_system_single_data);
+    attr_char_value.max_len   = sizeof(device_status_data);
 
     err_code = sd_ble_gatts_characteristic_add(p_cus->service_handle, &char_md,
                                                &attr_char_value,
@@ -274,8 +274,8 @@ uint32_t cus_stat_custom_value_update(cus_stat_t * p_cus, uint8_t * custom_value
     // Initialize value struct.
     memset(&gatts_value, 0, sizeof(gatts_value));
 
-    gatts_value.len     = sizeof(detection_system_single_data);
     gatts_value.offset  = 0;
+    gatts_value.len     = sizeof(device_status_data);
     gatts_value.p_value = custom_value;
 
     // Update database.
@@ -319,10 +319,6 @@ uint32_t cus_stat_custom_value_update(cus_stat_t * p_cus, uint8_t * custom_value
           
         }
         
-    }
-    else
-    {
-        err_code = NRF_ERROR_INVALID_STATE;
     }
 
     return err_code;
