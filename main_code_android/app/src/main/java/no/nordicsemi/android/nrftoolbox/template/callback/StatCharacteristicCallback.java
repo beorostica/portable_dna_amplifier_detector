@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
  * with a value (Heart Rate). The single method just returns the value and ignores other
  * optional data from Heart Rate Measurement characteristic for simplicity.
  */
-public interface TemplateCharacteristicCallback {
+public interface StatCharacteristicCallback {
 
 	/**
 	 * Called when a value is received.

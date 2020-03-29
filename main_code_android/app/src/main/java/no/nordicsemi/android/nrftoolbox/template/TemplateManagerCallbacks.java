@@ -22,13 +22,14 @@
 package no.nordicsemi.android.nrftoolbox.template;
 
 import no.nordicsemi.android.ble.BleManagerCallbacks;
-import no.nordicsemi.android.nrftoolbox.template.callback.TemplateCharacteristicCallback;
+import no.nordicsemi.android.nrftoolbox.template.callback.StatCharacteristicCallback;
+import no.nordicsemi.android.nrftoolbox.template.callback.SensCharacteristicCallback;
 
 /**
  * Interface {@link TemplateManagerCallbacks} must be implemented by {@link TemplateService}
  * in order to receive callbacks from {@link TemplateManager}
  */
-interface TemplateManagerCallbacks extends BleManagerCallbacks, TemplateCharacteristicCallback {
+interface TemplateManagerCallbacks extends BleManagerCallbacks, StatCharacteristicCallback, SensCharacteristicCallback {
 
 	// Callbacks are called when a data has been received/written to a remote device.
 	// This is the way how the manager notifies the activity about this event.

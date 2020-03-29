@@ -1,6 +1,7 @@
 package no.nordicsemi.android.nrftoolbox.template.callback;
 
 import android.bluetooth.BluetoothDevice;
+
 import androidx.annotation.NonNull;
 
 import no.nordicsemi.android.ble.callback.profile.ProfileDataCallback;
@@ -15,18 +16,17 @@ import no.nordicsemi.android.ble.data.Data;
  * TODO Modify the content to parse your data.
  */
 @SuppressWarnings("ConstantConditions")
-public abstract class TemplateDataCallback implements ProfileDataCallback, TemplateCharacteristicCallback {
+public abstract class SensDataCallback implements ProfileDataCallback, SensCharacteristicCallback {
 
 	@Override
 	public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
 
-		final int[] dataArray = new int[9];
-		for (int i = 0; i < dataArray.length; i++){
-			dataArray[i] = data.getIntValue(Data.FORMAT_UINT8, i);
+		final int[] dataArray = new int[6];
+		for (int i = 0; i < dataArray.length; i++) {
+			dataArray[i] = data.getIntValue(Data.FORMAT_UINT16, 2 * i);
 		}
-
 		// Report the parsed value(s)
-		onCharacteristicStatUpdate(device, dataArray);
+		onCharacteristicSensUpdate(device, dataArray);
 
 	}
 	

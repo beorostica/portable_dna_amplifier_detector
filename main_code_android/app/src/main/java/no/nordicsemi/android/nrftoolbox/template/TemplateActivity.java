@@ -173,9 +173,6 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 				// Get read or notified data and update UI:
 				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_STAT_UPDATE);
-				for(int i = 0; i < valueViewArray.length; i++){
-					valueViewArray[i].setText(String.valueOf(dataArray[i]));
-				}
 
 				//Update the Write Stat Characteristic Button:
 				Button buttonWrite = (Button) findViewById(R.id.action_write_characteristic_stat);
@@ -191,6 +188,15 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				}
 
 			}
+			if (TemplateService.BROADCAST_CHARACTERISTIC_SENS_UPDATE.equals(action)) {
+
+				// Get read or notified data and update UI:
+				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_SENS_UPDATE);
+				for(int i = 0; i < valueViewArray.length; i++){
+					valueViewArray[i].setText(String.valueOf(dataArray[i]));
+				}
+
+			}
 
 		}
 	};
@@ -198,6 +204,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	private static IntentFilter makeIntentFilter() {
 		final IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_STAT_UPDATE);
+		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_SENS_UPDATE);
 		return intentFilter;
 	}
 }
