@@ -44,8 +44,9 @@ int main(void)
     //Start Advertising:
     advertising_start();
 
-    //Set initial status of the device:
+    //Set initial status data and STAT characteristic of the device:
     deviceStatus_saveStructData_init();
+    bleCusStatSendData(deviceStatus_getStructData());
 
 
     //Print Message:

@@ -320,10 +320,6 @@ uint32_t cus_stat_custom_value_update(cus_stat_t * p_cus, uint8_t * custom_value
         }
         
     }
-    else
-    {
-        err_code = NRF_ERROR_INVALID_STATE;
-    }
 
     return err_code;
 }
