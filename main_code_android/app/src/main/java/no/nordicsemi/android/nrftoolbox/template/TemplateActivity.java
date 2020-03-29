@@ -31,6 +31,7 @@ import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.view.Menu;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.UUID;
@@ -71,7 +72,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 			}
 		});
 
-		findViewById(R.id.action_write).setOnClickListener(v -> {
+		findViewById(R.id.action_write_characteristic_stat).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
 				getService().performSendCommandFromPhone();
 			}
@@ -174,6 +175,19 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_STAT_UPDATE);
 				for(int i = 0; i < valueViewArray.length; i++){
 					valueViewArray[i].setText(String.valueOf(dataArray[i]));
+				}
+
+				//Update the Write Stat Characteristic Button:
+				Button buttonWrite = (Button) findViewById(R.id.action_write_characteristic_stat);
+				if(dataArray[0] == 0 && dataArray[1] == 0) {
+					buttonWrite.setEnabled(true);
+					buttonWrite.setText(R.string.template_action_write_start);
+				} else if (dataArray[0] == 1 && dataArray[1] == 1) {
+					buttonWrite.setEnabled(true);
+					buttonWrite.setText(R.string.template_action_write_stop);
+				} else if (dataArray[0] == 0 && dataArray[1] == 1) {
+					buttonWrite.setEnabled(false);
+					buttonWrite.setText(R.string.template_action_write_wait);
 				}
 
 			}
