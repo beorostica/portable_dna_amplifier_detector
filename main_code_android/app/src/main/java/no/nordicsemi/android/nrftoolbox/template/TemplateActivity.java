@@ -29,6 +29,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.view.Menu;
 import android.widget.TextView;
 
@@ -167,10 +168,10 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 			final String action = intent.getAction();
 			final BluetoothDevice device = intent.getParcelableExtra(TemplateService.EXTRA_DEVICE);
 
-			if (TemplateService.BROADCAST_CHARACTERISTIC_STAT_NOTIFICATION.equals(action)) {
+			if (TemplateService.BROADCAST_CHARACTERISTIC_STAT_UPDATE.equals(action)) {
 
-				// Get notified data and update UI:
-				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_STAT_NOTIFICATION);
+				// Get read or notified data and update UI:
+				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_STAT_UPDATE);
 				for(int i = 0; i < valueViewArray.length; i++){
 					valueViewArray[i].setText(String.valueOf(dataArray[i]));
 				}
@@ -182,7 +183,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 	private static IntentFilter makeIntentFilter() {
 		final IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_STAT_NOTIFICATION);
+		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_STAT_UPDATE);
 		return intentFilter;
 	}
 }

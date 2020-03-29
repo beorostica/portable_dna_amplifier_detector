@@ -44,8 +44,8 @@ import no.nordicsemi.android.nrftoolbox.profile.LoggableBleManager;
 
 public class TemplateService extends BleProfileService implements TemplateManagerCallbacks {
 
-    public static final String BROADCAST_CHARACTERISTIC_STAT_NOTIFICATION = "no.nordicsemi.android.nrftoolbox.template.BROADCAST_CHARACTERISTIC_STAT_NOTIFICATION";
-    public static final String EXTRA_DATA_CHARACTERISTIC_STAT_NOTIFICATION = "no.nordicsemi.android.nrftoolbox.template._CHARACTERISTIC_STAT_NOTIFICATION";
+    public static final String BROADCAST_CHARACTERISTIC_STAT_UPDATE = "no.nordicsemi.android.nrftoolbox.template.BROADCAST_CHARACTERISTIC_STAT_UPDATE";
+    public static final String EXTRA_DATA_CHARACTERISTIC_STAT_UPDATE = "no.nordicsemi.android.nrftoolbox.template.EXTRA_DATA_CHARACTERISTIC_STAT_UPDATE";
 
     private final static String ACTION_DISCONNECT = "no.nordicsemi.android.nrftoolbox.template.ACTION_DISCONNECT";
 
@@ -115,16 +115,11 @@ public class TemplateService extends BleProfileService implements TemplateManage
     }
 
     @Override
-    public void onCharacteristicStatNotification(@NonNull final BluetoothDevice device, final int[] dataArray) {
-        final Intent broadcast = new Intent(BROADCAST_CHARACTERISTIC_STAT_NOTIFICATION);
+    public void onCharacteristicStatUpdate(@NonNull final BluetoothDevice device, final int[] dataArray) {
+        final Intent broadcast = new Intent(BROADCAST_CHARACTERISTIC_STAT_UPDATE);
         broadcast.putExtra(EXTRA_DEVICE, getBluetoothDevice());
-        broadcast.putExtra(EXTRA_DATA_CHARACTERISTIC_STAT_NOTIFICATION, dataArray);
+        broadcast.putExtra(EXTRA_DATA_CHARACTERISTIC_STAT_UPDATE, dataArray);
         LocalBroadcastManager.getInstance(this).sendBroadcast(broadcast);
-
-        if (!bound) {
-            // Here we may update the notification to display the current value.
-            // TODO modify the notification here
-        }
     }
 
     /**

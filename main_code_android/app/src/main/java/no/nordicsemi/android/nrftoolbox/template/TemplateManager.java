@@ -77,6 +77,25 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 	 * BluetoothGatt callbacks for connection/disconnection, service discovery,
 	 * receiving indication, etc.
 	 */
+	private TemplateDataCallback mTemplateDataCallback = new TemplateDataCallback() {
+		@Override
+		public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
+			log(LogContract.Log.Level.APPLICATION, TemplateParser.parse(data));
+			super.onDataReceived(device, data);
+		}
+
+		@Override
+		public void onCharacteristicStatUpdate(@NonNull final BluetoothDevice device, final int[] dataArray) {
+			// Let's lass received data to the service
+			callbacks.onCharacteristicStatUpdate(device, dataArray);
+		}
+
+		@Override
+		public void onInvalidDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
+			log(Log.WARN, "Invalid data received: " + data);
+		}
+	};
+
 	private class TemplateManagerGattCallback extends BleManagerGattCallback {
 
 		@Override
@@ -105,24 +124,7 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 			// Set notification callback
 			setNotificationCallback(characteristicStat)
 					// This callback will be called each time the notification is received
-					.with(new TemplateDataCallback() {
-						@Override
-						public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
-							log(LogContract.Log.Level.APPLICATION, TemplateParser.parse(data));
-							super.onDataReceived(device, data);
-						}
-
-						@Override
-						public void onCharacteristicStatNotification(@NonNull final BluetoothDevice device, final int[] dataArray) {
-						    // Let's lass received data to the service
-							callbacks.onCharacteristicStatNotification(device, dataArray);
-						}
-
-						@Override
-						public void onInvalidDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
-							log(Log.WARN, "Invalid data received: " + data);
-						}
-					});
+					.with(mTemplateDataCallback);
 
 			// Enable notifications
 			enableNotifications(characteristicStat)
@@ -186,18 +188,7 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 	private byte dataDeviceStatus[] = new byte[9];
 
 	void readCharacteristicStat() {
-		readCharacteristic(characteristicStat).with((device, data) -> {
-			// Characteristic value has been read
-			// Let's do some magic with it.
-			if (data.size() > 0) {
-				for(int i = 0; i < dataDeviceStatus.length; i++){
-					dataDeviceStatus[i] = (byte)(data.getIntValue(Data.FORMAT_UINT8, i) & 0xFF);
-				}
-                Log.v("readCharacteristicStat", "dataDeviceStatus[0] = " + dataDeviceStatus[0]);
-			} else {
-				log(Log.WARN, "Value is empty!");
-			}
-		}).enqueue();
+		readCharacteristic(characteristicStat).with(mTemplateDataCallback).enqueue();
 	}
 
 	/**
