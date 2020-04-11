@@ -64,11 +64,10 @@ int main(void)
         ////////////////////////////////////////////////////////////////
         static uint8_t counter = 0;
 
-        if(deviceStatus_getStructData_isMeasuring())
+        if(deviceStatus_getStructData_isDataOnFlash())
         {
             if(timerDetectionSystem_GetFlag())
             {
-
                 if(secondsGetFlag())
                 {
                     secondsClearFlag();
@@ -183,16 +182,14 @@ int main(void)
                                 //Stop the detection system timers:
                                 timerDetectionSystem_Stop();
                                 secondsStop();
-                                hundredMillisStop();
 
                                 //Update the device status data (now it's not measuring):
                                 deviceStatus_saveStructData_isMeasuring(false);
                                 NRF_LOG_INFO("MAIN: isMeasuring = %d.", deviceStatus_getStructData_isMeasuring());
 
-                                //Update device status and notify STAT characteristic:
-                                device_status_data dataCusStat = deviceStatus_getStructData();
-                                bleCusStatSendData(dataCusStat);
-                                NRF_LOG_INFO("MAIN: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d.", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring());
+                                //Update device status and notify STAT characteristic:;
+                                bleCusStatSendData(deviceStatus_getStructData());
+                                NRF_LOG_INFO("MAIN: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d. isDataOnFlash = %d", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring(), deviceStatus_getStructData_isDataOnFlash());
                                                             
                             }
             
@@ -205,19 +202,20 @@ int main(void)
                 
                 }
             
-                //If the nRF52840 is connected and the notifications are enabled, then try to send BT data every 0.1[s]:
-                if(bleGetCusSensNotificationFlag())
-                {
-                    if(hundredMillisGetFlag())
-                    {
-                        hundredMillisClearFlag();
-                    
-                        //(2) Second:
-                        qspiReadExternalFlashAndSendBleDataIfPossible();
-                    }
-                }
-            
             }
+
+            //If the nRF52840 is connected and the notifications are enabled, then try to send BT data every 0.1[s]:
+            if(bleGetCusSensNotificationFlag())
+            {
+                if(hundredMillisGetFlag())
+                {
+                    hundredMillisClearFlag();
+                
+                    //(2) Second:
+                    qspiReadExternalFlashAndSendBleDataIfPossible();
+                }
+            }
+
         }
        
     }

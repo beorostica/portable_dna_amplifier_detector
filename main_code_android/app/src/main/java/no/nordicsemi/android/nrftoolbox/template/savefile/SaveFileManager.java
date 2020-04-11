@@ -14,9 +14,7 @@ import androidx.core.content.ContextCompat;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 
 
@@ -44,7 +42,7 @@ public class SaveFileManager {
 
     }
 
-    public void createFile(){
+    public void createFile(int[] dataStatArray){
         if(mFileWriter == null) {
             try {
 
@@ -63,17 +61,25 @@ public class SaveFileManager {
                 }
 
                 // Create the mFileWriter object:
-                String mFileName = (new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())).format(new Date()) + ".txt";
-                mFileWriter = new FileWriter(mBaseFolder + "/" + mFileName);
+                String fileName = 20 + String.format("%02d", dataStatArray[3])  +
+                        String.format("%02d", dataStatArray[4]) +
+                        String.format("%02d", dataStatArray[5]) + "_" +
+                        String.format("%02d", dataStatArray[6]) +
+                        String.format("%02d", dataStatArray[7]) +
+                        String.format("%02d", dataStatArray[8]) + ".txt";
+                File mFile = new File(mBaseFolder + "/" + fileName);
 
                 // Write the fist line (must be the name columns of the data to be written):
-                mFileWriter.write("timeWrite,index,time,mosfetBefore,mosfetAfter,lightBefore,lightAfter\r\n");
+                if (!mFile.isFile()) {
+                    mFileWriter = new FileWriter(mFile,true);
+                    mFileWriter.write("timeWrite,index,time,mosfetBefore,mosfetAfter,lightBefore,lightAfter\r\n");
+                }else{
+                    mFileWriter = new FileWriter(mFile,true);
+                }
 
                 // Get the initial time
                 mTimeInitialMillis = Calendar.getInstance().getTimeInMillis();
                 mTimeSeconds = (Calendar.getInstance().getTimeInMillis() - mTimeInitialMillis) / 1000.0;
-                Log.v("SaveFileManager", "mTimeInitialMillis: " + mTimeInitialMillis);
-                Log.v("SaveFileManager", "mTimeSeconds: " + mTimeSeconds);
 
             } catch (IOException ioe) {
                 ioe.printStackTrace();

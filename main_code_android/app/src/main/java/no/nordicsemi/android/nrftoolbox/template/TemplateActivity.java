@@ -96,6 +96,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+        mSaveFileManager.closeFile();
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
 	}
 
@@ -184,15 +185,15 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 				//Update the Write Stat Characteristic Button:
 				Button buttonWrite = (Button) findViewById(R.id.action_write_characteristic_stat);
-				if(dataArray[0] == 0 && dataArray[1] == 0) {
+				if(dataArray[0] == 0 && dataArray[2] == 0) {
 					buttonWrite.setEnabled(true);
 					buttonWrite.setText(R.string.template_action_write_start);
                     mSaveFileManager.closeFile();
-				} else if (dataArray[0] == 1 && dataArray[1] == 1) {
+				} else if (dataArray[0] == 1 && dataArray[2] == 1) {
 					buttonWrite.setEnabled(true);
 					buttonWrite.setText(R.string.template_action_write_stop);
-                    mSaveFileManager.createFile();
-				} else if (dataArray[0] == 0 && dataArray[1] == 1) {
+                    mSaveFileManager.createFile(dataArray);
+				} else if (dataArray[0] == 0 && dataArray[2] == 1) {
 					buttonWrite.setEnabled(false);
 					buttonWrite.setText(R.string.template_action_write_wait);
 				}

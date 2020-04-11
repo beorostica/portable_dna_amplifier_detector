@@ -29,6 +29,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import android.util.Log;
 
+import java.util.Calendar;
 import java.util.UUID;
 
 import no.nordicsemi.android.ble.data.Data;
@@ -256,12 +257,25 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
                 byte commandFromPhone = (dataDeviceStatus[0] == 1)?((byte)0):((byte)1);
                 Log.v("sendCommandFromPhone", "commandFromPhone = " + commandFromPhone);
 
+                ///////////////////////////////////////////////////////////////////
                 // Change data to send to the STAT characteristic:
                 byte[] dataDeviceStatusRequest = new byte[9];
                 dataDeviceStatusRequest[0] = commandFromPhone;
                 for(int i = 1; i < dataDeviceStatus.length; i++){
                     dataDeviceStatusRequest[i] = dataDeviceStatus[i];
                 }
+
+                // If the is no data stored on flash, then create a file name:
+                if(dataDeviceStatus[2] == 0){
+					Calendar now = Calendar.getInstance();
+					dataDeviceStatusRequest[3] = (byte) (now.get(Calendar.YEAR) - 2000);
+					dataDeviceStatusRequest[4] = (byte) (now.get(Calendar.MONTH) + 1); // Note: zero based!
+					dataDeviceStatusRequest[5] = (byte) now.get(Calendar.DAY_OF_MONTH);
+					dataDeviceStatusRequest[6] = (byte) now.get(Calendar.HOUR_OF_DAY);
+					dataDeviceStatusRequest[7] = (byte) now.get(Calendar.MINUTE);
+					dataDeviceStatusRequest[8] = (byte) now.get(Calendar.SECOND);
+				}
+                ///////////////////////////////////////////////////////////////////
 
                 // Write STAT characteristic:
                 writeCharacteristic(characteristicStat, dataDeviceStatusRequest)

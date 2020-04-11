@@ -244,6 +244,20 @@ void qspiReadExternalFlashAndSendBleDataIfPossible(void){
             //Update the index of the BT data to send:
             indexBleData = (indexBleData+1) % ((uint8_t) 4);
         }
+        //If it is the last data, if it is not measuring and there is still data on flash (data on flash means there is still data to send)
+        else if(!deviceStatus_getStructData_isMeasuring() && deviceStatus_getStructData_isDataOnFlash())
+        {
+            //Stop the millis Timer and update the internal device status data:
+            hundredMillisStop();
+            deviceStatus_saveStructData_isDataOnFlash(false);
+            deviceStatus_saveStructData_fileName(0,0,0,0,0,0);
+            NRF_LOG_INFO("FLASH: isDataOnFlash = %d.", deviceStatus_getStructData_isDataOnFlash());
+
+            //Update device status and notify STAT characteristic:
+            bleCusStatSendData(deviceStatus_getStructData());
+            NRF_LOG_INFO("FLASH: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d. isDataOnFlash = %d", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring(), deviceStatus_getStructData_isDataOnFlash());
+                                                    
+        }
 
     }
     
