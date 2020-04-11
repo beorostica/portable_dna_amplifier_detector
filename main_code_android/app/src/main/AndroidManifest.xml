@@ -30,7 +30,8 @@
 	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="18" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.NFC" />
 	<uses-permission android:name="no.nordicsemi.android.LOG" />
 
@@ -39,6 +40,7 @@
 		android:required="true" />
 
 	<application
+		android:requestLegacyExternalStorage="true"
 		android:fullBackupContent="true"
 		android:allowBackup="true"
 		android:icon="@mipmap/ic_launcher"
@@ -271,9 +273,22 @@
 			</intent-filter>
 		</service>
 
-		<provider android:name="no.nordicsemi.android.nrftoolbox.uart.UARTLocalLogContentProvider"
-			android:authorities="no.nordicsemi.android.nrftoolbox.uart.log"
-			android:exported="true"/>
+		<!--
+		<provider
+			android:name="androidx.core.content.FileProvider"
+			android:authorities="${applicationId}.logFileProvider"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/log_file_path" />
+		</provider>
+		-->
+		<!--
+		android:name="androidx.core.content.FileProvider"
+		android:authorities="${applicationId}.logFileProvider"
+		android:exported="true"
+		-->
 	</application>
 
 </manifest>

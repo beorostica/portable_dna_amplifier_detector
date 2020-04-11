@@ -39,6 +39,7 @@ import java.util.UUID;
 import no.nordicsemi.android.nrftoolbox.R;
 import no.nordicsemi.android.nrftoolbox.profile.BleProfileService;
 import no.nordicsemi.android.nrftoolbox.profile.BleProfileServiceReadyActivity;
+import no.nordicsemi.android.nrftoolbox.template.savefile.SaveFileManager;
 import no.nordicsemi.android.nrftoolbox.template.settings.SettingsActivity;
 
 /**
@@ -48,6 +49,9 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	@SuppressWarnings("unused")
 	private final String TAG = "TemplateActivity";
 
+	//The object that manages the save file:
+	private SaveFileManager mSaveFileManager;
+
 	// TODO change view references to match your need
 	private TextView[] valueViewArray = new TextView[6];
 
@@ -56,6 +60,10 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		// TODO modify the layout file(s). By default the activity shows only one field - the Heart Rate value as a sample
 		setContentView(R.layout.activity_feature_template);
 		setGUI();
+
+		//Create the save file manager:
+		mSaveFileManager = new SaveFileManager(this);
+
 	}
 
 	private void setGUI() {
@@ -179,15 +187,17 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				if(dataArray[0] == 0 && dataArray[1] == 0) {
 					buttonWrite.setEnabled(true);
 					buttonWrite.setText(R.string.template_action_write_start);
+                    mSaveFileManager.closeFile();
 				} else if (dataArray[0] == 1 && dataArray[1] == 1) {
 					buttonWrite.setEnabled(true);
 					buttonWrite.setText(R.string.template_action_write_stop);
+                    mSaveFileManager.createFile();
 				} else if (dataArray[0] == 0 && dataArray[1] == 1) {
 					buttonWrite.setEnabled(false);
 					buttonWrite.setText(R.string.template_action_write_wait);
 				}
 
-			}
+            }
 			if (TemplateService.BROADCAST_CHARACTERISTIC_SENS_UPDATE.equals(action)) {
 
 				// Get read or notified data and update UI:
@@ -195,6 +205,9 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				for(int i = 0; i < valueViewArray.length; i++){
 					valueViewArray[i].setText(String.valueOf(dataArray[i]));
 				}
+
+				//Write a line in the file:
+                mSaveFileManager.writeLine(dataArray);
 
 			}
 
