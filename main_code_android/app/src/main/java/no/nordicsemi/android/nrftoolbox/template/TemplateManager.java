@@ -242,7 +242,7 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 	/**
 	 * This method will write important data to the device.
 	 */
-	void sendCommandFromPhone() {
+	void sendCommandFromPhone(int[] durationTime) {
 
         readCharacteristic(characteristicStat).with((device, data) -> {
             // If the read value has more than one byte, then:
@@ -275,10 +275,10 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 					dataDeviceStatusRequest[6] = (byte) now.get(Calendar.HOUR_OF_DAY);
 					dataDeviceStatusRequest[7] = (byte) now.get(Calendar.MINUTE);
 					dataDeviceStatusRequest[8] = (byte) now.get(Calendar.SECOND);
-					dataDeviceStatusRequest[9]  = (byte) 0;
-					dataDeviceStatusRequest[10] = (byte) 0;
-					dataDeviceStatusRequest[11] = (byte) 30;
-					dataDeviceStatusRequest[12] = (byte) 40;
+					dataDeviceStatusRequest[9]  = (byte) durationTime[0];
+					dataDeviceStatusRequest[10] = (byte) durationTime[1];
+					dataDeviceStatusRequest[11] = (byte) durationTime[2];
+					dataDeviceStatusRequest[12] = (byte) 37;
 				}
                 ///////////////////////////////////////////////////////////////////
 

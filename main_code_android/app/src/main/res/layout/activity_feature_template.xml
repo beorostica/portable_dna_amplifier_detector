@@ -82,13 +82,14 @@
 
 
 		<ScrollView
+			android:id="@+id/scrollView"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent"
 			style="@style/Widget.List"
 			android:layout_marginLeft="@dimen/feature_horizontal_margin"
 			android:layout_marginTop="@dimen/feature_vertical_margin_top"
 			android:layout_marginRight="@dimen/feature_horizontal_margin"
-			android:layout_marginBottom="148dp">
+			android:layout_marginBottom="200dp">
 
 			<LinearLayout
 				android:id="@+id/container"
@@ -325,6 +326,63 @@
 
 			</LinearLayout>
 		</ScrollView>
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="50dp"
+			android:orientation="horizontal"
+			android:layout_above="@id/action_read"
+			android:layout_marginLeft="@dimen/feature_horizontal_margin"
+			android:layout_marginRight="@dimen/feature_horizontal_margin">
+
+			<EditText
+				android:id="@+id/editText_timeDuration0"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:ems="10"
+				android:inputType="number"
+				android:text="0"/>
+
+			<TextView
+				android:id="@+id/textView_timeDuration0"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="hrs" />
+
+			<EditText
+				android:id="@+id/editText_timeDuration1"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:ems="10"
+				android:inputType="number"
+				android:text="0"/>
+
+			<TextView
+				android:id="@+id/textView_timeDuration1"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="mins" />
+
+			<EditText
+				android:id="@+id/editText_timeDuration2"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:ems="10"
+				android:inputType="number"
+				android:text="40"/>
+
+			<TextView
+				android:id="@+id/textView_timeDuration2"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="secs" />
+		</LinearLayout>
 
 		<com.google.android.material.button.MaterialButton
 			android:id="@+id/action_read"

@@ -30,8 +30,13 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import android.text.InputFilter;
+import android.text.Spanned;
+import android.util.Log;
 import android.view.Menu;
+import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.UUID;
@@ -54,6 +59,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 	// TODO change view references to match your need
 	private TextView[] valueViewArray = new TextView[6];
+	private EditText[] editTextDurationArray = new EditText[3];
 
 	@Override
 	protected void onCreateView(final Bundle savedInstanceState) {
@@ -73,6 +79,14 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 			int resId = getResources().getIdentifier("value" + i, "id", getPackageName());
 			valueViewArray[i] = findViewById(resId);
 		}
+        for(int i = 0; i < editTextDurationArray.length; i++){
+            int resId = getResources().getIdentifier("editText_timeDuration" + i, "id", getPackageName());
+            editTextDurationArray[i] = findViewById(resId);
+            // Set a filter to receive timeDuration predefined values: 0 <= hrs <= 17, 0 <= mins <= 59, 0 <= secs <= 59
+            int numberMax = 59;
+            if(i == 0){ numberMax = 17;}
+            editTextDurationArray[i].setFilters(new InputFilter[]{new InputFilterMinMax(0, numberMax)});
+        }
 
 		findViewById(R.id.action_read).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
@@ -82,7 +96,13 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 		findViewById(R.id.action_write_characteristic_stat).setOnClickListener(v -> {
 			if (isDeviceConnected()) {
-				getService().performSendCommandFromPhone();
+			    // Get the timeDuration from the UI:
+                int[] durationTime = new int[editTextDurationArray.length];
+                for(int i = 0; i < editTextDurationArray.length; i++){
+                    durationTime[i]  = Integer.parseInt(editTextDurationArray[i].getText().toString());
+                }
+                Log.v("On BUTTON", "hrs: " + durationTime[0] + ", mins: " + durationTime[1] + ", secs: " + durationTime[2]);
+				getService().performSendCommandFromPhone(durationTime);
 			}
 		});
 
@@ -199,6 +219,12 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
                     mSaveFileManager.createFile(dataArray);
 				}
 
+				// Update the timeDuration received from nRF52 (useful when first connection):
+                for(int i = 0; i < editTextDurationArray.length; i++){
+                    editTextDurationArray[i].setText(String.valueOf(dataArray[i+9]));
+                }
+
+
             }
 			if (TemplateService.BROADCAST_CHARACTERISTIC_SENS_UPDATE.equals(action)) {
 
@@ -222,4 +248,36 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_SENS_UPDATE);
 		return intentFilter;
 	}
+
+
+    // This class is to define filters to receive timeDuration predefined values:
+    // 0 <= hrs <= 17, 0 <= mins <= 59, 0 <= secs <= 59
+    // in the user interface.
+    private class InputFilterMinMax implements InputFilter {
+        private int minimumValue;
+        private int maximumValue;
+
+        public InputFilterMinMax(int minimumValue, int maximumValue) {
+            this.minimumValue = minimumValue;
+            this.maximumValue = maximumValue;
+        }
+
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            try {
+                int input = Integer.parseInt(dest.subSequence(0, dstart).toString() + source + dest.subSequence(dend, dest.length()));
+                if (isInRange(minimumValue, maximumValue, input))
+                    return null;
+            }
+            catch (NumberFormatException nfe) {
+            }
+            return "";
+        }
+
+        private boolean isInRange(int a, int b, int c) {
+            return b > a ? c >= a && c <= b : c >= b && c <= a;
+        }
+
+    }
+
 }
