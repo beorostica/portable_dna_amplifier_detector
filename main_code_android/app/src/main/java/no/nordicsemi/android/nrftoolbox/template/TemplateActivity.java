@@ -120,6 +120,12 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
 	}
 
+    // After disconnection close the file:
+    @Override
+    public void onDeviceDisconnected(@NonNull BluetoothDevice device) {
+        mSaveFileManager.closeFile();
+    }
+
 	@Override
 	protected void setDefaultUI() {
 		// TODO clear your UI
