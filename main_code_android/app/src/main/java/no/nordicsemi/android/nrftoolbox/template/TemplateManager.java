@@ -29,6 +29,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import android.util.Log;
 
+import java.util.Calendar;
 import java.util.UUID;
 
 import no.nordicsemi.android.ble.data.Data;
@@ -231,7 +232,8 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 	 */
 
 	//This value stores the last updated STAT characteristic from the nRF52:
-	private byte dataDeviceStatus[] = new byte[9];
+	public static final int LENGTH_DATA_DEVICE_STATUS = 13;
+	private byte dataDeviceStatus[] = new byte[LENGTH_DATA_DEVICE_STATUS];
 
 	void readCharacteristicStat() {
 		readCharacteristic(characteristicStat).with(mStatDataCallback).enqueue();
@@ -240,7 +242,7 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 	/**
 	 * This method will write important data to the device.
 	 */
-	void sendCommandFromPhone() {
+	void sendCommandFromPhone(int[] durationTime) {
 
         readCharacteristic(characteristicStat).with((device, data) -> {
             // If the read value has more than one byte, then:
@@ -256,12 +258,29 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
                 byte commandFromPhone = (dataDeviceStatus[0] == 1)?((byte)0):((byte)1);
                 Log.v("sendCommandFromPhone", "commandFromPhone = " + commandFromPhone);
 
+                ///////////////////////////////////////////////////////////////////
                 // Change data to send to the STAT characteristic:
-                byte[] dataDeviceStatusRequest = new byte[9];
+                byte[] dataDeviceStatusRequest = new byte[LENGTH_DATA_DEVICE_STATUS];
                 dataDeviceStatusRequest[0] = commandFromPhone;
                 for(int i = 1; i < dataDeviceStatus.length; i++){
                     dataDeviceStatusRequest[i] = dataDeviceStatus[i];
                 }
+
+                // If the is no data stored on flash, then create a file name:
+                if(dataDeviceStatus[2] == 0){
+					Calendar now = Calendar.getInstance();
+					dataDeviceStatusRequest[3] = (byte) (now.get(Calendar.YEAR) - 2000);
+					dataDeviceStatusRequest[4] = (byte) (now.get(Calendar.MONTH) + 1); // Note: zero based!
+					dataDeviceStatusRequest[5] = (byte) now.get(Calendar.DAY_OF_MONTH);
+					dataDeviceStatusRequest[6] = (byte) now.get(Calendar.HOUR_OF_DAY);
+					dataDeviceStatusRequest[7] = (byte) now.get(Calendar.MINUTE);
+					dataDeviceStatusRequest[8] = (byte) now.get(Calendar.SECOND);
+					dataDeviceStatusRequest[9]  = (byte) durationTime[0];
+					dataDeviceStatusRequest[10] = (byte) durationTime[1];
+					dataDeviceStatusRequest[11] = (byte) durationTime[2];
+					dataDeviceStatusRequest[12] = (byte) 37;
+				}
+                ///////////////////////////////////////////////////////////////////
 
                 // Write STAT characteristic:
                 writeCharacteristic(characteristicStat, dataDeviceStatusRequest)

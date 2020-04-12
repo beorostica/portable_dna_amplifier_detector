@@ -48,7 +48,6 @@ int main(void)
     deviceStatus_saveStructData_init();
     bleCusStatSendData(deviceStatus_getStructData());
 
-
     //Print Message:
     NRF_LOG_INFO("");
     NRF_LOG_INFO("**********************");
@@ -64,11 +63,10 @@ int main(void)
         ////////////////////////////////////////////////////////////////
         static uint8_t counter = 0;
 
-        if(deviceStatus_getStructData_isMeasuring())
+        if(deviceStatus_getStructData_isDataOnFlash())
         {
             if(timerDetectionSystem_GetFlag())
             {
-
                 if(secondsGetFlag())
                 {
                     secondsClearFlag();
@@ -176,23 +174,25 @@ int main(void)
                             //(1) First:
                             qspiPushSampleInExternalFlash(dsData);
                             
-                            //If the command from the phone app is for stopping the detection system task, then stop it:
-                            if(!deviceStatus_getStructData_commandFromPhone()){
-                                NRF_LOG_INFO("MAIN: Detection System Task Stoped.");
+                            //If the time-out occurs or the command from the phone app is for stopping the detection system task, then stop it:
+                            if((time > deviceStatus_getStructData_timeDuration_secs()) || (!deviceStatus_getStructData_commandFromPhone())){
+                                NRF_LOG_INFO("MAIN: Detection System Task Stoped. time: %d.", time);
 
                                 //Stop the detection system timers:
                                 timerDetectionSystem_Stop();
                                 secondsStop();
-                                hundredMillisStop();
 
                                 //Update the device status data (now it's not measuring):
                                 deviceStatus_saveStructData_isMeasuring(false);
                                 NRF_LOG_INFO("MAIN: isMeasuring = %d.", deviceStatus_getStructData_isMeasuring());
 
-                                //Update device status and notify STAT characteristic:
-                                device_status_data dataCusStat = deviceStatus_getStructData();
-                                bleCusStatSendData(dataCusStat);
-                                NRF_LOG_INFO("MAIN: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d.", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring());
+                                //Update the device status data (now commandFromPhone is set to false even though actually there isn't a command from phone when time-out expires):
+                                deviceStatus_saveStructData_commandFromPhone(false);
+                                NRF_LOG_INFO("MAIN: commandFromPhone = %d.", deviceStatus_getStructData_commandFromPhone());
+
+                                //Update device status and notify STAT characteristic:;
+                                bleCusStatSendData(deviceStatus_getStructData());
+                                NRF_LOG_INFO("MAIN: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d. isDataOnFlash = %d", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring(), deviceStatus_getStructData_isDataOnFlash());
                                                             
                             }
             
@@ -205,19 +205,20 @@ int main(void)
                 
                 }
             
-                //If the nRF52840 is connected and the notifications are enabled, then try to send BT data every 0.1[s]:
-                if(bleGetCusSensNotificationFlag())
-                {
-                    if(hundredMillisGetFlag())
-                    {
-                        hundredMillisClearFlag();
-                    
-                        //(2) Second:
-                        qspiReadExternalFlashAndSendBleDataIfPossible();
-                    }
-                }
-            
             }
+
+            //If the nRF52840 is connected and the notifications are enabled, then try to send BT data every 0.1[s]:
+            if(bleGetCusSensNotificationFlag())
+            {
+                if(hundredMillisGetFlag())
+                {
+                    hundredMillisClearFlag();
+                
+                    //(2) Second:
+                    qspiReadExternalFlashAndSendBleDataIfPossible();
+                }
+            }
+
         }
        
     }

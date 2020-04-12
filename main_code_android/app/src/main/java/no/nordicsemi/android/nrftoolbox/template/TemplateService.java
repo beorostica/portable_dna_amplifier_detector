@@ -73,8 +73,8 @@ public class TemplateService extends BleProfileService implements TemplateManage
             manager.readCharacteristicStat();
         }
 
-        void performSendCommandFromPhone() {
-            manager.sendCommandFromPhone();
+        void performSendCommandFromPhone(int[] durationTime) {
+            manager.sendCommandFromPhone(durationTime);
         }
 
     }
