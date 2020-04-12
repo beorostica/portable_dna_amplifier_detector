@@ -48,9 +48,6 @@ int main(void)
     deviceStatus_saveStructData_init();
     bleCusStatSendData(deviceStatus_getStructData());
 
-    //Define the max duration of the detection system task:
-    uint16_t TIME_DURATION_SECS = 60; 
-
     //Print Message:
     NRF_LOG_INFO("");
     NRF_LOG_INFO("**********************");
@@ -178,7 +175,7 @@ int main(void)
                             qspiPushSampleInExternalFlash(dsData);
                             
                             //If the time-out occurs or the command from the phone app is for stopping the detection system task, then stop it:
-                            if((time > TIME_DURATION_SECS) || (!deviceStatus_getStructData_commandFromPhone())){
+                            if((time > deviceStatus_getStructData_timeDuration_secs()) || (!deviceStatus_getStructData_commandFromPhone())){
                                 NRF_LOG_INFO("MAIN: Detection System Task Stoped. time: %d.", time);
 
                                 //Stop the detection system timers:

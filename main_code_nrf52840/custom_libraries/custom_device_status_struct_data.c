@@ -14,6 +14,10 @@ void deviceStatus_saveStructData_init(void)
     statusData.fileName_hrs   = 0;
     statusData.fileName_mins  = 0;
     statusData.fileName_secs  = 0;
+    statusData.timeDuration_hrs  = 0;
+    statusData.timeDuration_mins = 1;
+    statusData.timeDuration_secs = 0;
+    statusData.tempReference = 37;
 }
 
 void deviceStatus_saveStructData_commandFromPhone(bool commandFromPhone)
@@ -41,6 +45,23 @@ void deviceStatus_saveStructData_fileName(uint8_t fileName_year, uint8_t fileNam
     statusData.fileName_secs  = fileName_secs;
 }
 
+void deviceStatus_saveStructData_timeDuration(uint8_t timeDuration_hrs, uint8_t timeDuration_mins, uint8_t timeDuration_secs)
+{
+    if(timeDuration_hrs > 17){  timeDuration_hrs  = 17;}
+    if(timeDuration_mins > 59){ timeDuration_mins = 59;}
+    if(timeDuration_secs > 59){ timeDuration_secs = 59;}
+    statusData.timeDuration_hrs  = timeDuration_hrs;
+    statusData.timeDuration_mins = timeDuration_mins;
+    statusData.timeDuration_secs = timeDuration_secs;
+}
+
+void deviceStatus_saveStructData_tempReference(uint8_t tempReference)
+{
+    if(tempReference > 100){ tempReference = 100;}
+    if(tempReference < 5){   tempReference = 5;}
+    statusData.tempReference = tempReference;
+}
+
 
 device_status_data deviceStatus_getStructData(void)
 {
@@ -60,4 +81,17 @@ bool deviceStatus_getStructData_isMeasuring(void)
 bool deviceStatus_getStructData_isDataOnFlash(void)
 {
     return statusData.isDataOnFlash;
+}
+
+uint16_t deviceStatus_getStructData_timeDuration_secs(void)
+{
+    uint16_t hrs  = (uint16_t) statusData.timeDuration_hrs;
+    uint16_t mins = (uint16_t) statusData.timeDuration_mins;
+    uint16_t secs = (uint16_t) statusData.timeDuration_secs;
+    return (hrs*3600 + mins*60 + secs);
+}
+
+uint8_t deviceStatus_getStructData_tempReference(void)
+{
+    return statusData.tempReference;
 }

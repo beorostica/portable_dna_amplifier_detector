@@ -232,7 +232,8 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 	 */
 
 	//This value stores the last updated STAT characteristic from the nRF52:
-	private byte dataDeviceStatus[] = new byte[9];
+	public static final int LENGTH_DATA_DEVICE_STATUS = 13;
+	private byte dataDeviceStatus[] = new byte[LENGTH_DATA_DEVICE_STATUS];
 
 	void readCharacteristicStat() {
 		readCharacteristic(characteristicStat).with(mStatDataCallback).enqueue();
@@ -259,7 +260,7 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 
                 ///////////////////////////////////////////////////////////////////
                 // Change data to send to the STAT characteristic:
-                byte[] dataDeviceStatusRequest = new byte[9];
+                byte[] dataDeviceStatusRequest = new byte[LENGTH_DATA_DEVICE_STATUS];
                 dataDeviceStatusRequest[0] = commandFromPhone;
                 for(int i = 1; i < dataDeviceStatus.length; i++){
                     dataDeviceStatusRequest[i] = dataDeviceStatus[i];
@@ -274,6 +275,10 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 					dataDeviceStatusRequest[6] = (byte) now.get(Calendar.HOUR_OF_DAY);
 					dataDeviceStatusRequest[7] = (byte) now.get(Calendar.MINUTE);
 					dataDeviceStatusRequest[8] = (byte) now.get(Calendar.SECOND);
+					dataDeviceStatusRequest[9]  = (byte) 0;
+					dataDeviceStatusRequest[10] = (byte) 0;
+					dataDeviceStatusRequest[11] = (byte) 30;
+					dataDeviceStatusRequest[12] = (byte) 40;
 				}
                 ///////////////////////////////////////////////////////////////////
 

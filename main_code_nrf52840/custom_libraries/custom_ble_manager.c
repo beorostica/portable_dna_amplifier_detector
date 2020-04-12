@@ -328,6 +328,8 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             NRF_LOG_INFO("BLE_MANAGER: isMeasuring = %d.", deviceStatus_getStructData_isMeasuring());
                             deviceStatus_saveStructData_isDataOnFlash(true);
                             deviceStatus_saveStructData_fileName(data_buffer[3], data_buffer[4], data_buffer[5], data_buffer[6], data_buffer[7], data_buffer[8]);
+                            deviceStatus_saveStructData_timeDuration(data_buffer[9], data_buffer[10], data_buffer[11]);
+                            deviceStatus_saveStructData_tempReference(data_buffer[12]);
                             NRF_LOG_INFO("BLE_MANAGER: isDataOnFlash = %d.", deviceStatus_getStructData_isDataOnFlash());
                             NRF_LOG_INFO("BLE_MANAGER: fileName_year = %d.", deviceStatus_getStructData().fileName_year);
                             NRF_LOG_INFO("BLE_MANAGER: fileName_month = %d.", deviceStatus_getStructData().fileName_month);
@@ -335,6 +337,10 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             NRF_LOG_INFO("BLE_MANAGER: fileName_hrs = %d.", deviceStatus_getStructData().fileName_hrs);
                             NRF_LOG_INFO("BLE_MANAGER: fileName_mins = %d.", deviceStatus_getStructData().fileName_mins);
                             NRF_LOG_INFO("BLE_MANAGER: fileName_secs = %d.", deviceStatus_getStructData().fileName_secs);
+                            NRF_LOG_INFO("BLE_MANAGER: timeDuration_hrs = %d.", deviceStatus_getStructData().timeDuration_hrs);
+                            NRF_LOG_INFO("BLE_MANAGER: timeDuration_mins = %d.", deviceStatus_getStructData().timeDuration_mins);
+                            NRF_LOG_INFO("BLE_MANAGER: timeDuration_secs = %d.", deviceStatus_getStructData().timeDuration_secs);
+                            NRF_LOG_INFO("BLE_MANAGER: tempReference = %d.", deviceStatus_getStructData().tempReference);
                             
                             //Change the "data_buffer" to update STAT characteristic:
                             data_buffer[0] = deviceStatus_getStructData_commandFromPhone();
@@ -346,6 +352,10 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             data_buffer[6] = deviceStatus_getStructData().fileName_hrs;
                             data_buffer[7] = deviceStatus_getStructData().fileName_mins;
                             data_buffer[8] = deviceStatus_getStructData().fileName_secs;
+                            data_buffer[9]  = deviceStatus_getStructData().timeDuration_hrs;
+                            data_buffer[10] = deviceStatus_getStructData().timeDuration_mins;
+                            data_buffer[11] = deviceStatus_getStructData().timeDuration_secs;
+                            data_buffer[12] = deviceStatus_getStructData().tempReference;
 
                             //Send a notification back to the phone app of the STAT characteristic written (stored on "data_buffer"):
                             uint32_t err_code = cus_stat_custom_value_update(p_cus_service, data_buffer);
