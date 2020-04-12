@@ -196,6 +196,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				} else if (dataArray[0] == 0 && dataArray[2] == 1) {
 					buttonWrite.setEnabled(false);
 					buttonWrite.setText(R.string.template_action_write_wait);
+                    mSaveFileManager.createFile(dataArray);
 				}
 
             }

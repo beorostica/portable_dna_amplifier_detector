@@ -48,6 +48,8 @@ int main(void)
     deviceStatus_saveStructData_init();
     bleCusStatSendData(deviceStatus_getStructData());
 
+    //Define the max duration of the detection system task:
+    uint16_t TIME_DURATION_SECS = 60; 
 
     //Print Message:
     NRF_LOG_INFO("");
@@ -175,9 +177,9 @@ int main(void)
                             //(1) First:
                             qspiPushSampleInExternalFlash(dsData);
                             
-                            //If the command from the phone app is for stopping the detection system task, then stop it:
-                            if(!deviceStatus_getStructData_commandFromPhone()){
-                                NRF_LOG_INFO("MAIN: Detection System Task Stoped.");
+                            //If the time-out occurs or the command from the phone app is for stopping the detection system task, then stop it:
+                            if((time > TIME_DURATION_SECS) || (!deviceStatus_getStructData_commandFromPhone())){
+                                NRF_LOG_INFO("MAIN: Detection System Task Stoped. time: %d.", time);
 
                                 //Stop the detection system timers:
                                 timerDetectionSystem_Stop();
@@ -186,6 +188,10 @@ int main(void)
                                 //Update the device status data (now it's not measuring):
                                 deviceStatus_saveStructData_isMeasuring(false);
                                 NRF_LOG_INFO("MAIN: isMeasuring = %d.", deviceStatus_getStructData_isMeasuring());
+
+                                //Update the device status data (now commandFromPhone is set to false even though actually there isn't a command from phone when time-out expires):
+                                deviceStatus_saveStructData_commandFromPhone(false);
+                                NRF_LOG_INFO("MAIN: commandFromPhone = %d.", deviceStatus_getStructData_commandFromPhone());
 
                                 //Update device status and notify STAT characteristic:;
                                 bleCusStatSendData(deviceStatus_getStructData());
