@@ -143,6 +143,7 @@
       <file file_name="../../../custom_libraries/cus_sens.c" />
       <file file_name="../../../custom_libraries/cus_stat.c" />
       <file file_name="../../../custom_libraries/custom_device_status_struct_data.c" />
+      <file file_name="../../../custom_libraries/custom_pid_controller.c" />
     </folder>
     <folder Name="other_libraries">
       <folder Name="for_ExternalFlash">
@@ -152,6 +153,12 @@
         <file file_name="../../../../../../integration/nrfx/legacy/nrf_drv_twi.c" />
         <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_twi.c" />
         <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_twim.c" />
+      </folder>
+      <folder Name="for_Pwm">
+        <file file_name="../../../../../../components/libraries/pwm/app_pwm.c" />
+        <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_ppi.c" />
+        <file file_name="../../../../../../modules/nrfx/drivers/src/nrfx_timer.c" />
+        <file file_name="../../../../../../integration/nrfx/legacy/nrf_drv_ppi.c" />
       </folder>
     </folder>
   </project>

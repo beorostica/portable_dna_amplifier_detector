@@ -8,6 +8,7 @@
 #include "custom_twi.h"
 #include "custom_ble_manager.h"
 #include "custom_device_status_struct_data.h"
+#include "custom_pid_controller.h"
 
 
 //Main Function:
@@ -50,6 +51,7 @@ int main(void)
 
     //Start the temp controller timer:
     timerControllerSystem_Start();
+    pwmInit();
 
     //Print Message:
     NRF_LOG_INFO("");
@@ -227,7 +229,7 @@ int main(void)
         ////////////////////////////////////////////////////////////////
         /// Temp Controller Task ///////////////////////////////////////
         ////////////////////////////////////////////////////////////////
-        static uint8_t count = 0;
+        static uint8_t value = 0;
 
         //if(deviceStatus_getStructData_isMeasuring())
         //{
@@ -235,8 +237,15 @@ int main(void)
             {
                 timerControllerSystem_ClearFlag();
                 
-                NRF_LOG_INFO("PID: %d.", count);
-                count++;
+                
+                pwmSetDutyCycle(value);
+
+                NRF_LOG_INFO("PID: %d.", value);
+
+                value++;
+                if (value > 100){
+                    value = 0;
+                }
 
             }
         //}
