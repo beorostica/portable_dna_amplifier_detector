@@ -58,4 +58,17 @@ void timerDetectionSystem_ClearFlag(void);
 void timerDetectionSystem_Stop(void);
 
 
+////////////////////////////////////////////////////////////////
+/// For periodicity of the Temp Controller System //////////////
+////////////////////////////////////////////////////////////////
+
+void timerControllerSystem_Start(void);
+
+void timerControllerSystem_Stop(void);
+
+bool timerControllerSystem_GetFlag(void);
+
+void timerControllerSystem_ClearFlag(void);
+
+
 #endif /* CUSTOM_TIMER_H */

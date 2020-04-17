@@ -7,6 +7,7 @@
 /**
  * @brief Create a variables that can hold the timer ID
  */
+APP_TIMER_DEF(m_timer_controller_system_id);
 APP_TIMER_DEF(m_timer_detection_system_id);
 APP_TIMER_DEF(m_timer_hundred_millis_id);
 APP_TIMER_DEF(m_timer_seconds_id);
@@ -24,6 +25,17 @@ static void lfclk_request(void)
     err_code = nrf_drv_clock_init();
     APP_ERROR_CHECK(err_code);
     nrf_drv_clock_lfclk_request(NULL);
+}
+
+
+/**
+ * @brief Timeout handler for the detection system timer.
+ */
+static volatile bool isTimerControllerSystemReady;
+
+static void timer_controller_system_handler(void * p_context)
+{
+    isTimerControllerSystemReady = true;
 }
 
 /**
@@ -68,7 +80,11 @@ static void create_timers()
 {
     ret_code_t err_code;
 
-    //Create the hundred millis timer:
+    //Create the controller system timer:
+    err_code = app_timer_create(&m_timer_controller_system_id, APP_TIMER_MODE_REPEATED, timer_controller_system_handler);
+    APP_ERROR_CHECK(err_code);
+
+    //Create the detection system timer:
     err_code = app_timer_create(&m_timer_detection_system_id, APP_TIMER_MODE_REPEATED, timer_detection_system_handler);
     APP_ERROR_CHECK(err_code);
 
@@ -210,4 +226,39 @@ bool timerDetectionSystem_GetFlag(void)
 void timerDetectionSystem_ClearFlag(void)
 {
     isTimerDetectionSystemReady = false;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+
+void timerControllerSystem_Start(void)
+{
+    ret_code_t err_code;
+
+    //Start the detection system timer:
+    isTimerControllerSystemReady = true;
+    err_code = app_timer_start(m_timer_controller_system_id, APP_TIMER_TICKS(200), NULL);
+    APP_ERROR_CHECK(err_code);
+
+}
+
+void timerControllerSystem_Stop(void)
+{
+    ret_code_t err_code;
+
+    //Stop the detection system timer:
+    err_code = app_timer_stop(m_timer_controller_system_id);
+    APP_ERROR_CHECK(err_code);
+    isTimerControllerSystemReady = true;
+}
+
+
+bool timerControllerSystem_GetFlag(void)
+{
+    return isTimerControllerSystemReady;
+}
+
+void timerControllerSystem_ClearFlag(void)
+{
+    isTimerControllerSystemReady = false;
 }

@@ -48,6 +48,9 @@ int main(void)
     deviceStatus_saveStructData_init();
     bleCusStatSendData(deviceStatus_getStructData());
 
+    //Start the temp controller timer:
+    timerControllerSystem_Start();
+
     //Print Message:
     NRF_LOG_INFO("");
     NRF_LOG_INFO("**********************");
@@ -220,6 +223,24 @@ int main(void)
             }
 
         }
+
+        ////////////////////////////////////////////////////////////////
+        /// Temp Controller Task ///////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+        static uint8_t count = 0;
+
+        //if(deviceStatus_getStructData_isMeasuring())
+        //{
+            if(timerControllerSystem_GetFlag())
+            {
+                timerControllerSystem_ClearFlag();
+                
+                NRF_LOG_INFO("PID: %d.", count);
+                count++;
+
+            }
+        //}
+
        
     }
 }
