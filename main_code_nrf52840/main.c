@@ -230,7 +230,8 @@ int main(void)
         ////////////////////////////////////////////////////////////////
         /// Temp Controller Task ///////////////////////////////////////
         ////////////////////////////////////////////////////////////////
-        static uint8_t value = 0;
+        static uint16_t count = 0;
+        static uint16_t adcReference = 768;
 
         //if(deviceStatus_getStructData_isMeasuring())
         //{
@@ -239,13 +240,20 @@ int main(void)
                 timerControllerSystem_ClearFlag();
                 
                 
-                pwmSetDutyCycle(value);
+                uint16_t adcValue = adcGetValue();
+                uint8_t pwmValue = pidGetAction(adcValue, adcReference);
+                pwmSetDutyCycle(pwmValue);
 
-                NRF_LOG_INFO("PID: %d. ADC: %d", value, adcGetValue());
+                NRF_LOG_INFO("Count: %d. PWM: %d. REF: %d. ADC: %d.", count, pwmValue, adcReference, adcValue);
 
-                value++;
-                if (value > 100){
-                    value = 0;
+                count++;
+                if (count > 600){
+                    count = 0;
+                    if (adcReference == 768) {
+                        adcReference = 256;
+                    } else {
+                        adcReference = 768;
+                    }
                 }
 
             }
