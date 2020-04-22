@@ -52,6 +52,7 @@ int main(void)
     //Start the temp controller timer:
     timerControllerSystem_Start();
     pwmInit();
+    adcInit();
 
     //Print Message:
     NRF_LOG_INFO("");
@@ -240,7 +241,7 @@ int main(void)
                 
                 pwmSetDutyCycle(value);
 
-                NRF_LOG_INFO("PID: %d.", value);
+                NRF_LOG_INFO("PID: %d. ADC: %d", value, adcGetValue());
 
                 value++;
                 if (value > 100){
