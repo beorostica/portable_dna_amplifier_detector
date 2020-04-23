@@ -27,7 +27,7 @@ static void saadc_ready_callback(nrf_drv_saadc_evt_t const * p_event)
     }
 }
 
-void adcInit(void)
+static void adcInit(void)
 {
     ret_code_t err_code;
     nrf_saadc_channel_config_t channel_config = NRF_DRV_SAADC_DEFAULT_CHANNEL_CONFIG_SE(NRF_SAADC_INPUT_AIN2);
@@ -44,7 +44,7 @@ void adcInit(void)
     APP_ERROR_CHECK(err_code);
 }
 
-uint16_t adcGetValue(void)
+uint16_t pidGetAdcValue(void)
 {
     isAdcReady = false;
     nrf_drv_saadc_sample();
@@ -73,7 +73,7 @@ static void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
     isPwmReady = true;
 }
 
-void pwmInit(void)
+static void pwmInit(void)
 {
     // 1-channel PWM, 200Hz, output on DK LED pins:
     app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_1CH(5000L, BSP_LED_0);
@@ -85,7 +85,7 @@ void pwmInit(void)
     app_pwm_enable(&PWM1);
 }
 
-void pwmSetDutyCycle(uint8_t value)
+void pidSetPwmAction(uint8_t value)
 { 
     // Try to change to the pwm peripheral once:
     isPwmReady = false;
@@ -105,6 +105,12 @@ void pwmSetDutyCycle(uint8_t value)
 // For PID ////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
 
+void pidInit(void)
+{
+    pwmInit();
+    adcInit();
+}
+
 const static float Ts = 0.1;
 const static float alpha = 0.081;
 const static float K = 1;
@@ -118,7 +124,7 @@ float e_past = 0;
 float u_inte_past = 0;
 float u_deri_past = 0;
 
-uint8_t pidGetAction(uint16_t adcValue, uint16_t adcReference)
+uint8_t pidGetPwmAction(uint16_t adcValue, uint16_t adcReference)
 {
 
     float y = (float) adcValue;

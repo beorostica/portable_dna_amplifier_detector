@@ -9,6 +9,7 @@
 #include "custom_ble_manager.h"
 #include "custom_device_status_struct_data.h"
 #include "custom_pid_controller.h"
+#include "custom_control_system_struct_data.h"
 
 
 //Main Function:
@@ -49,10 +50,9 @@ int main(void)
     deviceStatus_saveStructData_init();
     bleCusStatSendData(deviceStatus_getStructData());
 
-    //Start the temp controller timer:
+    //Start the temp controller timer and the PID controller:
     timerControllerSystem_Start();
-    pwmInit();
-    adcInit();
+    pidInit();
 
     //Print Message:
     NRF_LOG_INFO("");
@@ -239,13 +239,19 @@ int main(void)
             {
                 timerControllerSystem_ClearFlag();
                 
-                
-                uint16_t adcValue = adcGetValue();
-                uint8_t pwmValue = pidGetAction(adcValue, adcReference);
-                pwmSetDutyCycle(pwmValue);
+                // Measuring, Processing and Manipulate for PID controller:
+                uint16_t adcValue = pidGetAdcValue();
+                uint8_t pwmValue = pidGetPwmAction(adcValue, adcReference);
+                pidSetPwmAction(pwmValue);
 
-                NRF_LOG_INFO("Count: %d. PWM: %d. REF: %d. ADC: %d.", count, pwmValue, adcReference, adcValue);
+                // Save and get the data in the static control_system_data struct:
+                controlSystem_saveStructData(count, adcReference, adcValue, (uint16_t) pwmValue);
+                control_system_data csData = controlSystem_getStructData();
 
+                // Print in console:
+                NRF_LOG_INFO("Count: %d. PWM: %d. REF: %d. ADC: %d.", csData.time, csData.uPwm, csData.refAdc, csData.yAdc);
+
+                // Change the reference signal:
                 count++;
                 if (count > 600){
                     count = 0;
