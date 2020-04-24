@@ -179,7 +179,7 @@ int main(void)
                             
             
                             //(1) First:
-                            qspiPushSampleInExternalFlash(dsData);
+                            qspiDetectionSystem_PushSampleInExternalFlash(dsData);
                             
                             //If the time-out occurs or the command from the phone app is for stopping the detection system task, then stop it:
                             if((time > deviceStatus_getStructData_timeDuration_secs()) || (!deviceStatus_getStructData_commandFromPhone())){
@@ -222,12 +222,13 @@ int main(void)
                     hundredMillisClearFlag();
                 
                     //(2) Second:
-                    qspiReadExternalFlashAndSendBleDataIfPossible();
+                    qspiDetectionSystem_ReadExternalFlashAndSendBleDataIfPossible();
                 }
             }
 
         }
 
+        /*
         ////////////////////////////////////////////////////////////////
         /// Temp Control Task //////////////////////////////////////////
         ////////////////////////////////////////////////////////////////
@@ -281,6 +282,8 @@ int main(void)
 
 
         //}
+
+        */
 
        
     }

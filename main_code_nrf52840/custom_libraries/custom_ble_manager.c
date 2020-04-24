@@ -318,7 +318,7 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                 {                    
                     //If the command from phone app is true:
                     if(commandFromPhoneAux){
-                        //And if the detection system is not measuring, then start detection system task: 
+                        //And if there is not previous data stored on flash, then start detection system task: 
                         if(!deviceStatus_getStructData_isDataOnFlash())
                         {
                             NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic is gonna be stored in the device status data.");
@@ -340,6 +340,8 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             deviceStatus_saveStructData_fileName(data_buffer[3], data_buffer[4], data_buffer[5], data_buffer[6], data_buffer[7], data_buffer[8]);
                             deviceStatus_saveStructData_timeDuration(data_buffer[9], data_buffer[10], data_buffer[11]);
                             deviceStatus_saveStructData_tempReference(data_buffer[12]);
+                            deviceStatus_saveStructData_isSensDataOnFlash(true);
+                            deviceStatus_saveStructData_isContDataOnFlash(true);
                             NRF_LOG_INFO("BLE_MANAGER: isDataOnFlash = %d.", deviceStatus_getStructData_isDataOnFlash());
                             NRF_LOG_INFO("BLE_MANAGER: fileName_year = %d.", deviceStatus_getStructData().fileName_year);
                             NRF_LOG_INFO("BLE_MANAGER: fileName_month = %d.", deviceStatus_getStructData().fileName_month);
@@ -351,7 +353,9 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             NRF_LOG_INFO("BLE_MANAGER: timeDuration_mins = %d.", deviceStatus_getStructData().timeDuration_mins);
                             NRF_LOG_INFO("BLE_MANAGER: timeDuration_secs = %d.", deviceStatus_getStructData().timeDuration_secs);
                             NRF_LOG_INFO("BLE_MANAGER: tempReference = %d.", deviceStatus_getStructData().tempReference);
-                            
+                            NRF_LOG_INFO("BLE_MANAGER: isSensDataOnFlash = %d.", deviceStatus_getStructData_isSensDataOnFlash());
+                            NRF_LOG_INFO("BLE_MANAGER: isContDataOnFlash = %d.", deviceStatus_getStructData_isContDataOnFlash());
+
                             //Change the "data_buffer" to update STAT characteristic:
                             data_buffer[0] = deviceStatus_getStructData_commandFromPhone();
                             data_buffer[1] = deviceStatus_getStructData_isMeasuring();
@@ -366,23 +370,25 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             data_buffer[10] = deviceStatus_getStructData().timeDuration_mins;
                             data_buffer[11] = deviceStatus_getStructData().timeDuration_secs;
                             data_buffer[12] = deviceStatus_getStructData().tempReference;
+                            data_buffer[13] = deviceStatus_getStructData_isSensDataOnFlash();
+                            data_buffer[14] = deviceStatus_getStructData_isContDataOnFlash();
 
                             //Send a notification back to the phone app of the STAT characteristic written (stored on "data_buffer"):
                             uint32_t err_code = cus_stat_custom_value_update(p_cus_service, data_buffer);
                             APP_ERROR_CHECK(err_code);
                             NRF_LOG_INFO("BLE_MANAGER: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d. isDataOnFlash = %d", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring(), deviceStatus_getStructData_isDataOnFlash());
                         }
-                        //But if the detection system is measuring, then print log info:
+                        //But if there is previous data stored on flash, then print log info:
                         else
                         {
-                            NRF_LOG_INFO("BLE_MANAGER: The Detection System is already measuring, so you have to wait until detection system task stops.");
+                            NRF_LOG_INFO("BLE_MANAGER: The nRF52 has previous data stored on flash, so you have to wait until nRF52 reads and sends all the data on flash.");
                             NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic will not be stored in the device status data.");
                         }
                     }
                     //If the command from phone app is false:
                     else
                     {
-                        //And if the detection system is measuring, then the main will stop the detection system task soon:
+                        //And if there is previous data stored on flash, then the main will stop to read and send data on flash soon:
                         if(deviceStatus_getStructData_isDataOnFlash())
                         {
                             NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic is gonna be stored in the device status data.");
@@ -399,12 +405,12 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             uint32_t err_code = cus_stat_custom_value_update(p_cus_service, data_buffer);
                             APP_ERROR_CHECK(err_code);
                             NRF_LOG_INFO("BLE_MANAGER: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d. isDataOnFlash = %d", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring(), deviceStatus_getStructData_isDataOnFlash());
-                            NRF_LOG_INFO("BLE_MANAGER: Wait until the detection system task stops.");
+                            NRF_LOG_INFO("BLE_MANAGER: Wait until all the data stored on flash is send via BLE.");
                         }
-                        //But if the detection system is not measuring, then print log info:
+                        //But if there is not previous data stored on flash, then print log info:
                         else
                         {
-                            NRF_LOG_INFO("BLE_MANAGER: The Detection System is not measuring, so the command from phone was not necessary");
+                            NRF_LOG_INFO("BLE_MANAGER: The nRF52 doesn't have data to send (system is not measuring), so the command from phone was not necessary");
                             NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic will not be stored in the device status data.");
                         }
                     }
@@ -432,6 +438,12 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                 data_buffer[6] = dataCusStat.fileName_hrs;
                 data_buffer[7] = dataCusStat.fileName_mins;
                 data_buffer[8] = dataCusStat.fileName_secs;
+                data_buffer[9]  = dataCusStat.timeDuration_hrs;
+                data_buffer[10] = dataCusStat.timeDuration_mins;
+                data_buffer[11] = dataCusStat.timeDuration_secs;
+                data_buffer[12] = dataCusStat.tempReference;
+                data_buffer[13] = dataCusStat.isSensDataOnFlash;
+                data_buffer[14] = dataCusStat.isContDataOnFlash;
                 err_code = sd_ble_gatts_value_set(p_cus_service->conn_handle, p_cus_service->custom_value_handles.value_handle, &gatts_value);
                 APP_ERROR_CHECK(err_code);
                 NRF_LOG_INFO("BLE_MANAGER: The STAT characteristic is the same as the device status data.");

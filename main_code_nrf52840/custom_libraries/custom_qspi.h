@@ -9,9 +9,9 @@
 
 void qspiInit(void);
 
-void qspiPushSampleInExternalFlash(detection_system_data sample);
+void qspiDetectionSystem_PushSampleInExternalFlash(detection_system_data sample);
 
-void qspiReadExternalFlashAndSendBleDataIfPossible(void);
+void qspiDetectionSystem_ReadExternalFlashAndSendBleDataIfPossible(void);
 
 void qspiControlSystem_PushSampleInExternalFlash(control_system_data sample);
 

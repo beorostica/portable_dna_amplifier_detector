@@ -4,6 +4,7 @@
 #include "boards.h"
 #include "nrf_drv_qspi.h"
 #include "custom_ble_manager.h"
+#include "custom_timer.h"
 
 #include "custom_log.h"
 
@@ -112,7 +113,7 @@ static uint32_t indexBlock_write = 0;
 static uint32_t indexSector_write = 0;
 static detection_system_data mBuffer_write[QSPI_BUFFER_SIZE_DETSYSDAT];
 
-void qspiPushSampleInExternalFlash(detection_system_data sample)
+void qspiDetectionSystem_PushSampleInExternalFlash(detection_system_data sample)
 {
     ret_code_t err_code;
  
@@ -151,7 +152,7 @@ static uint32_t indexBlock_read = 0;
 static uint32_t indexSector_read = 0;
 
 
-static uint32_t qspiWriteReadBufferDistance(void)
+static uint32_t qspiDetectionSystem_WriteReadBufferDistance(void)
 {
     uint32_t indexBuffer_writeAux           = indexBuffer_write + (QSPI_BUFFER_SIZE_DETSYSDAT*(indexBlock_write + (QSPI_NUMBER_BLOCKS*indexSector_write)));
     uint32_t indexBuffer_readAux            = indexBuffer_read + (QSPI_BUFFER_SIZE_DETSYSDAT*(indexBlock_read  + (QSPI_NUMBER_BLOCKS*indexSector_read)));
@@ -162,7 +163,7 @@ static uint32_t qspiWriteReadBufferDistance(void)
 }
 
 
-void qspiReadExternalFlashAndSendBleDataIfPossible(void){
+void qspiDetectionSystem_ReadExternalFlashAndSendBleDataIfPossible(void){
 
     ret_code_t err_code;
 
@@ -217,7 +218,7 @@ void qspiReadExternalFlashAndSendBleDataIfPossible(void){
     //If there is not a m_buffer_rx saved from the flash, then check how larger is the distance
     else
     {
-        uint32_t distanceWriteReadBuffer = qspiWriteReadBufferDistance();
+        uint32_t distanceWriteReadBuffer = qspiDetectionSystem_WriteReadBufferDistance();
 
         //If the distance is larger enough, then read the memory flash an store data in the m_buffer_rx
         if(distanceWriteReadBuffer >= QSPI_BUFFER_SIZE_DETSYSDAT)
