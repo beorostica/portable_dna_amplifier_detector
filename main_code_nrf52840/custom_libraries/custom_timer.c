@@ -287,7 +287,7 @@ void timerControlSystem_SaveExternalFlash_Start(void)
 
     //Start the detection system timer:
     isTimerControlSystemSaveExternalFlashReady = true;
-    err_code = app_timer_start(m_timer_control_system_save_external_flash_id, APP_TIMER_TICKS(200), NULL);
+    err_code = app_timer_start(m_timer_control_system_save_external_flash_id, APP_TIMER_TICKS(1000), NULL);
     APP_ERROR_CHECK(err_code);
 
 }

@@ -42,7 +42,7 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
-
+    
     //Start Advertising:
     advertising_start();
 
@@ -250,24 +250,25 @@ int main(void)
                 control_system_data csData = controlSystem_getStructData();
                 //NRF_LOG_INFO("Count: %d. PWM: %d. REF: %d. ADC: %d.", csData.time, csData.uPwm, csData.refAdc, csData.yAdc);
 
-
                 // Save data in external flash after a certain time:
                 if (timerControlSystem_SaveExternalFlash_GetFlag()) 
                 {
                     timerControlSystem_SaveExternalFlash_ClearFlag();
 
-                    //(1) First:
+                    // (1) First:
                     qspiControlSystem_PushSampleInExternalFlash(csData);
                 }
 
-                // (2) Second:
-                if (adcReference == 256) {
+                //If the nRF52840 is connected and the notifications are enabled, then try to send BT data:
+                if(bleGetCusContNotificationFlag())
+                {
+                    // (2) Second:
                     qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible();
                 }
 
                 // Change the reference signal:
                 count++;
-                if (count > 1100){
+                if (count > 600){
                     count = 0;
                     if (adcReference == 768) {
                         adcReference = 256;

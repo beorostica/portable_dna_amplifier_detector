@@ -365,7 +365,7 @@ void qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible(void){
     {
         //Send data via BT from the m_buffer_rx:
         control_system_data bleData = m_buffer_rx[indBuffer_read];
-        //bleCusContSendData(bleData);
+        bleCusContSendData(bleData);
         NRF_LOG_INFO("BLE CONT SERVICE: send. Read from Buffer_read. indBuffer_read: %d. time: %d", indBuffer_read, bleData.time);
         
         
@@ -418,7 +418,7 @@ void qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible(void){
         {
             //Send data via BT from the mBuff_write:
             control_system_data bleData = mBuff_write[indBuffer_read];
-            //bleCusContSendData(bleData);
+            bleCusContSendData(bleData);
             NRF_LOG_INFO("BLE CONT SERVICE: send. Read from Buffer_write. indBuffer_read: %d. time: %d", indBuffer_read, bleData.time);
 
             //Update ind for reading:
