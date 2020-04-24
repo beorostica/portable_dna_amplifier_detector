@@ -246,8 +246,19 @@ void qspiReadExternalFlashAndSendBleDataIfPossible(void){
                 //Update index for reading:
                 if(indexBuffer_read == (QSPI_BUFFER_SIZE_DETSYSDAT-1))
                 {
+                    //If it is read the last block from flash memory (actually, the flash is not directly read):
                     if(indexBlock_read == (QSPI_NUMBER_BLOCKS-1))
                     {
+                        //Then erase the last sector of 4KB already read:
+                        uint32_t flashAddress = (indexSector_read*QSPI_SECTOR_SIZE_BYTES) + QSPI_OFFSET_DETSYS;
+                        err_code = nrf_drv_qspi_erase(QSPI_ERASE_LEN_LEN_4KB, flashAddress);
+                        APP_ERROR_CHECK(err_code);
+                        WAIT_FOR_PERIPH();
+                        NRF_LOG_INFO("**********************************************************************");
+                        NRF_LOG_INFO("*** Sector of 4KB erased. indexSector: %d. flashAddres: %d", indexSector_read, flashAddress);
+                        NRF_LOG_INFO("**********************************************************************");
+                
+
                         //Update memory sector index to read:
                         indexSector_read = (indexSector_read+1) % ((uint32_t) QSPI_NUMBER_SECTORS_DETSYS);    
                     }
@@ -413,8 +424,19 @@ void qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible(void){
             //Update ind for reading:
             if(indBuffer_read == (QSPI_BUFFER_SIZE_CONSYSDAT-1))
             {
+                //If it is read the last block from flash memory (actually, the flash is not directly read):
                 if(indBlock_read == (QSPI_NUMBER_BLOCKS-1))
                 {
+                    //Then erase the last sector of 4KB already read:
+                    uint32_t flashAddress = (indSector_read*QSPI_SECTOR_SIZE_BYTES) + QSPI_OFFSET_CONSYS;
+                    err_code = nrf_drv_qspi_erase(QSPI_ERASE_LEN_LEN_4KB, flashAddress);
+                    APP_ERROR_CHECK(err_code);
+                    WAIT_FOR_PERIPH();
+                    NRF_LOG_INFO("**********************************************************************");
+                    NRF_LOG_INFO("*** QSPI_CONT: Sector of 4KB erased. indSector: %d. flashAddres: %d", indSector_read, flashAddress);
+                    NRF_LOG_INFO("**********************************************************************");
+                
+
                     //Update memory sector ind to read:
                     indSector_read = (indSector_read+1) % ((uint32_t) QSPI_NUMBER_SECTORS_CONSYS);    
                 }

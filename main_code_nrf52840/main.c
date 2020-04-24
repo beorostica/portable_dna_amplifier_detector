@@ -265,10 +265,9 @@ int main(void)
                     qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible();
                 }
 
-
                 // Change the reference signal:
                 count++;
-                if (count > 400){
+                if (count > 1100){
                     count = 0;
                     if (adcReference == 768) {
                         adcReference = 256;
