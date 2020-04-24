@@ -244,6 +244,15 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
                 mSaveFileManager.writeLine(dataArray);
 
 			}
+			if (TemplateService.BROADCAST_CHARACTERISTIC_CONT_UPDATE.equals(action)) {
+
+				// Get read or notified data and update UI:
+				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_CONT_UPDATE);
+				for(int i = 0; i < dataArray.length; i++){
+					Log.v("CONT","dataArray[" + i + "] = " + dataArray[i]);
+				}
+
+			}
 
 		}
 	};
@@ -252,6 +261,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		final IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_STAT_UPDATE);
 		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_SENS_UPDATE);
+        intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_CONT_UPDATE);
 		return intentFilter;
 	}
 

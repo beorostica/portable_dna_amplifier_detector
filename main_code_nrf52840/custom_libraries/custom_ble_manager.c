@@ -331,6 +331,8 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             NRF_LOG_INFO("BLE_MANAGER: Detection System Task Starts.");
                             timerDetectionSystem_Start();
                             secondsStart();
+                            timerControlSystem_Start();
+                            timerControlSystem_SaveExternalFlash_Start();
                             hundredMillisStart();
                             
                             //Update the device status data (now it's measuring and there is data on flash):
