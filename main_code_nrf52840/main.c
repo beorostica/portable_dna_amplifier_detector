@@ -50,8 +50,9 @@ int main(void)
     deviceStatus_saveStructData_init();
     bleCusStatSendData(deviceStatus_getStructData());
 
-    //Start the temp controller timer and the PID controller:
-    timerControllerSystem_Start();
+    //Start the temp control timer and the PID controller:
+    timerControlSystem_Start();
+    timerControlSystem_SaveExternalFlash_Start();
     pidInit();
 
     //Print Message:
@@ -228,16 +229,16 @@ int main(void)
         }
 
         ////////////////////////////////////////////////////////////////
-        /// Temp Controller Task ///////////////////////////////////////
+        /// Temp Control Task //////////////////////////////////////////
         ////////////////////////////////////////////////////////////////
         static uint16_t count = 0;
         static uint16_t adcReference = 768;
 
         //if(deviceStatus_getStructData_isMeasuring())
         //{
-            if(timerControllerSystem_GetFlag())
+            if(timerControlSystem_GetFlag())
             {
-                timerControllerSystem_ClearFlag();
+                timerControlSystem_ClearFlag();
                 
                 // Measuring, Processing and Manipulate for PID controller:
                 uint16_t adcValue = pidGetAdcValue();
@@ -247,13 +248,27 @@ int main(void)
                 // Save and get the data in the static control_system_data struct:
                 controlSystem_saveStructData(count, adcReference, adcValue, (uint16_t) pwmValue);
                 control_system_data csData = controlSystem_getStructData();
+                //NRF_LOG_INFO("Count: %d. PWM: %d. REF: %d. ADC: %d.", csData.time, csData.uPwm, csData.refAdc, csData.yAdc);
 
-                // Print in console:
-                NRF_LOG_INFO("Count: %d. PWM: %d. REF: %d. ADC: %d.", csData.time, csData.uPwm, csData.refAdc, csData.yAdc);
+
+                // Save data in external flash after a certain time:
+                if (timerControlSystem_SaveExternalFlash_GetFlag()) 
+                {
+                    timerControlSystem_SaveExternalFlash_ClearFlag();
+
+                    //(1) First:
+                    qspiControlSystem_PushSampleInExternalFlash(csData);
+                }
+
+                // (2) Second:
+                if (adcReference == 256) {
+                    qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible();
+                }
+
 
                 // Change the reference signal:
                 count++;
-                if (count > 600){
+                if (count > 400){
                     count = 0;
                     if (adcReference == 768) {
                         adcReference = 256;
@@ -263,6 +278,8 @@ int main(void)
                 }
 
             }
+
+
         //}
 
        

@@ -62,13 +62,25 @@ void timerDetectionSystem_Stop(void);
 /// For periodicity of the Temp Controller System //////////////
 ////////////////////////////////////////////////////////////////
 
-void timerControllerSystem_Start(void);
+void timerControlSystem_Start(void);
 
-void timerControllerSystem_Stop(void);
+void timerControlSystem_Stop(void);
 
-bool timerControllerSystem_GetFlag(void);
+bool timerControlSystem_GetFlag(void);
 
-void timerControllerSystem_ClearFlag(void);
+void timerControlSystem_ClearFlag(void);
+
+////////////////////////////////////////////////////////////////////
+/// For periodicity of the Control System Save in external flash ///
+////////////////////////////////////////////////////////////////////
+
+void timerControlSystem_SaveExternalFlash_Start(void);
+
+void timerControlSystem_SaveExternalFlash_Stop(void);
+
+bool timerControlSystem_SaveExternalFlash_GetFlag(void);
+
+void timerControlSystem_SaveExternalFlash_ClearFlag(void);
 
 
 #endif /* CUSTOM_TIMER_H */
