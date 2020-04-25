@@ -76,7 +76,7 @@ static void pwm_ready_callback(uint32_t pwm_id)    // PWM callback function
 static void pwmInit(void)
 {
     // 1-channel PWM, 200Hz, output on DK LED pins:
-    app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_1CH(5000L, BSP_LED_0);
+    app_pwm_config_t pwm1_cfg = APP_PWM_DEFAULT_CONFIG_1CH(5000L, ARDUINO_13_PIN);
     pwm1_cfg.pin_polarity[0] = APP_PWM_POLARITY_ACTIVE_HIGH;
 
     // Initialize and enable PWM:
