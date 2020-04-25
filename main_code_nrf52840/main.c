@@ -53,6 +53,19 @@ int main(void)
     //Configure the PID controller peripherals:
     pidInit();
 
+    //
+    bool isBQ27441idCorrect = bq27441_begin();
+    NRF_LOG_INFO("isBQ27441idCorrect: %d.", isBQ27441idCorrect);
+    //bool isBQ2744CapacitySet = bq27441_setCapacity(750);
+    //NRF_LOG_INFO("isBQ2744CapacitySet: %d.", isBQ2744CapacitySet);
+    NRF_LOG_INFO("bq27441_getSoc(): %d.", bq27441_getSoc());
+    NRF_LOG_INFO("bq27441_getVoltage(): %d.", bq27441_getVoltage());
+    NRF_LOG_INFO("bq27441_getCurrent(): %d.", bq27441_getCurrent());
+    NRF_LOG_INFO("bq27441_getCapacityRemain(): %d.", bq27441_getCapacityRemain());
+    NRF_LOG_INFO("bq27441_getCapacityFull(): %d.", bq27441_getCapacityFull());
+    NRF_LOG_INFO("bq27441_getPower(): %d.", bq27441_getPower());
+    NRF_LOG_INFO("bq27441_getSoh(): %d.", bq27441_getSoh());
+
     //Print Message:
     NRF_LOG_INFO("");
     NRF_LOG_INFO("**********************");
