@@ -20,6 +20,8 @@ typedef struct
     uint8_t   timeDuration_mins;
     uint8_t   timeDuration_secs;
     uint8_t   tempReference;
+    bool      isSensDataOnFlash;
+    bool      isContDataOnFlash;
 } device_status_data;
 
 
@@ -37,6 +39,10 @@ void deviceStatus_saveStructData_timeDuration(uint8_t timeDuration_hrs, uint8_t 
 
 void deviceStatus_saveStructData_tempReference(uint8_t tempReference);
 
+void deviceStatus_saveStructData_isSensDataOnFlash(bool isSensDataOnFlash);
+
+void deviceStatus_saveStructData_isContDataOnFlash(bool isContDataOnFlash);
+
 
 device_status_data deviceStatus_getStructData(void);
 
@@ -49,6 +55,10 @@ bool deviceStatus_getStructData_isDataOnFlash(void);
 uint16_t deviceStatus_getStructData_timeDuration_secs(void);
 
 uint8_t deviceStatus_getStructData_tempReference(void);
+
+bool deviceStatus_getStructData_isSensDataOnFlash(void);
+
+bool deviceStatus_getStructData_isContDataOnFlash(void);
 
 
 #endif /* CUSTOM_STATUS_STRUCT_DATA_H */

@@ -8,6 +8,8 @@
 #include "custom_twi.h"
 #include "custom_ble_manager.h"
 #include "custom_device_status_struct_data.h"
+#include "custom_pid_controller.h"
+#include "custom_control_system_struct_data.h"
 
 
 //Main Function:
@@ -40,13 +42,16 @@ int main(void)
     services_init();
     advertising_init();
     conn_params_init();
-
+    
     //Start Advertising:
     advertising_start();
 
     //Set initial status data and STAT characteristic of the device:
     deviceStatus_saveStructData_init();
     bleCusStatSendData(deviceStatus_getStructData());
+
+    //Configure the PID controller peripherals:
+    pidInit();
 
     //Print Message:
     NRF_LOG_INFO("");
@@ -58,13 +63,55 @@ int main(void)
     //Enter main loop:
     while(1)
     {
-        ////////////////////////////////////////////////////////////////
-        /// Detection System Task //////////////////////////////////////
-        ////////////////////////////////////////////////////////////////
-        static uint8_t counter = 0;
-
-        if(deviceStatus_getStructData_isDataOnFlash())
+        
+        //If the measuring flag is true:
+        if(deviceStatus_getStructData_isMeasuring())
         {
+
+            ////////////////////////////////////////////////////////////////
+            /// Temp Control Task //////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////
+            static uint32_t timeSecondsPast = 0;
+            static uint16_t adcReference = 768;
+            if(timerControlSystem_GetFlag())
+            {
+                timerControlSystem_ClearFlag();
+                
+                // Measuring, Processing and Manipulating for PID controller:
+                uint16_t adcValue = pidGetAdcValue();
+                uint8_t pwmValue = pidGetPwmAction(adcValue, adcReference);
+                pidSetPwmAction(pwmValue);
+
+                // Save and get the data in the static control_system_data struct:
+                controlSystem_saveStructData((uint16_t) secondsGetTime(), adcReference, adcValue, (uint16_t) pwmValue);
+                control_system_data csData = controlSystem_getStructData();
+                //NRF_LOG_INFO("Count: %d. PWM: %d. REF: %d. ADC: %d.", csData.time, csData.uPwm, csData.refAdc, csData.yAdc);
+
+                // Save data in external flash after a certain time:
+                if (timerControlSystem_SaveExternalFlash_GetFlag()) 
+                {
+                    timerControlSystem_SaveExternalFlash_ClearFlag();
+
+                    //(1) First. Save on flash for "Cont":
+                    qspiControlSystem_PushSampleInExternalFlash(csData);
+                }
+
+                // Change the reference signal:
+                if (secondsGetTime() - timeSecondsPast > 60){
+                    timeSecondsPast = secondsGetTime();
+                    if (adcReference == 768) {
+                        adcReference = 256;
+                    } else {
+                        adcReference = 768;
+                    }
+                }
+
+            }
+
+            ////////////////////////////////////////////////////////////////
+            /// Detection System Task //////////////////////////////////////
+            ////////////////////////////////////////////////////////////////
+            static uint8_t counter = 0;
             if(timerDetectionSystem_GetFlag())
             {
                 if(secondsGetFlag())
@@ -171,16 +218,18 @@ int main(void)
                             NRF_LOG_INFO("time = %d. mosfetBefore = %d. sensorBefore = %d. mosfetAfter = %d. sensorAfter = %d", dsData.time[3], dsData.mosfetActuator_before[3], dsData.lightSensor_before[3], dsData.mosfetActuator_after[3], dsData.lightSensor_after[3]);
                             
             
-                            //(1) First:
-                            qspiPushSampleInExternalFlash(dsData);
+                            //(1) First. Save on flash for "Sens":
+                            qspiDetectionSystem_PushSampleInExternalFlash(dsData);
                             
                             //If the time-out occurs or the command from the phone app is for stopping the detection system task, then stop it:
                             if((time > deviceStatus_getStructData_timeDuration_secs()) || (!deviceStatus_getStructData_commandFromPhone())){
                                 NRF_LOG_INFO("MAIN: Detection System Task Stoped. time: %d.", time);
 
-                                //Stop the detection system timers:
+                                //Stop the detection system and the control system timers:
                                 timerDetectionSystem_Stop();
                                 secondsStop();
+                                timerControlSystem_Stop();
+                                timerControlSystem_SaveExternalFlash_Stop();
 
                                 //Update the device status data (now it's not measuring):
                                 deviceStatus_saveStructData_isMeasuring(false);
@@ -204,22 +253,35 @@ int main(void)
                     }
                 
                 }
-            
             }
 
-            //If the nRF52840 is connected and the notifications are enabled, then try to send BT data every 0.1[s]:
-            if(bleGetCusSensNotificationFlag())
-            {
-                if(hundredMillisGetFlag())
-                {
-                    hundredMillisClearFlag();
-                
-                    //(2) Second:
-                    qspiReadExternalFlashAndSendBleDataIfPossible();
-                }
-            }
 
         }
+
+        //If the data on flash flag is true:
+        if (deviceStatus_getStructData_isDataOnFlash()) 
+        {
+            // Do something (try to send BLE data) after 0.1 seconds:
+            if(hundredMillisGetFlag())
+            {
+                hundredMillisClearFlag();
+
+                //If the nRF52840 is connected and the notifications for "Cont" are enabled and there is data on flash for "Cont", then try to send BT data:
+                if(bleGetCusContNotificationFlag() && deviceStatus_getStructData_isContDataOnFlash())
+                {
+                    // (2) Second. Read from flash and send via BLE for "Cont":
+                    qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible();
+                }
+
+                //If the nRF52840 is connected and the notifications for "Sens" are enabled and there is data on flash for "Sens", then try to send BT data:
+                if(bleGetCusSensNotificationFlag() && deviceStatus_getStructData_isSensDataOnFlash()){
+                    //(2) Second. Read from flash and send via BLE for "Sens":
+                    qspiDetectionSystem_ReadExternalFlashAndSendBleDataIfPossible();
+                }
+
+            }
+        }
+
        
     }
 }

@@ -2,6 +2,7 @@
 #include "custom_ble_manager.h"
 #include "cus_stat.h"
 #include "cus_sens.h"
+#include "cus_cont.h"
 
 #include "ble_advertising.h"
 #include "ble_conn_params.h"
@@ -60,10 +61,12 @@ BLE_ADVERTISING_DEF(m_advertising);                                             
  */
 BLE_CUS_STAT_DEF(m_cus_stat);
 BLE_CUS_SENS_DEF(m_cus_sens);
+BLE_CUS_CONT_DEF(m_cus_cont);
 
 
 static bool isCusStatNotificationEnabled = false;
 static bool isCusSensNotificationEnabled = false;
+static bool isCusContNotificationEnabled = false;
 
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 
@@ -82,6 +85,7 @@ static void on_adv_evt(ble_adv_evt_t ble_adv_evt);                          //Fo
 static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context); //For handling BLE events
 static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt);   //For handling custom service events
 static void on_cus_sens_evt(cus_sens_t * p_cus_service, cus_sens_evt_t * p_evt);   //For handling custom service events
+static void on_cus_cont_evt(cus_cont_t * p_cus_service, cus_cont_evt_t * p_evt);   //For handling custom service events
 
 
 /**@brief Function for handling Queued Write Module errors.
@@ -168,8 +172,10 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
         case BLE_GAP_EVT_DISCONNECTED:
             isCusStatNotificationEnabled = false;
             isCusSensNotificationEnabled = false;
+            isCusContNotificationEnabled = false;
             NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: false");
             NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusContNotificationEnabled: false");
             NRF_LOG_INFO("BLE_MANAGER: Disconnected.");
             break;
 
@@ -196,8 +202,10 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             // Disconnect on GATT Client timeout event.
             isCusStatNotificationEnabled = false;
             isCusSensNotificationEnabled = false;
+            isCusContNotificationEnabled = false;
             NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: false");
             NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusContNotificationEnabled: false");
             NRF_LOG_DEBUG("BLE_MANAGER: GATT Client Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
@@ -208,8 +216,10 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             // Disconnect on GATT Server timeout event.
             isCusStatNotificationEnabled = false;
             isCusSensNotificationEnabled = false;
+            isCusContNotificationEnabled = false;
             NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: false");
             NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusContNotificationEnabled: false");
             NRF_LOG_DEBUG("BLE_MANAGER: GATT Server Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
@@ -308,7 +318,7 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                 {                    
                     //If the command from phone app is true:
                     if(commandFromPhoneAux){
-                        //And if the detection system is not measuring, then start detection system task: 
+                        //And if there is not previous data stored on flash, then start detection system task: 
                         if(!deviceStatus_getStructData_isDataOnFlash())
                         {
                             NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic is gonna be stored in the device status data.");
@@ -321,6 +331,8 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             NRF_LOG_INFO("BLE_MANAGER: Detection System Task Starts.");
                             timerDetectionSystem_Start();
                             secondsStart();
+                            timerControlSystem_Start();
+                            timerControlSystem_SaveExternalFlash_Start();
                             hundredMillisStart();
                             
                             //Update the device status data (now it's measuring and there is data on flash):
@@ -330,6 +342,8 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             deviceStatus_saveStructData_fileName(data_buffer[3], data_buffer[4], data_buffer[5], data_buffer[6], data_buffer[7], data_buffer[8]);
                             deviceStatus_saveStructData_timeDuration(data_buffer[9], data_buffer[10], data_buffer[11]);
                             deviceStatus_saveStructData_tempReference(data_buffer[12]);
+                            deviceStatus_saveStructData_isSensDataOnFlash(true);
+                            deviceStatus_saveStructData_isContDataOnFlash(true);
                             NRF_LOG_INFO("BLE_MANAGER: isDataOnFlash = %d.", deviceStatus_getStructData_isDataOnFlash());
                             NRF_LOG_INFO("BLE_MANAGER: fileName_year = %d.", deviceStatus_getStructData().fileName_year);
                             NRF_LOG_INFO("BLE_MANAGER: fileName_month = %d.", deviceStatus_getStructData().fileName_month);
@@ -341,7 +355,9 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             NRF_LOG_INFO("BLE_MANAGER: timeDuration_mins = %d.", deviceStatus_getStructData().timeDuration_mins);
                             NRF_LOG_INFO("BLE_MANAGER: timeDuration_secs = %d.", deviceStatus_getStructData().timeDuration_secs);
                             NRF_LOG_INFO("BLE_MANAGER: tempReference = %d.", deviceStatus_getStructData().tempReference);
-                            
+                            NRF_LOG_INFO("BLE_MANAGER: isSensDataOnFlash = %d.", deviceStatus_getStructData_isSensDataOnFlash());
+                            NRF_LOG_INFO("BLE_MANAGER: isContDataOnFlash = %d.", deviceStatus_getStructData_isContDataOnFlash());
+
                             //Change the "data_buffer" to update STAT characteristic:
                             data_buffer[0] = deviceStatus_getStructData_commandFromPhone();
                             data_buffer[1] = deviceStatus_getStructData_isMeasuring();
@@ -356,23 +372,25 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             data_buffer[10] = deviceStatus_getStructData().timeDuration_mins;
                             data_buffer[11] = deviceStatus_getStructData().timeDuration_secs;
                             data_buffer[12] = deviceStatus_getStructData().tempReference;
+                            data_buffer[13] = deviceStatus_getStructData_isSensDataOnFlash();
+                            data_buffer[14] = deviceStatus_getStructData_isContDataOnFlash();
 
                             //Send a notification back to the phone app of the STAT characteristic written (stored on "data_buffer"):
                             uint32_t err_code = cus_stat_custom_value_update(p_cus_service, data_buffer);
                             APP_ERROR_CHECK(err_code);
                             NRF_LOG_INFO("BLE_MANAGER: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d. isDataOnFlash = %d", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring(), deviceStatus_getStructData_isDataOnFlash());
                         }
-                        //But if the detection system is measuring, then print log info:
+                        //But if there is previous data stored on flash, then print log info:
                         else
                         {
-                            NRF_LOG_INFO("BLE_MANAGER: The Detection System is already measuring, so you have to wait until detection system task stops.");
+                            NRF_LOG_INFO("BLE_MANAGER: The nRF52 has previous data stored on flash, so you have to wait until nRF52 reads and sends all the data on flash.");
                             NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic will not be stored in the device status data.");
                         }
                     }
                     //If the command from phone app is false:
                     else
                     {
-                        //And if the detection system is measuring, then the main will stop the detection system task soon:
+                        //And if there is previous data stored on flash, then the main will stop to read and send data on flash soon:
                         if(deviceStatus_getStructData_isDataOnFlash())
                         {
                             NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic is gonna be stored in the device status data.");
@@ -389,12 +407,12 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             uint32_t err_code = cus_stat_custom_value_update(p_cus_service, data_buffer);
                             APP_ERROR_CHECK(err_code);
                             NRF_LOG_INFO("BLE_MANAGER: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d. isDataOnFlash = %d", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring(), deviceStatus_getStructData_isDataOnFlash());
-                            NRF_LOG_INFO("BLE_MANAGER: Wait until the detection system task stops.");
+                            NRF_LOG_INFO("BLE_MANAGER: Wait until all the data stored on flash is send via BLE.");
                         }
-                        //But if the detection system is not measuring, then print log info:
+                        //But if there is not previous data stored on flash, then print log info:
                         else
                         {
-                            NRF_LOG_INFO("BLE_MANAGER: The Detection System is not measuring, so the command from phone was not necessary");
+                            NRF_LOG_INFO("BLE_MANAGER: The nRF52 doesn't have data to send (system is not measuring), so the command from phone was not necessary");
                             NRF_LOG_INFO("BLE_MANAGER: Write to STAT characteristic will not be stored in the device status data.");
                         }
                     }
@@ -422,6 +440,12 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                 data_buffer[6] = dataCusStat.fileName_hrs;
                 data_buffer[7] = dataCusStat.fileName_mins;
                 data_buffer[8] = dataCusStat.fileName_secs;
+                data_buffer[9]  = dataCusStat.timeDuration_hrs;
+                data_buffer[10] = dataCusStat.timeDuration_mins;
+                data_buffer[11] = dataCusStat.timeDuration_secs;
+                data_buffer[12] = dataCusStat.tempReference;
+                data_buffer[13] = dataCusStat.isSensDataOnFlash;
+                data_buffer[14] = dataCusStat.isContDataOnFlash;
                 err_code = sd_ble_gatts_value_set(p_cus_service->conn_handle, p_cus_service->custom_value_handles.value_handle, &gatts_value);
                 APP_ERROR_CHECK(err_code);
                 NRF_LOG_INFO("BLE_MANAGER: The STAT characteristic is the same as the device status data.");
@@ -466,6 +490,44 @@ static void on_cus_sens_evt(cus_sens_t * p_cus_service, cus_sens_evt_t * p_evt)
         case CUS_SENS_EVT_DISCONNECTED:
             isCusSensNotificationEnabled = false;
             NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
+            break;
+
+        default:
+              // No implementation needed.
+              break;
+    }
+}
+
+/**@brief Function for handling the Custom Service Service events.
+ *
+ * @details This function will be called for all Custom Service events which are passed to
+ *          the application.
+ *
+ * @param[in]   p_cus_service  Custom Service structure.
+ * @param[in]   p_evt          Event received from the Custom Service.
+ *
+ */
+static void on_cus_cont_evt(cus_cont_t * p_cus_service, cus_cont_evt_t * p_evt)
+{
+    uint32_t err_code;
+    switch(p_evt->evt_type)
+    {
+        case CUS_CONT_EVT_NOTIFICATION_ENABLED:
+            isCusContNotificationEnabled = true;
+            NRF_LOG_INFO("BLE_MANAGER: isCusContNotificationEnabled: true");
+            break;
+
+        case CUS_CONT_EVT_NOTIFICATION_DISABLED:
+            isCusContNotificationEnabled = false;
+            NRF_LOG_INFO("BLE_MANAGER: isCusContNotificationEnabled: false");
+            break;
+
+        case CUS_CONT_EVT_CONNECTED :
+            break;
+
+        case CUS_CONT_EVT_DISCONNECTED:
+            isCusContNotificationEnabled = false;
+            NRF_LOG_INFO("BLE_MANAGER: isCusContNotificationEnabled: false");
             break;
 
         default:
@@ -642,6 +704,18 @@ void services_init(void)
     err_code = cus_sens_ble_init(&m_cus_sens, &cus_sens_init);
     APP_ERROR_CHECK(err_code);
 
+    //////////////////////////////////////////////////////////////
+    //CUS CONT service variable:
+    cus_cont_init_t  cus_cont_init;
+
+    //Initialize CUS Service init structure to zero.
+    memset(&cus_cont_init, 0, sizeof(cus_cont_init));
+
+    // Set the cus event handler
+    cus_cont_init.evt_handler = on_cus_cont_evt;
+
+    err_code = cus_cont_ble_init(&m_cus_cont, &cus_cont_init);
+    APP_ERROR_CHECK(err_code);
 }
 
 
@@ -693,6 +767,13 @@ bool bleGetCusSensNotificationFlag(void)
     return isCusSensNotificationEnabled;
 }
 
+/**@brief Function for checking notification status.
+ */
+bool bleGetCusContNotificationFlag(void)
+{
+    return isCusContNotificationEnabled;
+}
+
 /**@brief Function for sending ble data.
  */
 void bleCusStatSendData(device_status_data data)
@@ -708,5 +789,14 @@ void bleCusSensSendData(detection_system_single_data data)
 {
     uint8_t *ptrData = (uint8_t*) &data;
     uint32_t err_code = cus_sens_custom_value_update(&m_cus_sens, ptrData);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Function for sending ble data.
+ */
+void bleCusContSendData(control_system_data data)
+{
+    uint8_t *ptrData = (uint8_t*) &data;
+    uint32_t err_code = cus_cont_custom_value_update(&m_cus_cont, ptrData);
     APP_ERROR_CHECK(err_code);
 }

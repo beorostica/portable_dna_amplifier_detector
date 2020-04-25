@@ -60,6 +60,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	// TODO change view references to match your need
 	private TextView[] valueViewArray = new TextView[6];
 	private EditText[] editTextDurationArray = new EditText[3];
+	private TextView[] textViewContArray = new TextView[4];
 
 	@Override
 	protected void onCreateView(final Bundle savedInstanceState) {
@@ -86,6 +87,10 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
             int numberMax = 59;
             if(i == 0){ numberMax = 17;}
             editTextDurationArray[i].setFilters(new InputFilter[]{new InputFilterMinMax(0, numberMax)});
+        }
+        for(int i = 0; i < textViewContArray.length; i++){
+            int resId = getResources().getIdentifier("textViewCont" + i, "id", getPackageName());
+            textViewContArray[i] = findViewById(resId);
         }
 
 		findViewById(R.id.action_read).setOnClickListener(v -> {
@@ -244,6 +249,15 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
                 mSaveFileManager.writeLine(dataArray);
 
 			}
+			if (TemplateService.BROADCAST_CHARACTERISTIC_CONT_UPDATE.equals(action)) {
+
+				// Get read or notified data and update UI:
+				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_CONT_UPDATE);
+				for(int i = 0; i < textViewContArray.length; i++){
+                    textViewContArray[i].setText(String.valueOf(dataArray[i]));
+				}
+
+			}
 
 		}
 	};
@@ -252,6 +266,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		final IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_STAT_UPDATE);
 		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_SENS_UPDATE);
+        intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_CONT_UPDATE);
 		return intentFilter;
 	}
 
