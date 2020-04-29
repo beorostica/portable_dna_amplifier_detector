@@ -146,6 +146,7 @@
       <file file_name="../../../custom_libraries/custom_pid_controller.c" />
       <file file_name="../../../custom_libraries/custom_control_system_struct_data.c" />
       <file file_name="../../../custom_libraries/cus_cont.c" />
+      <file file_name="../../../custom_libraries/custom_battery_system_struct_data.c" />
     </folder>
     <folder Name="other_libraries">
       <folder Name="for_ExternalFlash">
