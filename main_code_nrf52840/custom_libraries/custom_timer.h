@@ -83,4 +83,17 @@ bool timerControlSystem_SaveExternalFlash_GetFlag(void);
 void timerControlSystem_SaveExternalFlash_ClearFlag(void);
 
 
+////////////////////////////////////////////////////////
+/// For periodicity of the Battery System //////////////
+////////////////////////////////////////////////////////
+
+void timerBatterySystem_Start(void);
+
+void timerBatterySystem_Stop(void);
+
+bool timerBatterySystem_GetFlag(void);
+
+void timerBatterySystem_ClearFlag(void);
+
+
 #endif /* CUSTOM_TIMER_H */

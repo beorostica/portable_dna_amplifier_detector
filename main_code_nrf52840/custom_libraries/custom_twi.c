@@ -125,9 +125,8 @@ uint16_t ads1015Read(uint8_t channel)
     static uint8_t m_data[2];
     err_code = nrf_drv_twi_rx(&m_twi, ADS1015_ADDRESS, m_data, sizeof(m_data));
     APP_ERROR_CHECK(err_code);
-    //TODO: check if the two following lines are necessary.
-    //while(!m_xfer_done);
-    //m_xfer_done = false;
+    while(!m_xfer_done);
+    m_xfer_done = false;
 
     ///////////////////////////////////////////////////////////////
     /// Value interpretation of ADC1015 data //////////////////////

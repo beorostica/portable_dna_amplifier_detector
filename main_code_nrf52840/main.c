@@ -54,40 +54,15 @@ int main(void)
     //Configure the PID controller peripherals:
     pidInit();
 
+
+    /////////////////////////////////////////////////////////
     //Configure battery babysitter:
     bq27441_begin();
 
-    //Read from babysitter:
-    uint16_t time           = 0;
-    uint16_t soc            = bq27441_getSoc();
-    uint16_t capacityRemain = bq27441_getCapacityRemain();
-    uint16_t capacityFull   = bq27441_getCapacityFull();
-    uint8_t soh             = bq27441_getSoh();
-    uint16_t voltage        = bq27441_getVoltage();
-    int16_t current         = bq27441_getCurrent();
-    int16_t power           = bq27441_getPower();
+    //Start Battery System Timer:
+    timerBatterySystem_Start();
 
-    //Save data in the static battery data struct:
-    batterySystem_saveStructData(time, soc, capacityRemain, capacityFull, (uint16_t)soh, voltage, (uint16_t)current, (uint16_t)power);
-
-    //Get the data from the static battery data struct:
-    battery_system_data bsData = batterySystem_getStructData();
-
-    //Compare values (uint16_t vs int16_t):
-    NRF_LOG_INFO("bq27441_getSoc(): %d.", soc);
-    NRF_LOG_INFO("bq27441_getCapacityRemain(): %d.", capacityRemain);
-    NRF_LOG_INFO("bq27441_getCapacityFull(): %d.", capacityFull);
-    NRF_LOG_INFO("bq27441_getSoh(): %d.", soh);
-    NRF_LOG_INFO("bq27441_getVoltage(): %d.", voltage);
-    NRF_LOG_INFO("bq27441_getCurrent(): %d.", current);
-    NRF_LOG_INFO("bq27441_getPower(): %d.", power);
-    NRF_LOG_INFO("bsData.soc: %d.", bsData.soc);
-    NRF_LOG_INFO("bsData.capacityRemain: %d.", bsData.capacityRemain);
-    NRF_LOG_INFO("bsData.capacityFull: %d.", bsData.capacityFull);
-    NRF_LOG_INFO("bsData.soh: %d.", bsData.soh);
-    NRF_LOG_INFO("bsData.voltage: %d.", bsData.voltage);
-    NRF_LOG_INFO("bsData.current: %d.", bsData.current);
-    NRF_LOG_INFO("bsData.power: %d.", bsData.power);
+    /////////////////////////////////////////////////////////
 
     //Print Message:
     NRF_LOG_INFO("");
@@ -99,6 +74,34 @@ int main(void)
     //Enter main loop:
     while(1)
     {
+
+        ////////////////////////////////////////////////////////////////
+        /// Battery System Task ////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+        if(timerBatterySystem_GetFlag())
+        {
+            timerBatterySystem_ClearFlag();
+
+            //Read from babysitter:
+            uint16_t time           = 0;
+            uint16_t soc            = bq27441_getSoc();
+            uint16_t capacityRemain = bq27441_getCapacityRemain();
+            uint16_t capacityFull   = bq27441_getCapacityFull();
+            uint8_t soh             = bq27441_getSoh();
+            uint16_t voltage        = bq27441_getVoltage();
+            int16_t current         = bq27441_getCurrent();
+            int16_t power           = bq27441_getPower();
+
+            //Save data in the static battery data struct:
+            batterySystem_saveStructData(time, soc, capacityRemain, capacityFull, (uint16_t)soh, voltage, (uint16_t)current, (uint16_t)power);
+
+            //Get the data from the static battery data struct:
+            battery_system_data bsData = batterySystem_getStructData();
+
+            //Print values for debugging:
+            NRF_LOG_INFO("soc: %d. capRem: %d. capFull: %d. voltage: %d. current: %d. power: %d.", bsData.soc, bsData.capacityRemain, bsData.capacityFull, bsData.voltage, bsData.current, bsData.power);
+
+        }
         
         //If the measuring flag is true:
         if(deviceStatus_getStructData_isMeasuring())
