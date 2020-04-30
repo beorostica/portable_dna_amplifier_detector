@@ -61,6 +61,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	private TextView[] valueViewArray = new TextView[6];
 	private EditText[] editTextDurationArray = new EditText[3];
 	private TextView[] textViewContArray = new TextView[4];
+    private TextView[] textViewBattArray = new TextView[8];
 
 	@Override
 	protected void onCreateView(final Bundle savedInstanceState) {
@@ -91,6 +92,10 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
         for(int i = 0; i < textViewContArray.length; i++){
             int resId = getResources().getIdentifier("textViewCont" + i, "id", getPackageName());
             textViewContArray[i] = findViewById(resId);
+        }
+        for(int i = 0; i < textViewBattArray.length; i++){
+            int resId = getResources().getIdentifier("textViewBatt" + i, "id", getPackageName());
+            textViewBattArray[i] = findViewById(resId);
         }
 
 		findViewById(R.id.action_read).setOnClickListener(v -> {
@@ -262,8 +267,8 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 				// Get read or notified data and update UI:
 				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_BATT_UPDATE);
-				for(int i = 0; i < dataArray.length; i++){
-					Log.v("BATT","dataArray[" + i + "] = " + dataArray[i]);
+				for(int i = 0; i < textViewBattArray.length; i++){
+                    textViewBattArray[i].setText(String.valueOf(dataArray[i]));
 				}
 
 			}

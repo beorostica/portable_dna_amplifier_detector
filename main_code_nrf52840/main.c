@@ -272,7 +272,7 @@ int main(void)
                 timerBatterySystem_ClearFlag();
 
                 //Read from babysitter:
-                uint16_t time           = 0;
+                uint16_t time           = (uint16_t) secondsGetTime();
                 uint16_t soc            = bq27441_getSoc();
                 uint16_t capacityRemain = bq27441_getCapacityRemain();
                 uint16_t capacityFull   = bq27441_getCapacityFull();
