@@ -285,8 +285,8 @@ void qspiDetectionSystem_ReadExternalFlashAndSendBleDataIfPossible(void){
             deviceStatus_saveStructData_isSensDataOnFlash(false);
             NRF_LOG_INFO("FLASH: isSensDataOnFlash = %d.", deviceStatus_getStructData_isSensDataOnFlash());
 
-            //If there is not data on flash for "Cont" either: 
-            if(!deviceStatus_getStructData_isContDataOnFlash())
+            //If there is not data on flash for "Cont" nor "Batt" either: 
+            if(!deviceStatus_getStructData_isContDataOnFlash() && !deviceStatus_getStructData_isBattDataOnFlash())
             {
                 //Stop the millis Timer and update the internal device status data:
                 hundredMillisStop();
@@ -469,8 +469,8 @@ void qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible(void){
             deviceStatus_saveStructData_isContDataOnFlash(false);
             NRF_LOG_INFO("FLASH: isContDataOnFlash = %d.", deviceStatus_getStructData_isContDataOnFlash());
 
-            //If there is not data on flash for "Sens" either: 
-            if(!deviceStatus_getStructData_isSensDataOnFlash())
+            //If there is not data on flash for "Sens" nor "Batt" either: 
+            if(!deviceStatus_getStructData_isSensDataOnFlash() && !deviceStatus_getStructData_isBattDataOnFlash())
             {
                 //Stop the millis Timer and update the internal device status data:
                 hundredMillisStop();
@@ -644,16 +644,15 @@ void qspiBatterySystem_ReadExternalFlashAndSendBleDataIfPossible(void){
             idxBuffer_read = (idxBuffer_read+1) % ((uint32_t) QSPI_BUFFER_SIZE_BATSYSDAT);
 
         }
-        /*
-        //If it is the last data, if it is not measuring and there is still data on flash for "Cont" (data on flash means there is still data to send)
-        else if(!deviceStatus_getStructData_isMeasuring() && deviceStatus_getStructData_isContDataOnFlash())
+        //If it is the last data, if it is not measuring and there is still data on flash for "Batt" (data on flash means there is still data to send)
+        else if(!deviceStatus_getStructData_isMeasuring() && deviceStatus_getStructData_isBattDataOnFlash())
         {
-            //Update device status data for "isContDataOnFlash":
-            deviceStatus_saveStructData_isContDataOnFlash(false);
-            NRF_LOG_INFO("FLASH: isContDataOnFlash = %d.", deviceStatus_getStructData_isContDataOnFlash());
+            //Update device status data for "isBattDataOnFlash":
+            deviceStatus_saveStructData_isBattDataOnFlash(false);
+            NRF_LOG_INFO("FLASH: isBattDataOnFlash = %d.", deviceStatus_getStructData_isBattDataOnFlash());
 
-            //If there is not data on flash for "Sens" either: 
-            if(!deviceStatus_getStructData_isSensDataOnFlash())
+            //If there is not data on flash for "Sens" nor for "Cont" either: 
+            if(!deviceStatus_getStructData_isSensDataOnFlash() && !deviceStatus_getStructData_isContDataOnFlash())
             {
                 //Stop the millis Timer and update the internal device status data:
                 hundredMillisStop();
@@ -667,7 +666,7 @@ void qspiBatterySystem_ReadExternalFlashAndSendBleDataIfPossible(void){
             }
 
         }
-        */
+        
     }
     
 }

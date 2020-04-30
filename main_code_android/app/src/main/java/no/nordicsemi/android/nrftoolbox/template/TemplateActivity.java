@@ -258,6 +258,15 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				}
 
 			}
+			if (TemplateService.BROADCAST_CHARACTERISTIC_BATT_UPDATE.equals(action)) {
+
+				// Get read or notified data and update UI:
+				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_BATT_UPDATE);
+				for(int i = 0; i < dataArray.length; i++){
+					Log.v("BATT","dataArray[" + i + "] = " + dataArray[i]);
+				}
+
+			}
 
 		}
 	};
@@ -267,6 +276,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_STAT_UPDATE);
 		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_SENS_UPDATE);
         intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_CONT_UPDATE);
+		intentFilter.addAction(TemplateService.BROADCAST_CHARACTERISTIC_BATT_UPDATE);
 		return intentFilter;
 	}
 
