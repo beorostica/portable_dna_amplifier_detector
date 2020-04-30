@@ -10,6 +10,7 @@
 #include "custom_device_status_struct_data.h"
 #include "custom_pid_controller.h"
 #include "custom_control_system_struct_data.h"
+#include "custom_battery_system_struct_data.h"
 
 
 //Main Function:
@@ -52,6 +53,14 @@ int main(void)
 
     //Configure the PID controller peripherals:
     pidInit();
+
+    /////////////////////////////////////////////////////////
+    //Configure battery babysitter:
+    bq27441_begin();
+
+    //Start Battery System Timer:
+    timerBatterySystem_Start();
+    /////////////////////////////////////////////////////////
 
     //Print Message:
     NRF_LOG_INFO("");
@@ -255,9 +264,79 @@ int main(void)
                 }
             }
 
+            ////////////////////////////////////////////////////////////////
+            /// Battery System Task (when measuring) ///////////////////////
+            ////////////////////////////////////////////////////////////////
+            if(timerBatterySystem_GetFlag())
+            {
+                timerBatterySystem_ClearFlag();
+
+                //Read from babysitter:
+                uint16_t time           = (uint16_t) secondsGetTime();
+                uint16_t soc            = bq27441_getSoc();
+                uint16_t capacityRemain = bq27441_getCapacityRemain();
+                uint16_t capacityFull   = bq27441_getCapacityFull();
+                uint8_t soh             = bq27441_getSoh();
+                uint16_t voltage        = bq27441_getVoltage();
+                int16_t current         = bq27441_getCurrent();
+                int16_t power           = bq27441_getPower();
+
+                //Save data in the static battery data struct:
+                batterySystem_saveStructData(time, soc, capacityRemain, capacityFull, (uint16_t)soh, voltage, (uint16_t)current, (uint16_t)power);
+  
+                //Get the data from the static battery data struct:
+                battery_system_data bsData = batterySystem_getStructData();
+
+                //Print values for debugging:
+                //NRF_LOG_INFO("soc: %d. capRem: %d. capFull: %d. voltage: %d. current: %d. power: %d.", bsData.soc, bsData.capacityRemain, bsData.capacityFull, bsData.voltage, bsData.current, bsData.power);
+
+                //(1) First. Save on flash for "Batt":
+                qspiBatterySystem_PushSampleInExternalFlash(bsData);
+            }
 
         }
+        //But if it's not measuring:
+        else
+        {
+            ///////////////////////////////////////////////////////////////////////
+            /// Battery System Task (when phone connected and not measuring) //////
+            ///////////////////////////////////////////////////////////////////////
+            //Only if there is a phone connected with Batt notification enabled, then send battery data via ble:
+            if(bleGetCusBattNotificationFlag() && timerBatterySystem_GetFlag())
+            {
+                timerBatterySystem_ClearFlag();
 
+                //Read from babysitter:
+                uint16_t time           = 0;
+                uint16_t soc            = bq27441_getSoc();
+                uint16_t capacityRemain = bq27441_getCapacityRemain();
+                uint16_t capacityFull   = bq27441_getCapacityFull();
+                uint8_t soh             = bq27441_getSoh();
+                uint16_t voltage        = bq27441_getVoltage();
+                int16_t current         = bq27441_getCurrent();
+                int16_t power           = bq27441_getPower();
+
+                //Save data in the static battery data struct:
+                batterySystem_saveStructData(time, soc, capacityRemain, capacityFull, (uint16_t)soh, voltage, (uint16_t)current, (uint16_t)power);
+  
+                //Get the data from the static battery data struct:
+                battery_system_data bsData = batterySystem_getStructData();
+
+                //Print values for debugging:
+                NRF_LOG_INFO("soc: %d. capRem: %d. capFull: %d. voltage: %d. current: %d. power: %d.", bsData.soc, bsData.capacityRemain, bsData.capacityFull, bsData.voltage, bsData.current, bsData.power);
+
+                //Just send battery ble data, but don't save on flash:
+                if(bleGetCusBattNotificationFlag())
+                {
+                    bleCusBattSendData(bsData);
+                    NRF_LOG_INFO("BLE BATT SERVICE: send. Read from main(). time: %d", bsData.time);
+                }
+            }
+        }
+
+        ////////////////////////////////////////////////////////////////
+        /// BLE data transmission Task /////////////////////////////////
+        ////////////////////////////////////////////////////////////////
         //If the data on flash flag is true:
         if (deviceStatus_getStructData_isDataOnFlash()) 
         {
@@ -269,7 +348,7 @@ int main(void)
                 //If the nRF52840 is connected and the notifications for "Cont" are enabled and there is data on flash for "Cont", then try to send BT data:
                 if(bleGetCusContNotificationFlag() && deviceStatus_getStructData_isContDataOnFlash())
                 {
-                    // (2) Second. Read from flash and send via BLE for "Cont":
+                    //(2) Second. Read from flash and send via BLE for "Cont":
                     qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible();
                 }
 
@@ -277,6 +356,12 @@ int main(void)
                 if(bleGetCusSensNotificationFlag() && deviceStatus_getStructData_isSensDataOnFlash()){
                     //(2) Second. Read from flash and send via BLE for "Sens":
                     qspiDetectionSystem_ReadExternalFlashAndSendBleDataIfPossible();
+                }
+
+                //If the nRF52840 is connected and the notifications for "Batt" are enabled and there is data on flash for "Batt", then try to send BT data:
+                if(bleGetCusBattNotificationFlag() && deviceStatus_getStructData_isBattDataOnFlash()){
+                    //(2) Second. Read from flash and send via BLE for "Batt":
+                    qspiBatterySystem_ReadExternalFlashAndSendBleDataIfPossible();
                 }
 
             }

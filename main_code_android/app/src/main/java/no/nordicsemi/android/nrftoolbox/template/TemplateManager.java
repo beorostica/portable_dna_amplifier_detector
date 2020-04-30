@@ -39,6 +39,7 @@ import no.nordicsemi.android.nrftoolbox.profile.LoggableBleManager;
 import no.nordicsemi.android.nrftoolbox.template.callback.SensDataCallback;
 import no.nordicsemi.android.nrftoolbox.template.callback.StatDataCallback;
 import no.nordicsemi.android.nrftoolbox.template.callback.ContDataCallback;
+import no.nordicsemi.android.nrftoolbox.template.callback.BattDataCallback;
 
 /**
  * Modify to template manager to match your requirements.
@@ -62,12 +63,17 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 	public static final UUID UUID_SERVICE_CONT         = UUID.fromString("04751400-11c1-5351-cb61-16db56c09bce");
 	private static final UUID UUID_CHARACTERISTIC_CONT = UUID.fromString("04751401-11c1-5351-cb61-16db56c09bce");
 
+	//The custom CONT service and characteristic UUIDs:
+	public static final UUID UUID_SERVICE_BATT         = UUID.fromString("15861400-22d2-6462-dc72-27ec67d1acdf");
+	private static final UUID UUID_CHARACTERISTIC_BATT = UUID.fromString("15861401-22d2-6462-dc72-27ec67d1acdf");
+
 
 	// TODO Add more services and characteristics references.
 	private BluetoothGattCharacteristic characteristicDeviceName;
 	private BluetoothGattCharacteristic characteristicStat;
     private BluetoothGattCharacteristic characteristicSens;
 	private BluetoothGattCharacteristic characteristicCont;
+	private BluetoothGattCharacteristic characteristicBatt;
 
 	public TemplateManager(final Context context) {
 		super(context);
@@ -137,6 +143,28 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 		public void onCharacteristicContUpdate(@NonNull final BluetoothDevice device, final int[] dataArray) {
 			// Let's lass received data to the service
 			callbacks.onCharacteristicContUpdate(device, dataArray);
+		}
+
+		@Override
+		public void onInvalidDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
+			log(Log.WARN, "Invalid data received: " + data);
+		}
+	};
+
+	/**
+	 * The callback for detecting updates of the Batt Characteristic.
+	 */
+	private BattDataCallback mBattDataCallback = new BattDataCallback() {
+		@Override
+		public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
+			log(LogContract.Log.Level.APPLICATION, TemplateParser.parse(data));
+			super.onDataReceived(device, data);
+		}
+
+		@Override
+		public void onCharacteristicBattUpdate(@NonNull final BluetoothDevice device, final int[] dataArray) {
+			// Let's lass received data to the service
+			callbacks.onCharacteristicBattUpdate(device, dataArray);
 		}
 
 		@Override
@@ -220,6 +248,21 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 					.fail((device, status) -> log(Log.WARN, "Failed to enable Cont notifications"))
 					.enqueue();
 
+			// Set notification callback
+			setNotificationCallback(characteristicBatt)
+					// This callback will be called each time the notification is received
+					.with(mBattDataCallback);
+
+			// Enable notifications
+			enableNotifications(characteristicBatt)
+					// Method called after the data were sent (data will contain 0x0100 in this case)
+					.with((device, data) -> log(Log.DEBUG, "Data sent: " + data))
+					// Method called when the request finished successfully. This will be called after .with(..) callback
+					.done(device -> log(LogContract.Log.Level.APPLICATION, "Batt Notifications enabled successfully"))
+					// Methods called in case of an error, for example when the characteristic does not have Notify property
+					.fail((device, status) -> log(Log.WARN, "Failed to enable Batt notifications"))
+					.enqueue();
+
 		}
 
 		@Override
@@ -242,7 +285,11 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 			if (serviceCont != null) {
 				characteristicCont = serviceCont.getCharacteristic(UUID_CHARACTERISTIC_CONT);
 			}
-			return characteristicDeviceName != null && characteristicStat != null && characteristicSens != null && characteristicCont != null;
+			final BluetoothGattService serviceBatt = gatt.getService(UUID_SERVICE_BATT);
+			if (serviceBatt != null) {
+				characteristicBatt = serviceBatt.getCharacteristic(UUID_CHARACTERISTIC_BATT);
+			}
+			return characteristicDeviceName != null && characteristicStat != null && characteristicSens != null && characteristicCont != null && characteristicBatt != null;
 		}
 
 		@Override
@@ -253,6 +300,7 @@ public class TemplateManager extends LoggableBleManager<TemplateManagerCallbacks
 			characteristicStat = null;
 			characteristicSens = null;
 			characteristicCont = null;
+			characteristicBatt = null;
 
 		}
 

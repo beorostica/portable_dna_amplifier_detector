@@ -20,6 +20,7 @@ void deviceStatus_saveStructData_init(void)
     statusData.tempReference = 37;
     statusData.isSensDataOnFlash = false;
     statusData.isContDataOnFlash = false;
+    statusData.isBattDataOnFlash = false;
 }
 
 void deviceStatus_saveStructData_commandFromPhone(bool commandFromPhone)
@@ -74,6 +75,11 @@ void deviceStatus_saveStructData_isContDataOnFlash(bool isContDataOnFlash)
     statusData.isContDataOnFlash = isContDataOnFlash;
 }
 
+void deviceStatus_saveStructData_isBattDataOnFlash(bool isBattDataOnFlash)
+{
+    statusData.isBattDataOnFlash = isBattDataOnFlash;
+}
+
 
 device_status_data deviceStatus_getStructData(void)
 {
@@ -116,4 +122,9 @@ bool deviceStatus_getStructData_isSensDataOnFlash(void)
 bool deviceStatus_getStructData_isContDataOnFlash(void)
 {
     return statusData.isContDataOnFlash;
+}
+
+bool deviceStatus_getStructData_isBattDataOnFlash(void)
+{
+    return statusData.isBattDataOnFlash;
 }

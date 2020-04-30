@@ -22,6 +22,7 @@ typedef struct
     uint8_t   tempReference;
     bool      isSensDataOnFlash;
     bool      isContDataOnFlash;
+    bool      isBattDataOnFlash;
 } device_status_data;
 
 
@@ -43,6 +44,8 @@ void deviceStatus_saveStructData_isSensDataOnFlash(bool isSensDataOnFlash);
 
 void deviceStatus_saveStructData_isContDataOnFlash(bool isContDataOnFlash);
 
+void deviceStatus_saveStructData_isBattDataOnFlash(bool isBattDataOnFlash);
+
 
 device_status_data deviceStatus_getStructData(void);
 
@@ -59,6 +62,8 @@ uint8_t deviceStatus_getStructData_tempReference(void);
 bool deviceStatus_getStructData_isSensDataOnFlash(void);
 
 bool deviceStatus_getStructData_isContDataOnFlash(void);
+
+bool deviceStatus_getStructData_isBattDataOnFlash(void);
 
 
 #endif /* CUSTOM_STATUS_STRUCT_DATA_H */

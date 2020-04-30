@@ -8,6 +8,7 @@
 #include "custom_device_status_struct_data.h"
 #include "custom_detection_system_struct_data.h"
 #include "custom_control_system_struct_data.h"
+#include "custom_battery_system_struct_data.h"
 
 
 void ble_stack_init(void);
@@ -26,6 +27,9 @@ void bleCusSensSendData(detection_system_single_data data);
 
 bool bleGetCusContNotificationFlag(void);
 void bleCusContSendData(control_system_data data);
+
+bool bleGetCusBattNotificationFlag(void);
+void bleCusBattSendData(battery_system_data data);
 
 
 #endif /* CUSTOM_BLE_MANAGER_H */

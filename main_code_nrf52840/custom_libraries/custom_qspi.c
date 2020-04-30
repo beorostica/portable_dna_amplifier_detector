@@ -20,12 +20,18 @@
 #define QSPI_BUFFER_SIZE_UINT16     QSPI_BLOCK_SIZE_BYTES/2  //128 elements in a buffer of uint16_t (2 Bytes)
 #define QSPI_BUFFER_SIZE_UINT32     QSPI_BLOCK_SIZE_BYTES/4  // 64 elements in a buffer of uint32_t (4 Bytes)
 
+
 #define QSPI_NUMBER_SECTORS_DETSYS  3                        //3 Sectors of 4096 Bytes (To write: I can erase sectors, not blocks)
 #define QSPI_BUFFER_SIZE_DETSYSDAT  QSPI_BLOCK_SIZE_BYTES/32 //  8 elements in a buffer of detection_system_data (32 Bytes)
 #define QSPI_OFFSET_DETSYS          0                        //Offset
+
 #define QSPI_NUMBER_SECTORS_CONSYS  2                        //2 Sectors of 4096 Bytes ~ 4k Bytes
 #define QSPI_BUFFER_SIZE_CONSYSDAT  QSPI_BLOCK_SIZE_BYTES/8  // 32 elements in a buffer of control_system_data (8 Bytes)
 #define QSPI_OFFSET_CONSYS          QSPI_OFFSET_DETSYS + (QSPI_NUMBER_SECTORS_DETSYS*QSPI_SECTOR_SIZE_BYTES) //Offset
+
+#define QSPI_NUMBER_SECTORS_BATSYS  2                        //2 Sectors of 4096 Bytes ~ 4k Bytes
+#define QSPI_BUFFER_SIZE_BATSYSDAT  QSPI_BLOCK_SIZE_BYTES/16 // 16 elements in a buffer of battery_system_data (16 Bytes)
+#define QSPI_OFFSET_BATSYS          QSPI_OFFSET_CONSYS + (QSPI_NUMBER_SECTORS_CONSYS*QSPI_SECTOR_SIZE_BYTES) //Offset
 
 
 #define WAIT_FOR_PERIPH() do { \
@@ -279,8 +285,8 @@ void qspiDetectionSystem_ReadExternalFlashAndSendBleDataIfPossible(void){
             deviceStatus_saveStructData_isSensDataOnFlash(false);
             NRF_LOG_INFO("FLASH: isSensDataOnFlash = %d.", deviceStatus_getStructData_isSensDataOnFlash());
 
-            //If there is not data on flash for "Cont" either: 
-            if(!deviceStatus_getStructData_isContDataOnFlash())
+            //If there is not data on flash for "Cont" nor "Batt" either: 
+            if(!deviceStatus_getStructData_isContDataOnFlash() && !deviceStatus_getStructData_isBattDataOnFlash())
             {
                 //Stop the millis Timer and update the internal device status data:
                 hundredMillisStop();
@@ -463,8 +469,8 @@ void qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible(void){
             deviceStatus_saveStructData_isContDataOnFlash(false);
             NRF_LOG_INFO("FLASH: isContDataOnFlash = %d.", deviceStatus_getStructData_isContDataOnFlash());
 
-            //If there is not data on flash for "Sens" either: 
-            if(!deviceStatus_getStructData_isSensDataOnFlash())
+            //If there is not data on flash for "Sens" nor "Batt" either: 
+            if(!deviceStatus_getStructData_isSensDataOnFlash() && !deviceStatus_getStructData_isBattDataOnFlash())
             {
                 //Stop the millis Timer and update the internal device status data:
                 hundredMillisStop();
@@ -481,5 +487,186 @@ void qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible(void){
 
     }
     
+}
 
+
+////////////////////////////////////////////////////////////////////////////////////////
+/// For Battery System /////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+//Declare static variables:
+static uint32_t idxBuffer_write = 0;
+static uint32_t idxBlock_write = 0;
+static uint32_t idxSector_write = 0;
+static battery_system_data mBufr_write[QSPI_BUFFER_SIZE_BATSYSDAT];
+
+void qspiBatterySystem_PushSampleInExternalFlash(battery_system_data sample)
+{
+    ret_code_t err_code;
+ 
+    //Write an new element in the buffer:
+    mBufr_write[idxBuffer_write] = sample;
+    NRF_LOG_INFO("QSPI_BATT: Write in buffer. idxBuffer_write: %d. timeValue: %d.", idxBuffer_write, mBufr_write[idxBuffer_write].time);
+
+    //If the buffer is complete:
+    if(idxBuffer_write == (QSPI_BUFFER_SIZE_BATSYSDAT-1))
+    {
+        //Write the data buffer in a memory block:
+        uint32_t flashAddress = (idxSector_write*QSPI_SECTOR_SIZE_BYTES) + (idxBlock_write*QSPI_BLOCK_SIZE_BYTES) + QSPI_OFFSET_BATSYS;
+        err_code = nrf_drv_qspi_write(&mBufr_write, QSPI_BLOCK_SIZE_BYTES, flashAddress);
+        APP_ERROR_CHECK(err_code);
+        WAIT_FOR_PERIPH();
+        NRF_LOG_INFO("QSPI_BATT: Writing. idxSector_write: %d. idxBlock_write: %d, flashAddress: %d", idxSector_write, idxBlock_write, flashAddress);
+
+        //If the sector is complete:
+        if(idxBlock_write == (QSPI_NUMBER_BLOCKS-1))
+        {
+            //Update memory sector idx to write:
+            idxSector_write = (idxSector_write+1) % ((uint32_t) QSPI_NUMBER_SECTORS_BATSYS);
+        }
+
+        //Update memory block idx to write:
+        idxBlock_write = (idxBlock_write+1) % ((uint32_t) QSPI_NUMBER_BLOCKS);
+    }
+    
+    //Update counter of the buffer:
+    idxBuffer_write = (idxBuffer_write+1) % ((uint32_t) QSPI_BUFFER_SIZE_BATSYSDAT);
+
+}
+
+
+static uint32_t idxBuffer_read = 0;
+static uint32_t idxBlock_read = 0;
+static uint32_t idxSector_read = 0;
+
+static uint32_t qspiBatterySystem_WriteReadBufferDistance(void)
+{
+    uint32_t idxBuffer_writeAux = idxBuffer_write + (QSPI_BUFFER_SIZE_BATSYSDAT*(idxBlock_write + (QSPI_NUMBER_BLOCKS*idxSector_write)));
+    uint32_t idxBuffer_readAux  = idxBuffer_read + (QSPI_BUFFER_SIZE_BATSYSDAT*(idxBlock_read  + (QSPI_NUMBER_BLOCKS*idxSector_read)));
+    uint32_t QSPI_BUFFER_SIZE_BATSYSDAT_AUX = QSPI_BUFFER_SIZE_BATSYSDAT*(QSPI_NUMBER_BLOCKS*QSPI_NUMBER_SECTORS_BATSYS);
+
+    uint32_t writeReadBufferDistance = ((QSPI_BUFFER_SIZE_BATSYSDAT_AUX-1) - ((idxBuffer_readAux + ((QSPI_BUFFER_SIZE_BATSYSDAT_AUX-1)-idxBuffer_writeAux)) % ((uint32_t) QSPI_BUFFER_SIZE_BATSYSDAT_AUX)));
+    return writeReadBufferDistance;
+}
+
+
+void qspiBatterySystem_ReadExternalFlashAndSendBleDataIfPossible(void){
+
+    ret_code_t err_code;
+
+    //Declare static variables:
+    static battery_system_data m_buffer_rx[QSPI_BUFFER_SIZE_BATSYSDAT];
+    static bool isThereRxBufferSavedFromFlash = false;
+
+    //If there is a m_buffer_rx saved from the flash, then send BT data as soon as possible until the the buffer is totally read:
+    if(isThereRxBufferSavedFromFlash)
+    {
+        //Send data via BT from the m_buffer_rx:
+        battery_system_data bleData = m_buffer_rx[idxBuffer_read];
+        bleCusBattSendData(bleData);
+        NRF_LOG_INFO("BLE BATT SERVICE: send. Read from Buffer_read. idxBuffer_read: %d. time: %d", idxBuffer_read, bleData.time);
+        
+        
+        //If it is send the last of the read buffer:
+        if(idxBuffer_read == (QSPI_BUFFER_SIZE_BATSYSDAT-1))
+        {   
+            //There is no longer a m_buffer_rx to read:
+            isThereRxBufferSavedFromFlash = false;
+           
+            //If it is read the last block from flash memory:
+            if(idxBlock_read == (QSPI_NUMBER_BLOCKS-1))
+            {
+                //Then erase the last sector of 4KB already read:
+                uint32_t flashAddress = (idxSector_read*QSPI_SECTOR_SIZE_BYTES) + QSPI_OFFSET_BATSYS;
+                err_code = nrf_drv_qspi_erase(QSPI_ERASE_LEN_LEN_4KB, flashAddress);
+                APP_ERROR_CHECK(err_code);
+                WAIT_FOR_PERIPH();
+                NRF_LOG_INFO("**********************************************************************");
+                NRF_LOG_INFO("*** QSPI_BATT: Sector of 4KB erased. idxSector: %d. flashAddres: %d", idxSector_read, flashAddress);
+                NRF_LOG_INFO("**********************************************************************");
+                
+                //Update memory sector idx to read:
+                idxSector_read = (idxSector_read+1) % ((uint32_t) QSPI_NUMBER_SECTORS_BATSYS);    
+            }
+            //Update memory block idx to read:
+            idxBlock_read = (idxBlock_read+1) % ((uint32_t) QSPI_NUMBER_BLOCKS); 
+        }
+        //Update the buffer idx to read:
+        idxBuffer_read = (idxBuffer_read+1) % ((uint32_t) QSPI_BUFFER_SIZE_BATSYSDAT);
+
+    }
+    //If there is not a m_buffer_rx saved from the flash, then check how larger is the distance
+    else
+    {
+        uint32_t distanceWriteReadBuffer = qspiBatterySystem_WriteReadBufferDistance();
+
+        //If the distance is large enough, then read the memory flash an store data in the m_buffer_rx
+        if(distanceWriteReadBuffer >= QSPI_BUFFER_SIZE_BATSYSDAT)
+        {
+            //Read a memory block from flash:
+            uint32_t flashAddress = (idxSector_read*QSPI_SECTOR_SIZE_BYTES) + (idxBlock_read*QSPI_BLOCK_SIZE_BYTES) + QSPI_OFFSET_BATSYS;
+            err_code = nrf_drv_qspi_read(m_buffer_rx, QSPI_BLOCK_SIZE_BYTES, flashAddress);
+            WAIT_FOR_PERIPH();
+            NRF_LOG_INFO("QSPI_BATT: Reading. idxSector_read: %d. idxBlock_read: %d, flashAddress: %d", idxSector_read, idxBlock_read, flashAddress);
+
+            //Now there is a m_buffer_rx to read:
+            isThereRxBufferSavedFromFlash = true;
+        }
+        else if(distanceWriteReadBuffer > 0)
+        {
+            //Send data via BT from the mBufr_write:
+            battery_system_data bleData = mBufr_write[idxBuffer_read];
+            bleCusBattSendData(bleData);
+            NRF_LOG_INFO("BLE BATT SERVICE: send. Read from Buffer_write. idxBuffer_read: %d. time: %d", idxBuffer_read, bleData.time);
+
+            //Update idx for reading:
+            if(idxBuffer_read == (QSPI_BUFFER_SIZE_BATSYSDAT-1))
+            {
+                //If it is read the last block from flash memory (actually, the flash is not directly read):
+                if(idxBlock_read == (QSPI_NUMBER_BLOCKS-1))
+                {
+                    //Then erase the last sector of 4KB already read:
+                    uint32_t flashAddress = (idxSector_read*QSPI_SECTOR_SIZE_BYTES) + QSPI_OFFSET_BATSYS;
+                    err_code = nrf_drv_qspi_erase(QSPI_ERASE_LEN_LEN_4KB, flashAddress);
+                    APP_ERROR_CHECK(err_code);
+                    WAIT_FOR_PERIPH();
+                    NRF_LOG_INFO("**********************************************************************");
+                    NRF_LOG_INFO("*** QSPI_BATT: Sector of 4KB erased. idxSector: %d. flashAddres: %d", idxSector_read, flashAddress);
+                    NRF_LOG_INFO("**********************************************************************");
+                
+
+                    //Update memory sector idx to read:
+                    idxSector_read = (idxSector_read+1) % ((uint32_t) QSPI_NUMBER_SECTORS_BATSYS);    
+                }
+                //Update memory block idx to read:
+                idxBlock_read = (idxBlock_read+1) % ((uint32_t) QSPI_NUMBER_BLOCKS); 
+            }
+            //Update the buffer idx to read:
+            idxBuffer_read = (idxBuffer_read+1) % ((uint32_t) QSPI_BUFFER_SIZE_BATSYSDAT);
+
+        }
+        //If it is the last data, if it is not measuring and there is still data on flash for "Batt" (data on flash means there is still data to send)
+        else if(!deviceStatus_getStructData_isMeasuring() && deviceStatus_getStructData_isBattDataOnFlash())
+        {
+            //Update device status data for "isBattDataOnFlash":
+            deviceStatus_saveStructData_isBattDataOnFlash(false);
+            NRF_LOG_INFO("FLASH: isBattDataOnFlash = %d.", deviceStatus_getStructData_isBattDataOnFlash());
+
+            //If there is not data on flash for "Sens" nor for "Cont" either: 
+            if(!deviceStatus_getStructData_isSensDataOnFlash() && !deviceStatus_getStructData_isContDataOnFlash())
+            {
+                //Stop the millis Timer and update the internal device status data:
+                hundredMillisStop();
+                deviceStatus_saveStructData_isDataOnFlash(false);
+                deviceStatus_saveStructData_fileName(0,0,0,0,0,0);
+                NRF_LOG_INFO("FLASH: isDataOnFlash = %d.", deviceStatus_getStructData_isDataOnFlash());
+            
+                //Update device status and notify STAT characteristic:
+                bleCusStatSendData(deviceStatus_getStructData());
+                NRF_LOG_INFO("FLASH: Send notification of the STAT characteristic. commandFromPhone = %d. isMeasuring = %d. isDataOnFlash = %d", deviceStatus_getStructData_commandFromPhone(), deviceStatus_getStructData_isMeasuring(), deviceStatus_getStructData_isDataOnFlash());                             
+            }
+
+        }
+        
+    }
+    
 }

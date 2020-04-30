@@ -7,6 +7,7 @@
 /**
  * @brief Create a variables that can hold the timer ID
  */
+APP_TIMER_DEF(m_timer_battery_system_id);
 APP_TIMER_DEF(m_timer_control_system_save_external_flash_id);
 APP_TIMER_DEF(m_timer_control_system_id);
 APP_TIMER_DEF(m_timer_detection_system_id);
@@ -28,6 +29,17 @@ static void lfclk_request(void)
     nrf_drv_clock_lfclk_request(NULL);
 }
 
+
+/**
+ * @brief Timeout handler for the battery system timer.
+ */
+static volatile bool isTimerBatterySystemReady;
+
+static void timer_battery_system_handler(void * p_context)
+{
+    isTimerBatterySystemReady = true;
+}
+
 /**
  * @brief Timeout handler for the control system save external flash timer.
  */
@@ -37,7 +49,6 @@ static void timer_control_system_save_external_flash_handler(void * p_context)
 {
     isTimerControlSystemSaveExternalFlashReady = true;
 }
-
 
 /**
  * @brief Timeout handler for the control system timer.
@@ -90,6 +101,10 @@ static void timer_seconds_handler(void * p_context)
 static void create_timers()
 {
     ret_code_t err_code;
+
+    //Create the control system timer:
+    err_code = app_timer_create(&m_timer_battery_system_id, APP_TIMER_MODE_REPEATED, timer_battery_system_handler);
+    APP_ERROR_CHECK(err_code);
 
     //Create the control system save external flash timer:
     err_code = app_timer_create(&m_timer_control_system_save_external_flash_id, APP_TIMER_MODE_REPEATED, timer_control_system_save_external_flash_handler);
@@ -250,7 +265,7 @@ void timerControlSystem_Start(void)
 {
     ret_code_t err_code;
 
-    //Start the detection system timer:
+    //Start the temp control system timer:
     isTimerControlSystemReady = true;
     err_code = app_timer_start(m_timer_control_system_id, APP_TIMER_TICKS(100), NULL);
     APP_ERROR_CHECK(err_code);
@@ -261,7 +276,7 @@ void timerControlSystem_Stop(void)
 {
     ret_code_t err_code;
 
-    //Stop the detection system timer:
+    //Stop the temp control system timer:
     err_code = app_timer_stop(m_timer_control_system_id);
     APP_ERROR_CHECK(err_code);
     isTimerControlSystemReady = true;
@@ -285,7 +300,7 @@ void timerControlSystem_SaveExternalFlash_Start(void)
 {
     ret_code_t err_code;
 
-    //Start the detection system timer:
+    //Start the temp control save flash system timer:
     isTimerControlSystemSaveExternalFlashReady = true;
     err_code = app_timer_start(m_timer_control_system_save_external_flash_id, APP_TIMER_TICKS(1000), NULL);
     APP_ERROR_CHECK(err_code);
@@ -296,7 +311,7 @@ void timerControlSystem_SaveExternalFlash_Stop(void)
 {
     ret_code_t err_code;
 
-    //Stop the detection system timer:
+    //Stop the temp control save flash system timer:
     err_code = app_timer_stop(m_timer_control_system_save_external_flash_id);
     APP_ERROR_CHECK(err_code);
     isTimerControlSystemSaveExternalFlashReady = true;
@@ -311,4 +326,39 @@ bool timerControlSystem_SaveExternalFlash_GetFlag(void)
 void timerControlSystem_SaveExternalFlash_ClearFlag(void)
 {
     isTimerControlSystemSaveExternalFlashReady = false;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+
+void timerBatterySystem_Start(void)
+{
+    ret_code_t err_code;
+
+    //Start the battery system timer:
+    isTimerBatterySystemReady = true;
+    err_code = app_timer_start(m_timer_battery_system_id, APP_TIMER_TICKS(5000), NULL);
+    APP_ERROR_CHECK(err_code);
+
+}
+
+void timerBatterySystem_Stop(void)
+{
+    ret_code_t err_code;
+
+    //Stop the battery system timer:
+    err_code = app_timer_stop(m_timer_battery_system_id);
+    APP_ERROR_CHECK(err_code);
+    isTimerBatterySystemReady = true;
+}
+
+
+bool timerBatterySystem_GetFlag(void)
+{
+    return isTimerBatterySystemReady;
+}
+
+void timerBatterySystem_ClearFlag(void)
+{
+    isTimerBatterySystemReady = false;
 }
