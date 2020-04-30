@@ -562,7 +562,7 @@ void qspiBatterySystem_ReadExternalFlashAndSendBleDataIfPossible(void){
     {
         //Send data via BT from the m_buffer_rx:
         battery_system_data bleData = m_buffer_rx[idxBuffer_read];
-        //bleCusBattSendData(bleData);
+        bleCusBattSendData(bleData);
         NRF_LOG_INFO("BLE BATT SERVICE: send. Read from Buffer_read. idxBuffer_read: %d. time: %d", idxBuffer_read, bleData.time);
         
         
@@ -615,7 +615,7 @@ void qspiBatterySystem_ReadExternalFlashAndSendBleDataIfPossible(void){
         {
             //Send data via BT from the mBufr_write:
             battery_system_data bleData = mBufr_write[idxBuffer_read];
-            //bleCusBattSendData(bleData);
+            bleCusBattSendData(bleData);
             NRF_LOG_INFO("BLE BATT SERVICE: send. Read from Buffer_write. idxBuffer_read: %d. time: %d", idxBuffer_read, bleData.time);
 
             //Update idx for reading:

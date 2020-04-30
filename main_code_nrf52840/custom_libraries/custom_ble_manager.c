@@ -3,6 +3,7 @@
 #include "cus_stat.h"
 #include "cus_sens.h"
 #include "cus_cont.h"
+#include "cus_batt.h"
 
 #include "ble_advertising.h"
 #include "ble_conn_params.h"
@@ -62,11 +63,13 @@ BLE_ADVERTISING_DEF(m_advertising);                                             
 BLE_CUS_STAT_DEF(m_cus_stat);
 BLE_CUS_SENS_DEF(m_cus_sens);
 BLE_CUS_CONT_DEF(m_cus_cont);
+BLE_CUS_BATT_DEF(m_cus_batt);
 
 
 static bool isCusStatNotificationEnabled = false;
 static bool isCusSensNotificationEnabled = false;
 static bool isCusContNotificationEnabled = false;
+static bool isCusBattNotificationEnabled = false;
 
 static uint16_t m_conn_handle = BLE_CONN_HANDLE_INVALID;                        /**< Handle of the current connection. */
 
@@ -86,6 +89,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context); //Fo
 static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt);   //For handling custom service events
 static void on_cus_sens_evt(cus_sens_t * p_cus_service, cus_sens_evt_t * p_evt);   //For handling custom service events
 static void on_cus_cont_evt(cus_cont_t * p_cus_service, cus_cont_evt_t * p_evt);   //For handling custom service events
+static void on_cus_batt_evt(cus_batt_t * p_cus_service, cus_batt_evt_t * p_evt);   //For handling custom service events
 
 
 /**@brief Function for handling Queued Write Module errors.
@@ -173,9 +177,11 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             isCusStatNotificationEnabled = false;
             isCusSensNotificationEnabled = false;
             isCusContNotificationEnabled = false;
+            isCusBattNotificationEnabled = false;
             NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: false");
             NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
             NRF_LOG_INFO("BLE_MANAGER: isCusContNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusBattNotificationEnabled: false");
             NRF_LOG_INFO("BLE_MANAGER: Disconnected.");
             break;
 
@@ -203,9 +209,11 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             isCusStatNotificationEnabled = false;
             isCusSensNotificationEnabled = false;
             isCusContNotificationEnabled = false;
+            isCusBattNotificationEnabled = false;
             NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: false");
             NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
             NRF_LOG_INFO("BLE_MANAGER: isCusContNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusBattNotificationEnabled: false");
             NRF_LOG_DEBUG("BLE_MANAGER: GATT Client Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gattc_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
@@ -217,9 +225,11 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
             isCusStatNotificationEnabled = false;
             isCusSensNotificationEnabled = false;
             isCusContNotificationEnabled = false;
+            isCusBattNotificationEnabled = false;
             NRF_LOG_INFO("BLE_MANAGER: isCusStatNotificationEnabled: false");
             NRF_LOG_INFO("BLE_MANAGER: isCusSensNotificationEnabled: false");
             NRF_LOG_INFO("BLE_MANAGER: isCusContNotificationEnabled: false");
+            NRF_LOG_INFO("BLE_MANAGER: isCusBattNotificationEnabled: false");
             NRF_LOG_DEBUG("BLE_MANAGER: GATT Server Timeout.");
             err_code = sd_ble_gap_disconnect(p_ble_evt->evt.gatts_evt.conn_handle,
                                              BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
@@ -327,13 +337,13 @@ static void on_cus_stat_evt(cus_stat_t * p_cus_service, cus_stat_evt_t * p_evt)
                             deviceStatus_saveStructData_commandFromPhone(true);
                             NRF_LOG_INFO("BLE_MANAGER: commandFromPhone = %d.", deviceStatus_getStructData_commandFromPhone());
 
-                            //Start the detection system timers:
-                            NRF_LOG_INFO("BLE_MANAGER: Detection System Task Starts.");
+                            //Start the detection system and temp control system timers:
+                            NRF_LOG_INFO("BLE_MANAGER: Detection System and Temp Control System Start.");
                             timerDetectionSystem_Start();
                             secondsStart();
                             timerControlSystem_Start();
                             timerControlSystem_SaveExternalFlash_Start();
-                            hundredMillisStart();
+                            //hundredMillisStart();
                             
                             //Update the device status data (now it's measuring and there is data on flash):
                             deviceStatus_saveStructData_isMeasuring(true);
@@ -537,6 +547,45 @@ static void on_cus_cont_evt(cus_cont_t * p_cus_service, cus_cont_evt_t * p_evt)
 }
 
 
+/**@brief Function for handling the Custom Service Service events.
+ *
+ * @details This function will be called for all Custom Service events which are passed to
+ *          the application.
+ *
+ * @param[in]   p_cus_service  Custom Service structure.
+ * @param[in]   p_evt          Event received from the Custom Service.
+ *
+ */
+static void on_cus_batt_evt(cus_batt_t * p_cus_service, cus_batt_evt_t * p_evt)
+{
+    uint32_t err_code;
+    switch(p_evt->evt_type)
+    {
+        case CUS_BATT_EVT_NOTIFICATION_ENABLED:
+            isCusBattNotificationEnabled = true;
+            NRF_LOG_INFO("BLE_MANAGER: isCusBattNotificationEnabled: true");
+            break;
+
+        case CUS_BATT_EVT_NOTIFICATION_DISABLED:
+            isCusBattNotificationEnabled = false;
+            NRF_LOG_INFO("BLE_MANAGER: isCusBattNotificationEnabled: false");
+            break;
+
+        case CUS_BATT_EVT_CONNECTED :
+            break;
+
+        case CUS_BATT_EVT_DISCONNECTED:
+            isCusBattNotificationEnabled = false;
+            NRF_LOG_INFO("BLE_MANAGER: isCusBattNotificationEnabled: false");
+            break;
+
+        default:
+              // No implementation needed.
+              break;
+    }
+}
+
+
 /**@brief Function for initializing the BLE stack.
  *
  * @details Initializes the SoftDevice and the BLE event interrupt.
@@ -716,6 +765,19 @@ void services_init(void)
 
     err_code = cus_cont_ble_init(&m_cus_cont, &cus_cont_init);
     APP_ERROR_CHECK(err_code);
+
+    //////////////////////////////////////////////////////////////
+    //CUS BATT service variable:
+    cus_batt_init_t  cus_batt_init;
+
+    //Initialize CUS Service init structure to zero.
+    memset(&cus_batt_init, 0, sizeof(cus_batt_init));
+
+    // Set the cus event handler
+    cus_batt_init.evt_handler = on_cus_batt_evt;
+
+    err_code = cus_batt_ble_init(&m_cus_batt, &cus_batt_init);
+    APP_ERROR_CHECK(err_code);
 }
 
 
@@ -774,6 +836,13 @@ bool bleGetCusContNotificationFlag(void)
     return isCusContNotificationEnabled;
 }
 
+/**@brief Function for checking notification status.
+ */
+bool bleGetCusBattNotificationFlag(void)
+{
+    return isCusBattNotificationEnabled;
+}
+
 /**@brief Function for sending ble data.
  */
 void bleCusStatSendData(device_status_data data)
@@ -798,5 +867,14 @@ void bleCusContSendData(control_system_data data)
 {
     uint8_t *ptrData = (uint8_t*) &data;
     uint32_t err_code = cus_cont_custom_value_update(&m_cus_cont, ptrData);
+    APP_ERROR_CHECK(err_code);
+}
+
+/**@brief Function for sending ble data.
+ */
+void bleCusBattSendData(battery_system_data data)
+{
+    uint8_t *ptrData = (uint8_t*) &data;
+    uint32_t err_code = cus_batt_custom_value_update(&m_cus_batt, ptrData);
     APP_ERROR_CHECK(err_code);
 }

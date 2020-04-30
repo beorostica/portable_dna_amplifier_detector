@@ -54,13 +54,15 @@ int main(void)
     //Configure the PID controller peripherals:
     pidInit();
 
-
     /////////////////////////////////////////////////////////
     //Configure battery babysitter:
     bq27441_begin();
 
     //Start Battery System Timer:
     timerBatterySystem_Start();
+
+    //
+    hundredMillisStart();
 
     /////////////////////////////////////////////////////////
 
@@ -74,38 +76,6 @@ int main(void)
     //Enter main loop:
     while(1)
     {
-
-        ////////////////////////////////////////////////////////////////
-        /// Battery System Task ////////////////////////////////////////
-        ////////////////////////////////////////////////////////////////
-        if(timerBatterySystem_GetFlag())
-        {
-            timerBatterySystem_ClearFlag();
-
-            //Read from babysitter:
-            uint16_t time           = 0;
-            uint16_t soc            = bq27441_getSoc();
-            uint16_t capacityRemain = bq27441_getCapacityRemain();
-            uint16_t capacityFull   = bq27441_getCapacityFull();
-            uint8_t soh             = bq27441_getSoh();
-            uint16_t voltage        = bq27441_getVoltage();
-            int16_t current         = bq27441_getCurrent();
-            int16_t power           = bq27441_getPower();
-
-            //Save data in the static battery data struct:
-            batterySystem_saveStructData(time, soc, capacityRemain, capacityFull, (uint16_t)soh, voltage, (uint16_t)current, (uint16_t)power);
-
-            //Get the data from the static battery data struct:
-            battery_system_data bsData = batterySystem_getStructData();
-
-            //Print values for debugging:
-            NRF_LOG_INFO("soc: %d. capRem: %d. capFull: %d. voltage: %d. current: %d. power: %d.", bsData.soc, bsData.capacityRemain, bsData.capacityFull, bsData.voltage, bsData.current, bsData.power);
-
-            //Save data in external flash:
-            qspiBatterySystem_PushSampleInExternalFlash(bsData);
-            qspiBatterySystem_ReadExternalFlashAndSendBleDataIfPossible();
-
-        }
         
         //If the measuring flag is true:
         if(deviceStatus_getStructData_isMeasuring())
@@ -298,12 +268,42 @@ int main(void)
                 }
             }
 
+        }
+
+        ////////////////////////////////////////////////////////////////
+        /// Battery System Task ////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////
+        if(timerBatterySystem_GetFlag())
+        {
+            timerBatterySystem_ClearFlag();
+
+            //Read from babysitter:
+            uint16_t time           = 0;
+            uint16_t soc            = bq27441_getSoc();
+            uint16_t capacityRemain = bq27441_getCapacityRemain();
+            uint16_t capacityFull   = bq27441_getCapacityFull();
+            uint8_t soh             = bq27441_getSoh();
+            uint16_t voltage        = bq27441_getVoltage();
+            int16_t current         = bq27441_getCurrent();
+            int16_t power           = bq27441_getPower();
+
+            //Save data in the static battery data struct:
+            batterySystem_saveStructData(time, soc, capacityRemain, capacityFull, (uint16_t)soh, voltage, (uint16_t)current, (uint16_t)power);
+
+            //Get the data from the static battery data struct:
+            battery_system_data bsData = batterySystem_getStructData();
+
+            //Print values for debugging:
+            //NRF_LOG_INFO("soc: %d. capRem: %d. capFull: %d. voltage: %d. current: %d. power: %d.", bsData.soc, bsData.capacityRemain, bsData.capacityFull, bsData.voltage, bsData.current, bsData.power);
+
+            //Save data in external flash:
+            qspiBatterySystem_PushSampleInExternalFlash(bsData);
 
         }
 
         //If the data on flash flag is true:
-        if (deviceStatus_getStructData_isDataOnFlash()) 
-        {
+        //if (deviceStatus_getStructData_isDataOnFlash()) 
+        //{
             // Do something (try to send BLE data) after 0.1 seconds:
             if(hundredMillisGetFlag())
             {
@@ -322,8 +322,14 @@ int main(void)
                     qspiDetectionSystem_ReadExternalFlashAndSendBleDataIfPossible();
                 }
 
+                //If the nRF52840 is connected and the notifications for "Batt" are enabled and there is data on flash for "Batt", then try to send BT data:
+                if(bleGetCusBattNotificationFlag()){
+                    //(2) Second. Read from flash and send via BLE for "Batt":
+                    qspiBatterySystem_ReadExternalFlashAndSendBleDataIfPossible();
+                }
+
             }
-        }
+        //}
 
        
     }
