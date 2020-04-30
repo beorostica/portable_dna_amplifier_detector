@@ -101,6 +101,10 @@ int main(void)
             //Print values for debugging:
             NRF_LOG_INFO("soc: %d. capRem: %d. capFull: %d. voltage: %d. current: %d. power: %d.", bsData.soc, bsData.capacityRemain, bsData.capacityFull, bsData.voltage, bsData.current, bsData.power);
 
+            //Save data in external flash:
+            qspiBatterySystem_PushSampleInExternalFlash(bsData);
+            qspiBatterySystem_ReadExternalFlashAndSendBleDataIfPossible();
+
         }
         
         //If the measuring flag is true:

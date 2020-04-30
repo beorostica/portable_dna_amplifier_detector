@@ -337,7 +337,7 @@ void timerBatterySystem_Start(void)
 
     //Start the battery system timer:
     isTimerBatterySystemReady = true;
-    err_code = app_timer_start(m_timer_battery_system_id, APP_TIMER_TICKS(5000), NULL);
+    err_code = app_timer_start(m_timer_battery_system_id, APP_TIMER_TICKS(500), NULL);
     APP_ERROR_CHECK(err_code);
 
 }
