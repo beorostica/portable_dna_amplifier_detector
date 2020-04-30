@@ -60,10 +60,6 @@ int main(void)
 
     //Start Battery System Timer:
     timerBatterySystem_Start();
-
-    //
-    hundredMillisStart();
-
     /////////////////////////////////////////////////////////
 
     //Print Message:
@@ -296,7 +292,7 @@ int main(void)
             //Print values for debugging:
             //NRF_LOG_INFO("soc: %d. capRem: %d. capFull: %d. voltage: %d. current: %d. power: %d.", bsData.soc, bsData.capacityRemain, bsData.capacityFull, bsData.voltage, bsData.current, bsData.power);
 
-            //Save data in external flash:
+            //(1) First. Save on flash for "Batt":
             qspiBatterySystem_PushSampleInExternalFlash(bsData);
 
         }
@@ -312,7 +308,7 @@ int main(void)
                 //If the nRF52840 is connected and the notifications for "Cont" are enabled and there is data on flash for "Cont", then try to send BT data:
                 if(bleGetCusContNotificationFlag() && deviceStatus_getStructData_isContDataOnFlash())
                 {
-                    // (2) Second. Read from flash and send via BLE for "Cont":
+                    //(2) Second. Read from flash and send via BLE for "Cont":
                     qspiControlSystem_ReadExternalFlashAndSendBleDataIfPossible();
                 }
 
@@ -323,7 +319,7 @@ int main(void)
                 }
 
                 //If the nRF52840 is connected and the notifications for "Batt" are enabled and there is data on flash for "Batt", then try to send BT data:
-                if(bleGetCusBattNotificationFlag()){
+                if(bleGetCusBattNotificationFlag() && deviceStatus_getStructData_isBattDataOnFlash()){
                     //(2) Second. Read from flash and send via BLE for "Batt":
                     qspiBatterySystem_ReadExternalFlashAndSendBleDataIfPossible();
                 }
