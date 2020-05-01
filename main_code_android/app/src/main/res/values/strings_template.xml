@@ -28,8 +28,8 @@
 	<dimen name="template_feature_title_long_margin">-62dp</dimen>
 
 	<string name="template_default_name">DEFAULT DEVICE</string>
-	<string name="template_action_read">Update</string>
-	<string name="template_action_write">Command</string>
+	<string name="template_action_read">Read</string>
+	<string name="template_action_write">Write</string>
 	<string name="template_action_write_start">Start</string>
 	<string name="template_action_write_wait">Wait</string>
 	<string name="template_action_write_stop">Stop</string>

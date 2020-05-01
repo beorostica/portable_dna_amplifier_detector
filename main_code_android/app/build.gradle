@@ -73,4 +73,8 @@ dependencies {
         exclude group: 'stax', module: 'stax-api'
         exclude group: 'xpp3', module: 'xpp3'
     }
+
+    // Import GraphView Library:
+    implementation 'com.jjoe64:graphview:4.2.2'
+
 }

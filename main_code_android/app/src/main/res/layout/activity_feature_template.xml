@@ -80,16 +80,16 @@
 		<!-- Application section -->
 
 
-
 		<ScrollView
 			android:id="@+id/scrollView"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
 			style="@style/Widget.List"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
 			android:layout_marginLeft="@dimen/feature_horizontal_margin"
-			android:layout_marginTop="@dimen/feature_vertical_margin_top"
+			android:layout_marginTop="@dimen/activity_horizontal_margin"
 			android:layout_marginRight="@dimen/feature_horizontal_margin"
-			android:layout_marginBottom="200dp">
+			android:layout_marginBottom="0dp"
+			android:layout_below="@id/device_name">
 
 			<LinearLayout
 				android:id="@+id/container"
@@ -653,15 +653,47 @@
 				</LinearLayout>
 
 			</LinearLayout>
+
 		</ScrollView>
 
+
+		<androidx.appcompat.widget.AppCompatTextView
+			style="@style/Widget.ListTitle"
+			android:id="@+id/listTitleGraphData"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_below="@id/scrollView"
+			android:layout_marginTop="@dimen/activity_horizontal_margin"
+			android:layout_marginLeft="@dimen/feature_horizontal_margin"
+			android:layout_marginRight="@dimen/feature_horizontal_margin"
+			android:text="Graph Data" />
+
+		<com.jjoe64.graphview.GraphView
+			android:id="@+id/graph"
+			android:layout_width="match_parent"
+			android:layout_height="160dip"
+			android:layout_below="@id/listTitleGraphData"
+			android:layout_marginLeft="@dimen/feature_horizontal_margin"
+			android:layout_marginRight="@dimen/feature_horizontal_margin" />
+
+		<androidx.appcompat.widget.AppCompatTextView
+			style="@style/Widget.ListTitle"
+			android:id="@+id/listTitleInputData"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_above="@id/linearLayoutInputData"
+			android:layout_marginLeft="@dimen/feature_horizontal_margin"
+			android:layout_marginRight="@dimen/feature_horizontal_margin"
+			android:text="User Input" />
+
 		<LinearLayout
+			android:id="@+id/linearLayoutInputData"
 			android:layout_width="match_parent"
 			android:layout_height="50dp"
-			android:orientation="horizontal"
-			android:layout_above="@id/action_read"
+			android:layout_above="@id/linearLayoutButtons"
 			android:layout_marginLeft="@dimen/feature_horizontal_margin"
-			android:layout_marginRight="@dimen/feature_horizontal_margin">
+			android:layout_marginRight="@dimen/feature_horizontal_margin"
+			android:orientation="horizontal">
 
 			<EditText
 				android:id="@+id/editText_timeDuration0"
@@ -670,7 +702,7 @@
 				android:layout_weight="1"
 				android:ems="10"
 				android:inputType="number"
-				android:text="0"/>
+				android:text="0" />
 
 			<TextView
 				android:id="@+id/textView_timeDuration0"
@@ -686,7 +718,7 @@
 				android:layout_weight="1"
 				android:ems="10"
 				android:inputType="number"
-				android:text="0"/>
+				android:text="0" />
 
 			<TextView
 				android:id="@+id/textView_timeDuration1"
@@ -702,7 +734,7 @@
 				android:layout_weight="1"
 				android:ems="10"
 				android:inputType="number"
-				android:text="40"/>
+				android:text="40" />
 
 			<TextView
 				android:id="@+id/textView_timeDuration2"
@@ -712,43 +744,48 @@
 				android:text="secs" />
 		</LinearLayout>
 
-		<com.google.android.material.button.MaterialButton
-			android:id="@+id/action_read"
-			style="@style/Widget.MaterialComponents.Button"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_alignParentLeft="true"
-			android:layout_marginLeft="@dimen/feature_horizontal_margin"
-			android:layout_marginTop="@dimen/feature_device_name_margin_top"
-			android:layout_above="@id/action_connect"
-			android:layout_centerHorizontal="true"
-			android:text="@string/template_action_read"
-			app:backgroundTint="@color/nordicLake" />
-
-		<com.google.android.material.button.MaterialButton
-			android:id="@+id/action_write_characteristic_stat"
-			style="@style/Widget.MaterialComponents.Button"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_alignParentRight="true"
-			android:layout_marginRight="@dimen/feature_horizontal_margin"
-			android:layout_marginTop="@dimen/feature_device_name_margin_top"
-			android:layout_above="@id/action_connect"
-			android:layout_centerHorizontal="true"
-			android:text="@string/template_action_write"
-			app:backgroundTint="@color/nordicLake" />
-
-
-		<com.google.android.material.button.MaterialButton
-			android:id="@+id/action_connect"
-			style="@style/Widget.Connect"
-			android:layout_width="wrap_content"
+		<LinearLayout
+			android:id="@+id/linearLayoutButtons"
+			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_alignParentBottom="true"
 			android:layout_centerHorizontal="true"
-			android:layout_marginBottom="@dimen/activity_vertical_margin_bottom"
-			android:onClick="onConnectClicked"
-			android:text="@string/action_connect"/>
+			android:layout_marginLeft="@dimen/feature_horizontal_margin"
+			android:layout_marginRight="@dimen/feature_horizontal_margin"
+			android:layout_marginBottom="@dimen/activity_vertical_margin_bottom_narrow"
+			android:orientation="horizontal">
+
+			<com.google.android.material.button.MaterialButton
+				android:id="@+id/action_read"
+				style="@style/Widget.MaterialComponents.Button"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="2"
+				android:text="@string/template_action_read"
+				app:backgroundTint="@color/nordicLake" />
+
+			<com.google.android.material.button.MaterialButton
+				android:id="@+id/action_connect"
+				style="@style/Widget.Connect"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_marginLeft="6dp"
+				android:layout_marginRight="6dp"
+				android:layout_weight="3"
+				android:onClick="onConnectClicked"
+				android:text="@string/action_connect" />
+
+			<com.google.android.material.button.MaterialButton
+				android:id="@+id/action_write_characteristic_stat"
+				style="@style/Widget.MaterialComponents.Button"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="2"
+				android:text="@string/template_action_write"
+				app:backgroundTint="@color/nordicLake" />
+
+		</LinearLayout>
+
 
 	</no.nordicsemi.android.nrftoolbox.widget.ForegroundRelativeLayout>
 </LinearLayout>
