@@ -76,5 +76,6 @@ dependencies {
 
     // Import GraphView Library:
     implementation 'com.jjoe64:graphview:4.2.2'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 
 }
