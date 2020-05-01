@@ -58,8 +58,8 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	private SaveFileManager mSaveFileManager;
 
 	// TODO change view references to match your need
-	private TextView[] valueViewArray = new TextView[6];
 	private EditText[] editTextDurationArray = new EditText[3];
+	private TextView[][] textView2dArray = new TextView[4][6];
 	private TextView[] textViewContArray = new TextView[4];
     private TextView[] textViewBattArray = new TextView[8];
 
@@ -77,18 +77,20 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	private void setGUI() {
 
 		// TODO assign your views to fields
-		for(int i = 0; i < valueViewArray.length; i++){
-			int resId = getResources().getIdentifier("value" + i, "id", getPackageName());
-			valueViewArray[i] = findViewById(resId);
+		for(int i = 0; i < editTextDurationArray.length; i++){
+			int resId = getResources().getIdentifier("editText_timeDuration" + i, "id", getPackageName());
+			editTextDurationArray[i] = findViewById(resId);
+			// Set a filter to receive timeDuration predefined values: 0 <= hrs <= 17, 0 <= mins <= 59, 0 <= secs <= 59
+			int numberMax = 59;
+			if(i == 0){ numberMax = 17;}
+			editTextDurationArray[i].setFilters(new InputFilter[]{new InputFilterMinMax(0, numberMax)});
 		}
-        for(int i = 0; i < editTextDurationArray.length; i++){
-            int resId = getResources().getIdentifier("editText_timeDuration" + i, "id", getPackageName());
-            editTextDurationArray[i] = findViewById(resId);
-            // Set a filter to receive timeDuration predefined values: 0 <= hrs <= 17, 0 <= mins <= 59, 0 <= secs <= 59
-            int numberMax = 59;
-            if(i == 0){ numberMax = 17;}
-            editTextDurationArray[i].setFilters(new InputFilter[]{new InputFilterMinMax(0, numberMax)});
-        }
+		for(int i = 0; i < textView2dArray.length; i++){
+			for(int j = 0; j < textView2dArray[0].length; j++) {
+				int resId = getResources().getIdentifier("textViewSens" + i + "" + j, "id", getPackageName());
+				textView2dArray[i][j] = findViewById(resId);
+			}
+		}
         for(int i = 0; i < textViewContArray.length; i++){
             int resId = getResources().getIdentifier("textViewCont" + i, "id", getPackageName());
             textViewContArray[i] = findViewById(resId);
@@ -139,9 +141,9 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	@Override
 	protected void setDefaultUI() {
 		// TODO clear your UI
-		for(int i = 0; i < valueViewArray.length; i++){
-			valueViewArray[i].setText(R.string.not_available_value);
-		}
+		//for(int i = 0; i < valueViewArray.length; i++){
+		//	valueViewArray[i].setText(R.string.not_available_value);
+		//}
 	}
 
 	@Override
@@ -246,8 +248,8 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 				// Get read or notified data and update UI:
 				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_SENS_UPDATE);
-				for(int i = 0; i < valueViewArray.length; i++){
-					valueViewArray[i].setText(String.valueOf(dataArray[i]));
+				for(int j = 0; j < textView2dArray[0].length; j++){
+					textView2dArray[dataArray[0]][j].setText(String.valueOf(dataArray[j]));
 				}
 
 				//Write a line in the file:
