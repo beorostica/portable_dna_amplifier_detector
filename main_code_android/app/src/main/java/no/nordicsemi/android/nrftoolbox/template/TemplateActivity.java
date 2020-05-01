@@ -40,6 +40,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.Viewport;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
@@ -61,6 +62,9 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	//The object that manages the save file:
 	private SaveFileManager mSaveFileManager;
 
+	//graphView:
+	private LineGraphSeries<DataPoint> mSerie = new LineGraphSeries<>();
+
 	// TODO change view references to match your need
 	private EditText[] editTextDurationArray = new EditText[3];
 	private TextView[][] textView2dArray = new TextView[4][6];
@@ -75,6 +79,17 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 		//Create the save file manager:
 		mSaveFileManager = new SaveFileManager(this);
+
+		//graphView:
+		GraphView mGraphView = findViewById(R.id.graph);
+		Viewport mViewport  = mGraphView.getViewport();
+		mGraphView.addSeries(mSerie);
+		mViewport.setMinX(0);
+		mViewport.setMaxX(120);
+		mViewport.setMinY(0);
+		mViewport.setMaxY(1023);
+		mViewport.setYAxisBoundsManual(true);
+		mViewport.setXAxisBoundsManual(true);
 
 	}
 
@@ -121,16 +136,6 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				getService().performSendCommandFromPhone(durationTime);
 			}
 		});
-
-		GraphView graph = (GraphView) findViewById(R.id.graph);
-		LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
-				new DataPoint(0, 1),
-				new DataPoint(1, 5),
-				new DataPoint(2, 3),
-				new DataPoint(3, 2),
-				new DataPoint(4, 6)
-		});
-		graph.addSeries(series);
 
 	}
 
@@ -277,6 +282,9 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				for(int i = 0; i < textViewContArray.length; i++){
                     textViewContArray[i].setText(String.valueOf(dataArray[i]));
 				}
+
+				//graphView:
+				mSerie.appendData(new DataPoint((double)dataArray[0],(double)dataArray[2]),true,120);
 
 			}
 			if (TemplateService.BROADCAST_CHARACTERISTIC_BATT_UPDATE.equals(action)) {
