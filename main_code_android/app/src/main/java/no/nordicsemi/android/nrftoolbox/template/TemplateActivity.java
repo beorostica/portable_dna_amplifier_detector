@@ -148,14 +148,14 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-        mSaveFileManager.closeFile();
+        mSaveFileManager.closeFiles();
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
 	}
 
     // After disconnection close the file:
     @Override
     public void onDeviceDisconnected(@NonNull BluetoothDevice device) {
-        mSaveFileManager.closeFile();
+        mSaveFileManager.closeFiles();
     }
 
 	@Override
@@ -250,15 +250,15 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				if(dataArray[0] == 0 && dataArray[2] == 0) {
 					buttonWrite.setEnabled(true);
 					buttonWrite.setText(R.string.template_action_write_start);
-                    mSaveFileManager.closeFile();
+                    mSaveFileManager.closeFiles();
 				} else if (dataArray[0] == 1 && dataArray[2] == 1) {
 					buttonWrite.setEnabled(true);
 					buttonWrite.setText(R.string.template_action_write_stop);
-                    mSaveFileManager.createFile(dataArray);
+                    mSaveFileManager.createFiles(dataArray);
 				} else if (dataArray[0] == 0 && dataArray[2] == 1) {
 					buttonWrite.setEnabled(false);
 					buttonWrite.setText(R.string.template_action_write_wait);
-                    mSaveFileManager.createFile(dataArray);
+                    mSaveFileManager.createFiles(dataArray);
 				}
 
 				// Update the timeDuration received from nRF52 (useful when first connection):
@@ -277,7 +277,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				}
 
 				//Write a line in the file:
-                mSaveFileManager.writeLine(dataArray);
+                mSaveFileManager.writeLine(dataArray,0);
 
 			}
 			if (TemplateService.BROADCAST_CHARACTERISTIC_CONT_UPDATE.equals(action)) {
@@ -287,6 +287,9 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				for(int i = 0; i < textViewContArray.length; i++){
                     textViewContArray[i].setText(String.valueOf(dataArray[i]));
 				}
+
+				//Write a line in the file:
+				mSaveFileManager.writeLine(dataArray,1);
 
 				//graphView:
 				mSerie.appendData(new DataPoint((double)dataArray[0],(double)dataArray[2]),true,120);
@@ -299,6 +302,9 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				for(int i = 0; i < textViewBattArray.length; i++){
                     textViewBattArray[i].setText(String.valueOf(dataArray[i]));
 				}
+
+				//Write a line in the file:
+				mSaveFileManager.writeLine(dataArray,2);
 
 			}
 
