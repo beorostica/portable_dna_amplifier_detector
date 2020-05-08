@@ -19,25 +19,46 @@
   ~ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
   ~ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" >
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	tools:context=".template.settings.FilesActivity">
 
-    <item
-        android:id="@+id/action_select_file"
-        android:orderInCategory="98"
-        app:showAsAction="never"
-        android:title="@string/action_select_file"/>
+	<include
+		android:id="@+id/toolbar_actionbar"
+		layout="@layout/toolbar"/>
 
-    <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="99"
-        app:showAsAction="never"
-        android:title="@string/action_settings"/>
-    
-    <item
-        android:id="@+id/action_about"
-        android:orderInCategory="100"
-        app:showAsAction="never"
-        android:title="@string/action_about"/>    
-    
-</menu>
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_marginLeft="@dimen/feature_horizontal_margin"
+		android:layout_marginRight="@dimen/feature_horizontal_margin"
+		android:orientation="vertical">
+
+		<androidx.appcompat.widget.AppCompatTextView
+			android:id="@+id/titleFileSelection"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:gravity="center"
+			android:padding="@dimen/feature_section_padding"
+			android:text="@string/files_activity_title"
+			android:textAllCaps="true"
+			android:textAppearance="?android:attr/textAppearanceLarge" />
+
+		<androidx.appcompat.widget.AppCompatTextView
+			style="@style/Widget.ListTitle"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:text="@string/files_activity_subtitle" />
+
+		<ListView
+			android:id="@+id/listViewFiles"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent" />
+
+	</LinearLayout>
+
+</LinearLayout>
+

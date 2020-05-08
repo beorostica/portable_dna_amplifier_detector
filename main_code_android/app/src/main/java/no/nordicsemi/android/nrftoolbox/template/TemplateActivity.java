@@ -50,6 +50,7 @@ import no.nordicsemi.android.nrftoolbox.R;
 import no.nordicsemi.android.nrftoolbox.profile.BleProfileService;
 import no.nordicsemi.android.nrftoolbox.profile.BleProfileServiceReadyActivity;
 import no.nordicsemi.android.nrftoolbox.template.savefile.SaveFileManager;
+import no.nordicsemi.android.nrftoolbox.template.settings.FilesActivity;
 import no.nordicsemi.android.nrftoolbox.template.settings.SettingsActivity;
 
 /**
@@ -187,6 +188,10 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 			case R.id.action_settings:
 				final Intent intent = new Intent(this, SettingsActivity.class);
 				startActivity(intent);
+				break;
+			case R.id.action_select_file:
+				Intent i = new Intent(this, FilesActivity.class);
+				startActivity(i);
 				break;
 		}
 		return true;

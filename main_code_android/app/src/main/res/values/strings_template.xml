@@ -24,6 +24,11 @@
     <string name="template_feature_title">DNA Amplifier</string>
 	<string name="template_settings_title">DNA Amplifier Settings</string>
 
+    <string name="action_select_file">Files</string>
+	<string name="files_activity_title">Files</string>
+	<string name="files_activity_subtitle">List of File Options</string>
+	<string name="plot_activity_title">Plot</string>
+
 	<string name="template_feature_title_long">DNA Amplifier</string>
 	<dimen name="template_feature_title_long_margin">-62dp</dimen>
 
