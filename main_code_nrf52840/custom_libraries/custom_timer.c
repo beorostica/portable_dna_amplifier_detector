@@ -203,7 +203,7 @@ void secondsStop(void)
     //Stop the millis timer:
     err_code = app_timer_stop(m_timer_seconds_id);
     APP_ERROR_CHECK(err_code);
-    timeSeconds = 0;
+    //timeSeconds = 0;
     isTimerSecondsReady = true;
 }
 

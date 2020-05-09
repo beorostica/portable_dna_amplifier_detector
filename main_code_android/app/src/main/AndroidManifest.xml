@@ -102,6 +102,16 @@
 			android:name="no.nordicsemi.android.nrftoolbox.template.TemplateService"
 			android:label="@string/template_feature_title" />
 
+		<activity
+			android:name="no.nordicsemi.android.nrftoolbox.template.settings.FilesActivity"
+			android:label="@string/files_activity_title" >
+		</activity>
+
+		<activity
+			android:name="no.nordicsemi.android.nrftoolbox.template.settings.PlotActivity"
+			android:label="@string/plot_activity_title" >
+		</activity>
+
 		<!-- Plug-in activities -->
 		<activity
 			android:name="no.nordicsemi.android.nrftoolbox.dfu.DfuActivity"

@@ -39,12 +39,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.Viewport;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
 import java.util.UUID;
 
 import no.nordicsemi.android.nrftoolbox.R;
 import no.nordicsemi.android.nrftoolbox.profile.BleProfileService;
 import no.nordicsemi.android.nrftoolbox.profile.BleProfileServiceReadyActivity;
 import no.nordicsemi.android.nrftoolbox.template.savefile.SaveFileManager;
+import no.nordicsemi.android.nrftoolbox.template.settings.FilesActivity;
 import no.nordicsemi.android.nrftoolbox.template.settings.SettingsActivity;
 
 /**
@@ -57,9 +63,12 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	//The object that manages the save file:
 	private SaveFileManager mSaveFileManager;
 
+	//graphView:
+	private LineGraphSeries<DataPoint> mSerie = new LineGraphSeries<>();
+
 	// TODO change view references to match your need
-	private TextView[] valueViewArray = new TextView[6];
 	private EditText[] editTextDurationArray = new EditText[3];
+	private TextView[][] textView2dArray = new TextView[4][6];
 	private TextView[] textViewContArray = new TextView[4];
     private TextView[] textViewBattArray = new TextView[8];
 
@@ -72,23 +81,36 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		//Create the save file manager:
 		mSaveFileManager = new SaveFileManager(this);
 
+		//graphView:
+		GraphView mGraphView = findViewById(R.id.graph);
+		Viewport mViewport  = mGraphView.getViewport();
+		mGraphView.addSeries(mSerie);
+		mViewport.setMinX(0);
+		mViewport.setMaxX(120);
+		mViewport.setMinY(0);
+		mViewport.setMaxY(1023);
+		mViewport.setYAxisBoundsManual(true);
+		mViewport.setXAxisBoundsManual(true);
+
 	}
 
 	private void setGUI() {
 
 		// TODO assign your views to fields
-		for(int i = 0; i < valueViewArray.length; i++){
-			int resId = getResources().getIdentifier("value" + i, "id", getPackageName());
-			valueViewArray[i] = findViewById(resId);
+		for(int i = 0; i < editTextDurationArray.length; i++){
+			int resId = getResources().getIdentifier("editText_timeDuration" + i, "id", getPackageName());
+			editTextDurationArray[i] = findViewById(resId);
+			// Set a filter to receive timeDuration predefined values: 0 <= hrs <= 17, 0 <= mins <= 59, 0 <= secs <= 59
+			int numberMax = 59;
+			if(i == 0){ numberMax = 17;}
+			editTextDurationArray[i].setFilters(new InputFilter[]{new InputFilterMinMax(0, numberMax)});
 		}
-        for(int i = 0; i < editTextDurationArray.length; i++){
-            int resId = getResources().getIdentifier("editText_timeDuration" + i, "id", getPackageName());
-            editTextDurationArray[i] = findViewById(resId);
-            // Set a filter to receive timeDuration predefined values: 0 <= hrs <= 17, 0 <= mins <= 59, 0 <= secs <= 59
-            int numberMax = 59;
-            if(i == 0){ numberMax = 17;}
-            editTextDurationArray[i].setFilters(new InputFilter[]{new InputFilterMinMax(0, numberMax)});
-        }
+		for(int i = 0; i < textView2dArray.length; i++){
+			for(int j = 0; j < textView2dArray[0].length; j++) {
+				int resId = getResources().getIdentifier("textViewSens" + i + "" + j, "id", getPackageName());
+				textView2dArray[i][j] = findViewById(resId);
+			}
+		}
         for(int i = 0; i < textViewContArray.length; i++){
             int resId = getResources().getIdentifier("textViewCont" + i, "id", getPackageName());
             textViewContArray[i] = findViewById(resId);
@@ -126,22 +148,22 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-        mSaveFileManager.closeFile();
+        mSaveFileManager.closeFiles();
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
 	}
 
     // After disconnection close the file:
     @Override
     public void onDeviceDisconnected(@NonNull BluetoothDevice device) {
-        mSaveFileManager.closeFile();
+        mSaveFileManager.closeFiles();
     }
 
 	@Override
 	protected void setDefaultUI() {
 		// TODO clear your UI
-		for(int i = 0; i < valueViewArray.length; i++){
-			valueViewArray[i].setText(R.string.not_available_value);
-		}
+		//for(int i = 0; i < valueViewArray.length; i++){
+		//	valueViewArray[i].setText(R.string.not_available_value);
+		//}
 	}
 
 	@Override
@@ -166,6 +188,10 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 			case R.id.action_settings:
 				final Intent intent = new Intent(this, SettingsActivity.class);
 				startActivity(intent);
+				break;
+			case R.id.action_select_file:
+				Intent i = new Intent(this, FilesActivity.class);
+				startActivity(i);
 				break;
 		}
 		return true;
@@ -224,15 +250,15 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				if(dataArray[0] == 0 && dataArray[2] == 0) {
 					buttonWrite.setEnabled(true);
 					buttonWrite.setText(R.string.template_action_write_start);
-                    mSaveFileManager.closeFile();
+                    mSaveFileManager.closeFiles();
 				} else if (dataArray[0] == 1 && dataArray[2] == 1) {
 					buttonWrite.setEnabled(true);
 					buttonWrite.setText(R.string.template_action_write_stop);
-                    mSaveFileManager.createFile(dataArray);
+                    mSaveFileManager.createFiles(dataArray);
 				} else if (dataArray[0] == 0 && dataArray[2] == 1) {
 					buttonWrite.setEnabled(false);
 					buttonWrite.setText(R.string.template_action_write_wait);
-                    mSaveFileManager.createFile(dataArray);
+                    mSaveFileManager.createFiles(dataArray);
 				}
 
 				// Update the timeDuration received from nRF52 (useful when first connection):
@@ -246,12 +272,12 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 				// Get read or notified data and update UI:
 				final int[] dataArray = intent.getIntArrayExtra(TemplateService.EXTRA_DATA_CHARACTERISTIC_SENS_UPDATE);
-				for(int i = 0; i < valueViewArray.length; i++){
-					valueViewArray[i].setText(String.valueOf(dataArray[i]));
+				for(int j = 0; j < textView2dArray[0].length; j++){
+					textView2dArray[dataArray[0]][j].setText(String.valueOf(dataArray[j]));
 				}
 
 				//Write a line in the file:
-                mSaveFileManager.writeLine(dataArray);
+                mSaveFileManager.writeLine(dataArray,0);
 
 			}
 			if (TemplateService.BROADCAST_CHARACTERISTIC_CONT_UPDATE.equals(action)) {
@@ -262,6 +288,12 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
                     textViewContArray[i].setText(String.valueOf(dataArray[i]));
 				}
 
+				//Write a line in the file:
+				mSaveFileManager.writeLine(dataArray,1);
+
+				//graphView:
+				mSerie.appendData(new DataPoint((double)dataArray[0],(double)dataArray[2]),true,120);
+
 			}
 			if (TemplateService.BROADCAST_CHARACTERISTIC_BATT_UPDATE.equals(action)) {
 
@@ -270,6 +302,9 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 				for(int i = 0; i < textViewBattArray.length; i++){
                     textViewBattArray[i].setText(String.valueOf(dataArray[i]));
 				}
+
+				//Write a line in the file:
+				mSaveFileManager.writeLine(dataArray,2);
 
 			}
 

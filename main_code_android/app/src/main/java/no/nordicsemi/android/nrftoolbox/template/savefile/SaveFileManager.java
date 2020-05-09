@@ -22,7 +22,7 @@ public class SaveFileManager {
 
     private Context mContext;
 
-    FileWriter mFileWriter;
+    FileWriter mFileWriters[] = new FileWriter[3];
     private long mTimeInitialMillis;
     private double mTimeSeconds;
 
@@ -30,8 +30,6 @@ public class SaveFileManager {
     public SaveFileManager(Context context) {
 
         mContext = context;
-
-        Log.v("SaveFileManager","HOLI");
 
         //Request user permission:
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -42,8 +40,8 @@ public class SaveFileManager {
 
     }
 
-    public void createFile(int[] dataStatArray){
-        if(mFileWriter == null) {
+    public void createFiles(int[] dataStatArray){
+        if(!areAllFileWriters()) {
             try {
 
                 // Get the base folder to save the file:
@@ -60,21 +58,37 @@ public class SaveFileManager {
                     mBaseFolder.mkdirs();
                 }
 
-                // Create the mFileWriter object:
-                String fileName = 20 + String.format("%02d", dataStatArray[3])  +
+                // Create the file names from the STAT characteristic:
+                String fileNameBase = 20 + String.format("%02d", dataStatArray[3])  +
                         String.format("%02d", dataStatArray[4]) +
                         String.format("%02d", dataStatArray[5]) + "_" +
                         String.format("%02d", dataStatArray[6]) +
                         String.format("%02d", dataStatArray[7]) +
-                        String.format("%02d", dataStatArray[8]) + ".txt";
-                File mFile = new File(mBaseFolder + "/" + fileName);
+                        String.format("%02d", dataStatArray[8]);
+                File[] mFiles = new File[mFileWriters.length];
+                mFiles[0] = new File(mBaseFolder + "/" + fileNameBase + "_measure.txt");
+                mFiles[1] = new File(mBaseFolder + "/" + fileNameBase + "_control.txt");
+                mFiles[2] = new File(mBaseFolder + "/" + fileNameBase + "_battery.txt");
 
-                // Write the fist line (must be the name columns of the data to be written):
-                if (!mFile.isFile()) {
-                    mFileWriter = new FileWriter(mFile,true);
-                    mFileWriter.write("timeWrite,index,time,mosfetBefore,mosfetAfter,lightBefore,lightAfter\r\n");
-                }else{
-                    mFileWriter = new FileWriter(mFile,true);
+                // Create the array of file writer objects:
+                for (int i = 0; i < mFileWriters.length; i++) {
+                    if (!mFiles[i].isFile()) {
+                        // Write the first line (must be the name columns of the data to be written):
+                        mFileWriters[i] = new FileWriter(mFiles[i], true);
+                        switch (i) {
+                            case 0:
+                                mFileWriters[i].write("timeWrite,index,time,mosfetBefore,mosfetAfter,lightBefore,lightAfter\r\n");
+                                break;
+                            case 1:
+                                mFileWriters[i].write("timeWrite,time,refAdc,yAdc,uPwm\r\n");
+                                break;
+                            case 2:
+                                mFileWriters[i].write("timeWrite,time,soc,capacityRemain,capacityFull,soh,voltage,current,power\r\n");
+                                break;
+                        }
+                    } else {
+                        mFileWriters[i] = new FileWriter(mFiles[i], true);
+                    }
                 }
 
                 // Get the initial time
@@ -88,18 +102,18 @@ public class SaveFileManager {
     }
 
 
-    public void writeLine(int[] dataArray){
-        if (mFileWriter != null) {
+    public void writeLine(int[] dataArray, int index){
+        if(mFileWriters[index] != null) {
             try {
                 mTimeSeconds = (Calendar.getInstance().getTimeInMillis() - mTimeInitialMillis) / 1000.0;
-                mFileWriter.write(String.format(Locale.ENGLISH,"%.1f", mTimeSeconds));
-                mFileWriter.write(",");
+                mFileWriters[index].write(String.format(Locale.ENGLISH,"%.1f", mTimeSeconds));
+                mFileWriters[index].write(",");
                 for(int i = 0; i < (dataArray.length-1); i++){
-                    mFileWriter.write(String.valueOf(dataArray[i]));
-                    mFileWriter.write(",");
+                    mFileWriters[index].write(String.valueOf(dataArray[i]));
+                    mFileWriters[index].write(",");
                 }
-                mFileWriter.write(String.valueOf(dataArray[dataArray.length-1]));
-                mFileWriter.write("\r\n");
+                mFileWriters[index].write(String.valueOf(dataArray[dataArray.length-1]));
+                mFileWriters[index].write("\r\n");
             } catch (IOException ioe){
                 ioe.printStackTrace();
             }
@@ -107,16 +121,29 @@ public class SaveFileManager {
     }
 
 
-    public void closeFile(){
-        if(mFileWriter != null) {
+    public void closeFiles(){
+        if(areAllFileWriters()) {
             try {
-                mFileWriter.flush();
-                mFileWriter.close();
-                mFileWriter = null;
+                for(int i = 0; i < mFileWriters.length; i++){
+                    mFileWriters[i].flush();
+                    mFileWriters[i].close();
+                    mFileWriters[i] = null;
+                }
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
         }
+    }
+
+    private boolean areAllFileWriters() {
+        boolean areFileWriters = true;
+        for (int i = 0; i < mFileWriters.length; i++) {
+            if (mFileWriters[i] == null) {
+                areFileWriters = false;
+                break;
+            }
+        }
+        return areFileWriters;
     }
 
 }

@@ -31,71 +31,42 @@
 		android:id="@+id/toolbar_actionbar"
 		layout="@layout/toolbar"/>
 
-	<no.nordicsemi.android.nrftoolbox.widget.ForegroundRelativeLayout
-		style="@style/HeaderShadow"
+	<androidx.constraintlayout.widget.ConstraintLayout
 		android:layout_width="match_parent"
-		android:layout_height="match_parent">
-
-		<!-- The size of text below must be fixed, therefore dp are used instead of sp -->
-
-		<androidx.appcompat.widget.AppCompatTextView
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_centerVertical="true"
-			android:layout_marginLeft="@dimen/template_feature_title_long_margin"
-			android:rotation="270"
-			android:text="@string/template_feature_title_long"
-			android:textColor="@color/verticalTitleColor"
-			android:textSize="26dp"
-			android:textStyle="bold" />
-
-		<TextView
-			android:id="@+id/battery"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_alignParentLeft="true"
-			android:layout_marginLeft="@dimen/feature_horizontal_margin"
-			android:layout_marginTop="@dimen/feature_device_name_margin_top"
-			android:background="@drawable/battery"
-			android:freezesText="true"
-			android:gravity="center"
-			android:text="@string/not_available"
-			android:textColor="#FFFFFF"
-			android:textSize="12sp"/>
-
-		<androidx.appcompat.widget.AppCompatTextView
-			android:id="@+id/device_name"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_marginLeft="10dp"
-			android:layout_marginTop="@dimen/feature_device_name_margin_top"
-			android:layout_toRightOf="@+id/battery"
-			android:ellipsize="end"
-			android:freezesText="true"
-			android:maxLines="1"
-			android:text="@string/template_default_name"
-			android:textAllCaps="true"
-			android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-		<!-- Application section -->
-
-
+		android:layout_height="match_parent"
+		android:layout_marginLeft="@dimen/feature_horizontal_margin"
+		android:layout_marginRight="@dimen/feature_horizontal_margin">
 
 		<ScrollView
 			android:id="@+id/scrollView"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
 			style="@style/Widget.List"
-			android:layout_marginLeft="@dimen/feature_horizontal_margin"
-			android:layout_marginTop="@dimen/feature_vertical_margin_top"
-			android:layout_marginRight="@dimen/feature_horizontal_margin"
-			android:layout_marginBottom="200dp">
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:background="@android:color/transparent"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent">
 
 			<LinearLayout
 				android:id="@+id/container"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:orientation="vertical">
+
+				<androidx.appcompat.widget.AppCompatTextView
+					android:id="@+id/device_name"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_toRightOf="@+id/battery"
+					android:ellipsize="end"
+					android:freezesText="true"
+					android:gravity="center"
+					android:maxLines="1"
+					android:padding="@dimen/feature_section_padding"
+					android:text="@string/template_default_name"
+					android:textAllCaps="true"
+					android:textAppearance="?android:attr/textAppearanceLarge" />
 
 				<androidx.appcompat.widget.AppCompatTextView
 					style="@style/Widget.ListTitle"
@@ -378,324 +349,402 @@
 					android:layout_marginTop="@dimen/activity_horizontal_margin"
 					android:text="Detection System" />
 
-				<TableLayout
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:orientation="horizontal">
+
+					<TextView
+						android:id="@+id/textViewSensInd"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						android:text="Ind" />
+
+					<TextView
+						android:id="@+id/textViewSensTime"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						android:text="Time" />
+
+					<TextView
+						android:id="@+id/textViewSensMosBefore"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						android:text="Led0" />
+
+					<TextView
+						android:id="@+id/textViewSensMosAfter"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						android:text="Led1" />
+
+					<TextView
+						android:id="@+id/textViewSensAdcBefore"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						android:text="Adc0" />
+
+					<TextView
+						android:id="@+id/textViewSensAdcAfter"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						android:text="Adc1" />
+				</LinearLayout>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:orientation="horizontal">
+
+					<TextView
+						android:id="@+id/textViewSens00"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="0" />
+
+					<TextView
+						android:id="@+id/textViewSens01"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="120" />
+
+					<TextView
+						android:id="@+id/textViewSens02"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="0" />
+
+					<TextView
+						android:id="@+id/textViewSens03"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="1" />
+
+					<TextView
+						android:id="@+id/textViewSens04"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="24" />
+
+					<TextView
+						android:id="@+id/textViewSens05"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="1427" />
+
+				</LinearLayout>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:orientation="horizontal">
+
+					<TextView
+						android:id="@+id/textViewSens10"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="1" />
+
+					<TextView
+						android:id="@+id/textViewSens11"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="121" />
+
+					<TextView
+						android:id="@+id/textViewSens12"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="0" />
+
+					<TextView
+						android:id="@+id/textViewSens13"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="1" />
+
+					<TextView
+						android:id="@+id/textViewSens14"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="23" />
+
+					<TextView
+						android:id="@+id/textViewSens15"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="1424" />
+
+				</LinearLayout>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:orientation="horizontal">
+
+					<TextView
+						android:id="@+id/textViewSens20"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="2" />
+
+					<TextView
+						android:id="@+id/textViewSens21"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="122" />
+
+					<TextView
+						android:id="@+id/textViewSens22"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="0" />
+
+					<TextView
+						android:id="@+id/textViewSens23"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="1" />
+
+					<TextView
+						android:id="@+id/textViewSens24"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="26" />
+
+					<TextView
+						android:id="@+id/textViewSens25"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="1425" />
+
+				</LinearLayout>
+
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:orientation="horizontal">
+
+					<TextView
+						android:id="@+id/textViewSens30"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="3" />
+
+					<TextView
+						android:id="@+id/textViewSens31"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="123" />
+
+					<TextView
+						android:id="@+id/textViewSens32"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="0" />
+
+					<TextView
+						android:id="@+id/textViewSens33"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="1" />
+
+					<TextView
+						android:id="@+id/textViewSens34"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="25" />
+
+					<TextView
+						android:id="@+id/textViewSens35"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:gravity="center"
+						tools:text="1426" />
+
+				</LinearLayout>
+
+				<androidx.appcompat.widget.AppCompatTextView
+					android:id="@+id/listTitleGraphData"
+					style="@style/Widget.ListTitle"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:padding="@dimen/feature_section_padding">
+					android:layout_marginTop="@dimen/activity_horizontal_margin"
+					android:text="Graph Data" />
 
-					<TableRow
-						android:layout_width="match_parent"
-						android:layout_height="wrap_content">
+				<com.jjoe64.graphview.GraphView
+					android:id="@+id/graph"
+					android:layout_width="match_parent"
+					android:layout_height="160dp" />
 
-						<androidx.appcompat.widget.AppCompatTextView
-							android:layout_width="0dp"
-							android:layout_height="match_parent"
-							android:layout_weight="1"
-							android:gravity="center_vertical"
-							android:text="@string/template_value_title" />
-
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value0"
-							android:layout_width="wrap_content"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="right"
-							android:text="@string/not_available_value"
-							android:textSize="36sp" />
-
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value_unit"
-							android:layout_width="45dp"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="bottom"
-							android:text="@string/template_unit" />
-					</TableRow>
-
-				</TableLayout>
-
-				<TableLayout
+				<androidx.appcompat.widget.AppCompatTextView
+					android:id="@+id/listTitleInputData"
+					style="@style/Widget.ListTitle"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:padding="@dimen/feature_section_padding">
+					android:layout_above="@id/linearLayoutInputData"
+					android:layout_marginTop="@dimen/activity_horizontal_margin"
+					android:text="User Input" />
 
-					<TableRow
-						android:layout_width="match_parent"
-						android:layout_height="wrap_content">
+				<LinearLayout
+					android:id="@+id/linearLayoutInputData"
+					android:layout_width="match_parent"
+					android:layout_height="50dp"
+					android:layout_above="@id/linearLayoutButtons"
+					android:orientation="horizontal">
 
-						<androidx.appcompat.widget.AppCompatTextView
-							android:layout_width="0dp"
-							android:layout_height="match_parent"
-							android:layout_weight="1"
-							android:gravity="center_vertical"
-							android:text="@string/template_value_title_1" />
+					<EditText
+						android:id="@+id/editText_timeDuration0"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:ems="10"
+						android:inputType="number"
+						android:text="0" />
 
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value1"
-							android:layout_width="wrap_content"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="right"
-							android:text="@string/not_available_value"
-							android:textSize="36sp" />
+					<TextView
+						android:id="@+id/textView_timeDuration0"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:text="hrs" />
 
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value_unit1"
-							android:layout_width="45dp"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="bottom"
-							android:text="@string/template_unit_1" />
-					</TableRow>
+					<EditText
+						android:id="@+id/editText_timeDuration1"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:ems="10"
+						android:inputType="number"
+						android:text="0" />
 
-				</TableLayout>
+					<TextView
+						android:id="@+id/textView_timeDuration1"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:text="mins" />
 
+					<EditText
+						android:id="@+id/editText_timeDuration2"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:ems="10"
+						android:inputType="number"
+						android:text="40" />
 
-				<TableLayout
+					<TextView
+						android:id="@+id/textView_timeDuration2"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:text="secs" />
+				</LinearLayout>
+
+				<LinearLayout
+					android:id="@+id/linearLayoutButtons"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:padding="@dimen/feature_section_padding">
+					android:layout_alignParentBottom="true"
+					android:layout_centerHorizontal="true"
+					android:layout_marginBottom="@dimen/activity_horizontal_margin"
+					android:orientation="horizontal">
 
-					<TableRow
-						android:layout_width="match_parent"
-						android:layout_height="wrap_content">
+					<com.google.android.material.button.MaterialButton
+						android:id="@+id/action_read"
+						style="@style/Widget.MaterialComponents.Button"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:text="@string/template_action_read"
+						app:backgroundTint="@color/nordicLake" />
 
-						<androidx.appcompat.widget.AppCompatTextView
-							android:layout_width="0dp"
-							android:layout_height="match_parent"
-							android:layout_weight="1"
-							android:gravity="center_vertical"
-							android:text="@string/template_value_title_2" />
+					<com.google.android.material.button.MaterialButton
+						android:id="@+id/action_connect"
+						style="@style/Widget.Connect"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_marginLeft="6dp"
+						android:layout_marginRight="6dp"
+						android:layout_weight="3"
+						android:onClick="onConnectClicked"
+						android:text="@string/action_connect" />
 
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value2"
-							android:layout_width="wrap_content"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="right"
-							android:text="@string/not_available_value"
-							android:textSize="36sp" />
+					<com.google.android.material.button.MaterialButton
+						android:id="@+id/action_write_characteristic_stat"
+						style="@style/Widget.MaterialComponents.Button"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="2"
+						android:text="@string/template_action_write"
+						app:backgroundTint="@color/nordicLake" />
 
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value_unit2"
-							android:layout_width="45dp"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="bottom"
-							android:text="@string/template_unit_2" />
-					</TableRow>
-
-				</TableLayout>
-
-
-				<TableLayout
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:padding="@dimen/feature_section_padding">
-
-					<TableRow
-						android:layout_width="match_parent"
-						android:layout_height="wrap_content">
-
-						<androidx.appcompat.widget.AppCompatTextView
-							android:layout_width="0dp"
-							android:layout_height="match_parent"
-							android:layout_weight="1"
-							android:gravity="center_vertical"
-							android:text="@string/template_value_title_3" />
-
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value3"
-							android:layout_width="wrap_content"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="right"
-							android:text="@string/not_available_value"
-							android:textSize="36sp" />
-
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value_unit3"
-							android:layout_width="45dp"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="bottom"
-							android:text="@string/template_unit_3" />
-					</TableRow>
-
-				</TableLayout>
-
-
-				<TableLayout
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:padding="@dimen/feature_section_padding">
-
-					<TableRow
-						android:layout_width="match_parent"
-						android:layout_height="wrap_content">
-
-						<androidx.appcompat.widget.AppCompatTextView
-							android:layout_width="0dp"
-							android:layout_height="match_parent"
-							android:layout_weight="1"
-							android:gravity="center_vertical"
-							android:text="@string/template_value_title_4" />
-
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value4"
-							android:layout_width="wrap_content"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="right"
-							android:text="@string/not_available_value"
-							android:textSize="36sp" />
-
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value_unit4"
-							android:layout_width="45dp"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="bottom"
-							android:text="@string/template_unit_4" />
-					</TableRow>
-
-				</TableLayout>
-
-				<TableLayout
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"
-					android:padding="@dimen/feature_section_padding">
-
-					<TableRow
-						android:layout_width="match_parent"
-						android:layout_height="wrap_content">
-
-						<androidx.appcompat.widget.AppCompatTextView
-							android:layout_width="0dp"
-							android:layout_height="match_parent"
-							android:layout_weight="1"
-							android:gravity="center_vertical"
-							android:text="@string/template_value_title_5" />
-
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value5"
-							android:layout_width="wrap_content"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="right"
-							android:text="@string/not_available_value"
-							android:textSize="36sp" />
-
-						<androidx.appcompat.widget.AppCompatTextView
-							android:id="@+id/value_unit5"
-							android:layout_width="45dp"
-							android:layout_height="match_parent"
-							android:freezesText="true"
-							android:gravity="bottom"
-							android:text="@string/template_unit_5" />
-					</TableRow>
-
-				</TableLayout>
-
+				</LinearLayout>
 
 			</LinearLayout>
 		</ScrollView>
 
-		<LinearLayout
-			android:layout_width="match_parent"
-			android:layout_height="50dp"
-			android:orientation="horizontal"
-			android:layout_above="@id/action_read"
-			android:layout_marginLeft="@dimen/feature_horizontal_margin"
-			android:layout_marginRight="@dimen/feature_horizontal_margin">
+	</androidx.constraintlayout.widget.ConstraintLayout>
 
-			<EditText
-				android:id="@+id/editText_timeDuration0"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:ems="10"
-				android:inputType="number"
-				android:text="0"/>
-
-			<TextView
-				android:id="@+id/textView_timeDuration0"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:text="hrs" />
-
-			<EditText
-				android:id="@+id/editText_timeDuration1"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:ems="10"
-				android:inputType="number"
-				android:text="0"/>
-
-			<TextView
-				android:id="@+id/textView_timeDuration1"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:text="mins" />
-
-			<EditText
-				android:id="@+id/editText_timeDuration2"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:ems="10"
-				android:inputType="number"
-				android:text="40"/>
-
-			<TextView
-				android:id="@+id/textView_timeDuration2"
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="1"
-				android:text="secs" />
-		</LinearLayout>
-
-		<com.google.android.material.button.MaterialButton
-			android:id="@+id/action_read"
-			style="@style/Widget.MaterialComponents.Button"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_alignParentLeft="true"
-			android:layout_marginLeft="@dimen/feature_horizontal_margin"
-			android:layout_marginTop="@dimen/feature_device_name_margin_top"
-			android:layout_above="@id/action_connect"
-			android:layout_centerHorizontal="true"
-			android:text="@string/template_action_read"
-			app:backgroundTint="@color/nordicLake" />
-
-		<com.google.android.material.button.MaterialButton
-			android:id="@+id/action_write_characteristic_stat"
-			style="@style/Widget.MaterialComponents.Button"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_alignParentRight="true"
-			android:layout_marginRight="@dimen/feature_horizontal_margin"
-			android:layout_marginTop="@dimen/feature_device_name_margin_top"
-			android:layout_above="@id/action_connect"
-			android:layout_centerHorizontal="true"
-			android:text="@string/template_action_write"
-			app:backgroundTint="@color/nordicLake" />
-
-
-		<com.google.android.material.button.MaterialButton
-			android:id="@+id/action_connect"
-			style="@style/Widget.Connect"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_alignParentBottom="true"
-			android:layout_centerHorizontal="true"
-			android:layout_marginBottom="@dimen/activity_vertical_margin_bottom"
-			android:onClick="onConnectClicked"
-			android:text="@string/action_connect"/>
-
-	</no.nordicsemi.android.nrftoolbox.widget.ForegroundRelativeLayout>
 </LinearLayout>
 
