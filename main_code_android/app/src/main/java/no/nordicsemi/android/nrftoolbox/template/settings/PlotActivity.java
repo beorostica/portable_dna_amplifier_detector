@@ -5,9 +5,11 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
@@ -41,6 +43,11 @@ public class PlotActivity extends AppCompatActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plot);
+
+        // For Toolbar:
+        final Toolbar toolbar  = findViewById(R.id.toolbar_actionbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Get the file name selected from the parent activity:
         Intent intent = getIntent();
@@ -180,6 +187,17 @@ public class PlotActivity extends AppCompatActivity {
         mSerieBatterySystem0.setColor(Color.rgb(255,0,0));
         mGraphViewBatterySystem.addSeries(mSerieBatterySystem0);
 
+    }
+
+    // For Toolbar:
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }
