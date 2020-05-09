@@ -12,12 +12,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import no.nordicsemi.android.nrftoolbox.R;
 
 public class FilesActivity extends AppCompatActivity {
 
-    public static final String EXTRA_DATA_FILENAME = "no.nordicsemi.android.nrftoolbox.template.settings.EXTRA_DATA_FILENAME";
+    public static final String EXTRA_DATA_FILENAMEBASE = "no.nordicsemi.android.nrftoolbox.template.settings.EXTRA_DATA_FILENAMEBASE";
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -27,11 +29,24 @@ public class FilesActivity extends AppCompatActivity {
         // Get the base folder where the files are saved:
         File mBaseFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath() + "/DNAamplifier");
 
-        // Read the file names in the base folder and fill the array list of file names:
+        // Read the file names in the base folder and sort them by name:
         File[] arrayFiles = mBaseFolder.listFiles();
+        if (arrayFiles != null && arrayFiles.length > 1) {
+            Arrays.sort(arrayFiles, new Comparator<File>() {
+                @Override
+                public int compare(File object1, File object2) {
+                    return object2.getName().compareTo(object1.getName());
+                }
+            });
+        }
+
+        // Fill the array list of file names with the array of file names with the extension "_measure.txt, _control.txt, _battery.txt" removed:
         final ArrayList<String> arrayListFileNames = new ArrayList<String>();
-        for (int i = 0; i < arrayFiles.length; i++) {
-            arrayListFileNames.add(arrayFiles[i].getName());
+        arrayListFileNames.add(arrayFiles[0].getName().substring(0,15));
+        for (int i = 1; i < arrayFiles.length; i++) {
+            if(!arrayFiles[i].getName().substring(0,15).equals(arrayFiles[i-1].getName().substring(0,15))){
+                arrayListFileNames.add(arrayFiles[i].getName().substring(0,15));
+            }
         }
 
         // Setup the array adapter + list view:
@@ -43,10 +58,10 @@ public class FilesActivity extends AppCompatActivity {
         listViewFiles.setOnItemClickListener(new AdapterView.OnItemClickListener(){
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String fileName = arrayListFileNames.get(position);
+                String fileNameBase = arrayListFileNames.get(position);
 
                 Intent intent = new Intent(FilesActivity.this, PlotActivity.class);
-                intent.putExtra(EXTRA_DATA_FILENAME, fileName);
+                intent.putExtra(EXTRA_DATA_FILENAMEBASE, fileNameBase);
                 startActivity(intent);
             }
         });

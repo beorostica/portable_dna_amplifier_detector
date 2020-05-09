@@ -67,15 +67,40 @@
 				android:orientation="vertical">
 
 				<androidx.appcompat.widget.AppCompatTextView
-					android:id="@+id/titleGraphViewDetectionSystem"
+					android:id="@+id/titleGraphViewMeasureSystem"
+					style="@style/Widget.ListTitle"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:text="Graph Dectection System" />
+
+				<com.jjoe64.graphview.GraphView
+					android:id="@+id/graphViewMeasureSystem"
+					android:layout_width="match_parent"
+					android:layout_height="160dp" />
+
+				<androidx.appcompat.widget.AppCompatTextView
+					android:id="@+id/titleGraphViewControlSystem"
 					style="@style/Widget.ListTitle"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:layout_marginTop="@dimen/activity_horizontal_margin"
-					android:text="Graph Dectection System" />
+					android:text="Graph Control System" />
 
 				<com.jjoe64.graphview.GraphView
-					android:id="@+id/graphViewDetectionSystem"
+					android:id="@+id/graphViewControlSystem"
+					android:layout_width="match_parent"
+					android:layout_height="160dp" />
+
+				<androidx.appcompat.widget.AppCompatTextView
+					android:id="@+id/titleGraphViewBatterySystem"
+					style="@style/Widget.ListTitle"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="@dimen/activity_horizontal_margin"
+					android:text="Graph Battery System" />
+
+				<com.jjoe64.graphview.GraphView
+					android:id="@+id/graphViewBatterySystem"
 					android:layout_width="match_parent"
 					android:layout_height="160dp" />
 
