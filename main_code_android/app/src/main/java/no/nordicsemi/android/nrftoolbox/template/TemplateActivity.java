@@ -69,7 +69,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 	// TODO change view references to match your need
 	private EditText[] editTextDurationArray = new EditText[3];
 	private TextView[][] textView2dArray = new TextView[4][6];
-	private TextView[] textViewContArray = new TextView[4];
+	private TextView[] textViewContArray = new TextView[8];
     private TextView[] textViewBattArray = new TextView[8];
 
 	@Override

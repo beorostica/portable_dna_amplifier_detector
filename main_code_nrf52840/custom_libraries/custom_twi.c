@@ -7,7 +7,6 @@
 #include "nrf_drv_twi.h"
 #include "custom_log.h"
 
-
 // Indicates if operation on TWI has ended.
 static volatile bool m_xfer_done = false;
 
@@ -109,6 +108,9 @@ uint16_t ads1015Read(uint8_t channel)
     APP_ERROR_CHECK(err_code);
     while(!m_xfer_done);
     m_xfer_done = false;
+
+    // This is just a dummy delay:
+    for(uint32_t i = 0; i < 10000; i++){}
 
     ///////////////////////////////////////////////////////////////
     /// Read data from ADC1015 ////////////////////////////////////

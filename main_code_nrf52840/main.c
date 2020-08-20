@@ -35,6 +35,10 @@ int main(void)
     qspiInit();                       //Init QSPI for external flash (qspiInit() must be after the timers are started, otherwise the qspi throws error on the first burn (but after reset works ok)).
     bsp_board_init(BSP_INIT_LEDS);    //Init digital output
     twiInit();                        //Init TWI for ADS1015
+    bsp_board_led_on(0);
+    bsp_board_led_on(1);
+    bsp_board_led_on(2);
+    bsp_board_led_on(3);
 
     //Initialize BLE:
     ble_stack_init();
@@ -81,18 +85,24 @@ int main(void)
             /// Temp Control Task //////////////////////////////////////////
             ////////////////////////////////////////////////////////////////
             static uint32_t timeSecondsPast = 0;
-            static uint16_t adcReference = 768;
+            uint16_t adc1Reference = 820;
+            uint16_t adc2Reference = 870;
             if(timerControlSystem_GetFlag())
             {
                 timerControlSystem_ClearFlag();
                 
                 // Measuring, Processing and Manipulating for PID controller:
-                uint16_t adcValue = pidGetAdcValue();
-                uint8_t pwmValue = pidGetPwmAction(adcValue, adcReference);
-                pidSetPwmAction(pwmValue);
+                adc_data_t adcData = pidGetAdcValues();
+                uint16_t adc1Value = adcData.adcHeater;
+                uint16_t adc2Value = adcData.adcHotlid;
+                uint16_t adc3Value = adcData.adcTamb;
+                uint8_t pwm1Value = pid1GetPwmAction(adc1Value, adc1Reference);
+                uint8_t pwm2Value = pid2GetPwmAction(adc2Value, adc2Reference);
+                pid1SetPwmAction(pwm1Value);
+                pid2SetPwmAction(pwm2Value);
 
                 // Save and get the data in the static control_system_data struct:
-                controlSystem_saveStructData((uint16_t) secondsGetTime(), adcReference, adcValue, (uint16_t) pwmValue);
+                controlSystem_saveStructData((uint16_t) secondsGetTime(), adc1Reference, adc1Value, (uint16_t) pwm1Value, adc2Reference, adc2Value, (uint16_t) pwm2Value, adc3Value);
                 control_system_data csData = controlSystem_getStructData();
                 //NRF_LOG_INFO("Count: %d. PWM: %d. REF: %d. ADC: %d.", csData.time, csData.uPwm, csData.refAdc, csData.yAdc);
 
@@ -105,6 +115,7 @@ int main(void)
                     qspiControlSystem_PushSampleInExternalFlash(csData);
                 }
 
+                /*
                 // Change the reference signal:
                 if (secondsGetTime() - timeSecondsPast > 60){
                     timeSecondsPast = secondsGetTime();
@@ -114,6 +125,7 @@ int main(void)
                         adcReference = 768;
                     }
                 }
+                */
 
             }
 
@@ -127,9 +139,9 @@ int main(void)
                 {
                     secondsClearFlag();
                 
-                    static uint8_t mosfetActuator;
-                    static uint16_t lightSensor;
-                    static uint16_t time;
+                    uint8_t mosfetActuator;
+                    uint16_t lightSensor;
+                    uint16_t time;
                 
                     switch(counter) 
                     {
@@ -140,7 +152,7 @@ int main(void)
                             lightSensor    = ads1015Read(counter);
                             NRF_LOG_INFO("lightSensor[%d]: %d", counter, lightSensor);
                             detectionSystem_saveStructData_before(counter, mosfetActuator, lightSensor);
-                            bsp_board_led_on(counter);
+                            bsp_board_led_off(counter);
                             
                             //Increase counter:
                             counter++;
@@ -154,14 +166,14 @@ int main(void)
                             time           = (uint16_t) secondsGetTime();
                             NRF_LOG_INFO("lightSensor[%d]: %d", (counter-1), lightSensor);
                             detectionSystem_saveStructData_after((counter-1), mosfetActuator, lightSensor, time);
-                            bsp_board_led_off(counter-1);
+                            bsp_board_led_on(counter-1);
                 
                             //Save struct data before and Change the mosfet state for detection:
                             mosfetActuator = (uint8_t) bsp_board_led_state_get(counter);
                             lightSensor    = ads1015Read(counter);
                             NRF_LOG_INFO("lightSensor[%d]: %d", counter, lightSensor);
                             detectionSystem_saveStructData_before(counter, mosfetActuator, lightSensor);
-                            bsp_board_led_on(counter);
+                            bsp_board_led_off(counter);
                 
                             //Increase counter:
                             counter++;
@@ -175,14 +187,14 @@ int main(void)
                             time           = (uint16_t) secondsGetTime();
                             NRF_LOG_INFO("lightSensor[%d]: %d", (counter-1), lightSensor);
                             detectionSystem_saveStructData_after((counter-1), mosfetActuator, lightSensor, time);
-                            bsp_board_led_off(counter-1);
+                            bsp_board_led_on(counter-1);
                 
                             //Save struct data before and Change the mosfet state for detection:
                             mosfetActuator = (uint8_t) bsp_board_led_state_get(counter);
                             lightSensor    = ads1015Read(counter);
                             NRF_LOG_INFO("lightSensor[%d]: %d", counter, lightSensor);
                             detectionSystem_saveStructData_before(counter, mosfetActuator, lightSensor);
-                            bsp_board_led_on(counter);
+                            bsp_board_led_off(counter);
                 
                             //Increase counter:
                             counter++;
@@ -196,14 +208,14 @@ int main(void)
                             time           = (uint16_t) secondsGetTime();
                             NRF_LOG_INFO("lightSensor[%d]: %d", (counter-1), lightSensor);
                             detectionSystem_saveStructData_after((counter-1), mosfetActuator, lightSensor, time);
-                            bsp_board_led_off(counter-1);
+                            bsp_board_led_on(counter-1);
                 
                             //Save struct data before and Change the mosfet state for detection:
                             mosfetActuator = (uint8_t) bsp_board_led_state_get(counter);
                             lightSensor    = ads1015Read(counter);
                             NRF_LOG_INFO("lightSensor[%d]: %d", counter, lightSensor);
                             detectionSystem_saveStructData_before(counter, mosfetActuator, lightSensor);
-                            bsp_board_led_on(counter);
+                            bsp_board_led_off(counter);
                 
                             //Increase counter:
                             counter++;
@@ -217,7 +229,7 @@ int main(void)
                             time           = (uint16_t) secondsGetTime();
                             NRF_LOG_INFO("lightSensor[%d]: %d", (counter-1), lightSensor);
                             detectionSystem_saveStructData_after((counter-1), mosfetActuator, lightSensor, time);
-                            bsp_board_led_off(counter-1);
+                            bsp_board_led_on(counter-1);
                 
                             //Get the detection system struct data:
                             detection_system_data dsData = detectionSystem_getStructData();
@@ -235,6 +247,8 @@ int main(void)
                                 NRF_LOG_INFO("MAIN: Detection System Task Stoped. time: %d.", time);
 
                                 //Stop the detection system and the control system timers:
+                                pid1SetPwmAction(0);
+                                pid2SetPwmAction(0);
                                 timerDetectionSystem_Stop();
                                 secondsStop();
                                 timerControlSystem_Stop();
