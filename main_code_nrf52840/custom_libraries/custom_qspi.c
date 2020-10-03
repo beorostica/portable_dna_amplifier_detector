@@ -26,7 +26,7 @@
 #define QSPI_OFFSET_DETSYS          0                        //Offset
 
 #define QSPI_NUMBER_SECTORS_CONSYS  2                        //2 Sectors of 4096 Bytes ~ 4k Bytes
-#define QSPI_BUFFER_SIZE_CONSYSDAT  QSPI_BLOCK_SIZE_BYTES/8  // 32 elements in a buffer of control_system_data (8 Bytes)
+#define QSPI_BUFFER_SIZE_CONSYSDAT  QSPI_BLOCK_SIZE_BYTES/16  // 16 elements in a buffer of control_system_data (16 Bytes)
 #define QSPI_OFFSET_CONSYS          QSPI_OFFSET_DETSYS + (QSPI_NUMBER_SECTORS_DETSYS*QSPI_SECTOR_SIZE_BYTES) //Offset
 
 #define QSPI_NUMBER_SECTORS_BATSYS  2                        //2 Sectors of 4096 Bytes ~ 4k Bytes
@@ -52,6 +52,8 @@ static void qspi_handler(nrf_drv_qspi_evt_t event, void * p_context)
 
 static void configure_memory(void)
 {
+    /* 
+    // For Nordic nRF52840 DK:
     ret_code_t err_code;
     
     uint8_t temporary = 0x40;
@@ -78,6 +80,35 @@ static void configure_memory(void)
     cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_2B;
     err_code = nrf_drv_qspi_cinstr_xfer(&cinstr_cfg, &temporary, NULL);
     APP_ERROR_CHECK(err_code);
+    */
+
+    // For Feather nRF52840:
+    uint32_t err_code;
+    nrf_qspi_cinstr_conf_t cinstr_cfg = {
+        .opcode    = QSPI_STD_CMD_RSTEN,
+        .length    = NRF_QSPI_CINSTR_LEN_1B,
+        .io2_level = true,
+        .io3_level = true,
+        .wipwait   = true,
+        .wren      = true
+    };
+
+    // Send reset enable
+    err_code = nrf_drv_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
+    APP_ERROR_CHECK(err_code);
+
+    // Send reset command
+    cinstr_cfg.opcode = QSPI_STD_CMD_RST;
+    err_code = nrf_drv_qspi_cinstr_xfer(&cinstr_cfg, NULL, NULL);
+    APP_ERROR_CHECK(err_code);    
+
+    // Switch to qspi mode
+    uint8_t full_status[2] = {0x00, 0x02};
+    cinstr_cfg.opcode = QSPI_STD_CMD_WRSR;
+    cinstr_cfg.length = NRF_QSPI_CINSTR_LEN_3B;
+    err_code = nrfx_qspi_cinstr_xfer(&cinstr_cfg, full_status, NULL);
+    APP_ERROR_CHECK(err_code);
+
 }
 
 
@@ -86,6 +117,22 @@ void qspiInit(void)
     ret_code_t err_code;
 
     nrf_drv_qspi_config_t config = NRF_DRV_QSPI_DEFAULT_CONFIG;
+    
+    /////////////////////////////////////////////////////////////////
+    // For Feather nRF52850:
+    // Set QSPI pins to pins related to connected board.
+    config.pins.sck_pin = NRF_GPIO_PIN_MAP(0,19);
+    config.pins.csn_pin = NRF_GPIO_PIN_MAP(0,20);
+    config.pins.io0_pin = NRF_GPIO_PIN_MAP(0,17);
+    config.pins.io1_pin = NRF_GPIO_PIN_MAP(0,22);
+    config.pins.io2_pin = NRF_GPIO_PIN_MAP(0,23);
+    config.pins.io3_pin = NRF_GPIO_PIN_MAP(0,21);
+    // More configurations:
+    config.prot_if.readoc = NRF_QSPI_READOC_READ4O;
+    config.prot_if.writeoc = NRF_QSPI_WRITEOC_PP4O;
+    config.phy_if.sck_delay = 10;
+    /////////////////////////////////////////////////////////////////
+
     err_code = nrf_drv_qspi_init(&config, qspi_handler, NULL);
     APP_ERROR_CHECK(err_code);
     NRF_LOG_INFO("QSPI started.");

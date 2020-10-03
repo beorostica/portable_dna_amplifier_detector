@@ -21,7 +21,7 @@ public abstract class ContDataCallback implements ProfileDataCallback, ContChara
     @Override
     public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
 
-        final int[] dataArray = new int[4];
+        final int[] dataArray = new int[8];
         for (int i = 0; i < dataArray.length; i++) {
             dataArray[i] = data.getIntValue(Data.FORMAT_UINT16, 2 * i);
         }

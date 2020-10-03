@@ -342,6 +342,44 @@
 						tools:text="65" />
 				</LinearLayout>
 
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="match_parent"
+					android:orientation="horizontal">
+
+					<TextView
+						android:id="@+id/textViewCont7"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="24" />
+
+					<TextView
+						android:id="@+id/textViewCont4"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="768" />
+
+					<TextView
+						android:id="@+id/textViewCont5"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="770" />
+
+					<TextView
+						android:id="@+id/textViewCont6"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:gravity="center"
+						tools:text="65" />
+				</LinearLayout>
+
 				<androidx.appcompat.widget.AppCompatTextView
 					style="@style/Widget.ListTitle"
 					android:layout_width="match_parent"

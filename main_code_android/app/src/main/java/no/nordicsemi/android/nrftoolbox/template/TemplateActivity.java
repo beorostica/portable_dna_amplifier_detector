@@ -26,6 +26,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -65,11 +66,12 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 	//graphView:
 	private LineGraphSeries<DataPoint> mSerie = new LineGraphSeries<>();
+    private LineGraphSeries<DataPoint> mSerie2 = new LineGraphSeries<>();
 
 	// TODO change view references to match your need
 	private EditText[] editTextDurationArray = new EditText[3];
 	private TextView[][] textView2dArray = new TextView[4][6];
-	private TextView[] textViewContArray = new TextView[4];
+	private TextView[] textViewContArray = new TextView[8];
     private TextView[] textViewBattArray = new TextView[8];
 
 	@Override
@@ -84,7 +86,10 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 		//graphView:
 		GraphView mGraphView = findViewById(R.id.graph);
 		Viewport mViewport  = mGraphView.getViewport();
+        mSerie.setColor(Color.rgb(0,0,255));
+        mSerie2.setColor(Color.rgb(255,0,0));
 		mGraphView.addSeries(mSerie);
+        mGraphView.addSeries(mSerie2);
 		mViewport.setMinX(0);
 		mViewport.setMaxX(120);
 		mViewport.setMinY(0);
@@ -293,6 +298,7 @@ public class TemplateActivity extends BleProfileServiceReadyActivity<TemplateSer
 
 				//graphView:
 				mSerie.appendData(new DataPoint((double)dataArray[0],(double)dataArray[2]),true,120);
+                mSerie2.appendData(new DataPoint((double)dataArray[0],(double)dataArray[5]),true,120);
 
 			}
 			if (TemplateService.BROADCAST_CHARACTERISTIC_BATT_UPDATE.equals(action)) {
