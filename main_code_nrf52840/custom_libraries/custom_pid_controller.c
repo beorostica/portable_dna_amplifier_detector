@@ -237,7 +237,7 @@ uint8_t pid1GetPwmAction(uint16_t adcValue, uint16_t adcReference)
     return (uint8_t)u;
 }
 
-const float Kp2 = 100;
+const float Kp2 = 10;
 uint8_t pid2GetPwmAction(uint16_t adcValue, uint16_t adcReference)
 {
     float y = (float) adcValue;

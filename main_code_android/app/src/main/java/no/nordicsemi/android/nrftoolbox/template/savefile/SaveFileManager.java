@@ -80,7 +80,7 @@ public class SaveFileManager {
                                 mFileWriters[i].write("timeWrite,index,time,mosfetBefore,mosfetAfter,lightBefore,lightAfter\r\n");
                                 break;
                             case 1:
-                                mFileWriters[i].write("timeWrite,time,refAdc,yAdc,uPwm\r\n");
+                                mFileWriters[i].write("timeWrite,time,refAdc,yAdc,uPwm,refAdcHotlid,yAdcHotlid,uPwmHotlid,yAdcTamb\r\n");
                                 break;
                             case 2:
                                 mFileWriters[i].write("timeWrite,time,soc,capacityRemain,capacityFull,soh,voltage,current,power\r\n");

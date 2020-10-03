@@ -85,8 +85,8 @@ int main(void)
             /// Temp Control Task //////////////////////////////////////////
             ////////////////////////////////////////////////////////////////
             static uint32_t timeSecondsPast = 0;
-            uint16_t adc1Reference = 820;
-            uint16_t adc2Reference = 870;
+            uint16_t adc1Reference = 812;
+            uint16_t adc2Reference = 930;
             if(timerControlSystem_GetFlag())
             {
                 timerControlSystem_ClearFlag();
