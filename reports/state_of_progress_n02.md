@@ -18,6 +18,7 @@ En cada test, 3 de los tubos de ensayo contienen muestra positiva, mientras que 
 
 Adicionalmente a las reacciones hechas en el prototipo, en paralelo se realizaron reaciones (con la misma preparación de las muestras del día) en una máquina profesional (la cual sólo controla temperatura y no mide fluorescencia).
 
+
 ### Primer día de preparación de muestras:
 
 #### Test 00 (muestra negativa en tubo 0):
@@ -51,11 +52,13 @@ Adicionalmente a las reacciones hechas en el prototipo, en paralelo se realizaro
 #### Medición de fluorescia en el prototipo de muestras cuyo control de temperatura fue realizado en máquina profesional
 
 Primera tanda de muestras positivas:
+
 ![professional_day1_0_fluorescence.jpg)](images_n02/professional_day1_0_fluorescence.png)
 
 ![professional_day1_0_temperature.jpg)](images_n02/professional_day1_0_temperature.png)
 
 Segunda tanda de muestras positivas:
+
 ![professional_day1_1_fluorescence.jpg)](images_n02/professional_day1_1_fluorescence.png)
 
 ![professional_day1_1_temperature.jpg)](images_n02/professional_day1_1_temperature.png)
@@ -100,7 +103,6 @@ Segunda tanda de muestras positivas:
 
 #### Medición de fluorescia en el prototipo de muestras cuyo control de temperatura fue realizado en máquina profesional
 
-Primera tanda de muestras positivas:
 ![professional_day2_fluorescence.jpg)](images_n02/professional_day2_fluorescence.png)
 
 ![professional_day2_temperature.jpg)](images_n02/professional_day2_temperature.png)
@@ -142,12 +144,10 @@ Debido a estos problemas, antes del segundo día de pruebas se revisó y realiza
 
 Notar que la temperatura afecta la medición de fluorescencia, lo que se puede evidencias al inicio (primeros ~5min) y al final (después de los 60min). Esto no represente un problema severo para la detección de la curva sigmoidea dado que en esos momentos la temperatura es constante.
 
-El primer día se ve que las muestras negativas no alcanzaron a reaccionar, mientras que el segundo día las muestras negativas reacionaron mucho después que lo hicieron las muestras positivas (lo cual es algo normal en reacciones LAMP). Esto puede deberse a que los colaboradoes que prepararon las muestras lo hicieron con diferentes insumos que el día anterior. 
+El primer día se ve que las muestras negativas no alcanzaron a reaccionar, mientras que el segundo día las muestras negativas reacionaron mucho después que lo hicieron las muestras positivas (lo cual es algo normal en reacciones LAMP). Esto puede deberse a que los colaboradoes que prepararon las muestras lo hicieron con diferentes insumos que el día anterior.
 
 En general el aparato entrega resultados consistentes en el sentido de que las muestras positivas comienza un curva sigmoidea a los ~20min - ~25min y no hay reacción o tiene una reacción tardía para las muestras negativas.
 
 En cuanto a la detección de fluorescencia, cada uno de los 4 circuitos entrega valores distintos de offset y ganancia. Se puede ver que los offsets son cercanos para los 4 circuitos, pero la ganancia para el circuito del tubo 2 es mayor (aproximadamente el doble) que los otros circuitos. Se aprecia que el primer día la ganancia del tubo 3 es considerablemente menor que la de los demás, mientras que el segundo día (luego de las reparaciones) se ve que los circuitos del tubo 0, 1 y 3 tienen ganancias similares.
- 
+
 De acuerdo con las tablas de comparación entre la máquina profesional y el prototipo, el control de temperatura del profesional y del prototipo genera valores cercanos de fluorescencia.
-
-
