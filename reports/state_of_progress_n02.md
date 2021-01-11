@@ -151,3 +151,14 @@ En general el aparato entrega resultados consistentes en el sentido de que las m
 En cuanto a la detección de fluorescencia, cada uno de los 4 circuitos entrega valores distintos de offset y ganancia. Se puede ver que los offsets son cercanos para los 4 circuitos, pero la ganancia para el circuito del tubo 2 es mayor (aproximadamente el doble) que los otros circuitos. Se aprecia que el primer día la ganancia del tubo 3 es considerablemente menor que la de los demás, mientras que el segundo día (luego de las reparaciones) se ve que los circuitos del tubo 0, 1 y 3 tienen ganancias similares.
 
 De acuerdo con las tablas de comparación entre la máquina profesional y el prototipo, el control de temperatura del profesional y del prototipo genera valores cercanos de fluorescencia.
+
+---
+## Post-Procesado:
+
+A continuación se muestra a modo de resúmen los resultados fluorescencia con el intervalo de tiempo acotado en que la temperatura del proceso es constante:
+
+![summary_fluorescence.jpg)](images_n02/summary_fluorescence_raw.png)
+
+También se presenta el resúmen en que se realiza una interpolación a una curva de crecimiento sigmoideo y escalado:
+
+![summary_fluorescence.jpg)](images_n02/summary_fluorescence_processed.png)
